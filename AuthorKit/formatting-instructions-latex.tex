@@ -1,0 +1,129 @@
+\def\year{2015}
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article}
+
+% Required Packages
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+
+% Section numbers. 
+\setcounter{secnumdepth}{2}  
+
+\nocopyright
+\begin{document}
+% Title and author information
+\title{Formatting Instructions \\for Authors Using \LaTeX{}}
+\author{Author 1 \\ Study ID author 1 \And Author 2 \\ Study ID author 2 \And Author 3 \\ Study ID author 3 \And Author 4 \\ Study ID author 4}
+\maketitle
+\begin{abstract}
+The abstract goes here. Please read this document carefully before preparing your manuscript.
+
+To ensure that all reports have a uniform appearance corresponding to published papers at the major AI conferences (like IJCAI and AAAI), authors must adhere to the following instructions. 
+\end{abstract}
+
+\section{Introduction}
+This document details the requirements necessary to get your report formatted using \LaTeX{}. If you are using Microsoft Word, instructions are provided in a different document. 
+
+All authors must comply with the following:
+
+\begin{itemize}
+\item Use the provided author kit.
+\item Prepare your paper by modifying this file (\texttt{formatting-instructions-latex.tex}) if using \LaTeX{}.
+\item Adhere to the stated page limitations.
+\item Check every page of your report before submitting it.
+\item Remember to put your names and study IDs in the \verb|\author{}| field, and include your group name in the \verb|\title{}| field.
+\end{itemize}
+
+\section{Bibliography}
+Your bibliography should be formatted using \texttt{aaai.bst} as this document. Citations are included like so~\cite{book2015}. Multiple citations appear like this~\cite{conf,article}. All references to be cited should be included in BibTeX format in the file \texttt{bibliography.bib}.\footnote{Almost anything ever published can be found in BibTeX format via Google Scholar, but if using this method, you need to check the BibTeX entry for sanity before including it in the \texttt{bibliography.bib} file.}
+
+\section{Using \LaTeX{} to Format Your Paper}
+Make sure that the AAAI style file \texttt{aaai.sty} and the bibliography file \texttt{aaai.bst} are in the same folder as your \LaTeX{} source files.
+
+
+\subsection{Paper Size, Margins, and Column Width}
+Papers must be formatted to print in two-column format on 8.5 x 11 inch US letter-sized paper. The margins must be exactly as follows: 
+\begin{itemize}
+\item Top margin: .75 inches
+\item Left margin: .75 inches
+\item Right margin: .75 inches
+\item Bottom margin: 1.25 inches
+\end{itemize} 
+This is ensured by the following commands in the preamble (assuming you use PDF\LaTeX{} to compile the document):
+\begin{center}
+\textbackslash setlength\{\textbackslash pdfpagewidth\}\{8.5in\} \\
+\textbackslash setlength\{\textbackslash pdfpageheight\}\{11in\}
+\end{center}
+
+\begin{figure*}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline
+A & B &C & D & E & F & G & H & I & J& K &L &M&N&O  \\  \hline
+1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\
+16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 & 26 & 27 & 28 & 29 &30 \\ \hline
+\end{tabular}
+\end{center}
+\caption{A figure containing a wide table.}\label{figu:2}
+\end{figure*}
+
+
+\subsubsection{Column Width and Margins.}
+To ensure maximum readability, your paper must include two columns. Each column should be 3.3 inches wide (slightly more than 3.25 inches), with a .375 inch (.952 cm) gutter of white space between the two columns. The aaai.sty file will automatically create these columns for you. 
+
+\subsection{Overlength Papers}
+If your paper is too long, try to shrink the size of your graphics. Use \textbackslash centering instead of \textbackslash begin\{center\} in your figure environment. If these two methods don't work, you may minimally use the following. For floats (tables and figures), you may minimally reduce \textbackslash floatsep, \textbackslash textfloatsep, \textbackslash abovecaptionskip, and \textbackslash belowcaptionskip. For mathematical environments, you may minimally reduce \textbackslash abovedisplayskip, \textbackslash belowdisplayskip, and \textbackslash arraycolsep. You may also alter the size of your bibliography by inserting \textbackslash fontsize\{9.5pt\}\{10.5pt\} \textbackslash selectfont
+right before the bibliography. 
+
+Commands that alter page layout are forbidden. These include \textbackslash columnsep, \textbackslash topmargin, \textbackslash topskip, \textbackslash textheight, \textbackslash textwidth, \textbackslash oddsidemargin, and \textbackslash evensizemargin (this list is not exhaustive). 
+
+The title sec package is not allowed. Before using every trick you know to make your paper a certain length, try reducing the size of your graphics or cutting text instead.
+
+\subsection{Type Font and Size}
+Your paper must be formatted in Times Roman or Nimbus. We will not accept papers formatted using Computer Modern or Palatino or some other font as the text or heading typeface. Sans serif, when used, should be Courier. Use Symbol or Lucida or Computer Modern for \textit{mathematics only. } 
+
+\subsubsection{Formatting Author Information}
+If the authors (group members) don't fit in a single ``row'', use \textbackslash AND to start a new row:
+\begin{quote}
+\begin{small}
+\textbackslash author\{Author 1 \textbackslash\textbackslash ~ Study ID 1  \\
+\textbackslash AND\\
+Author 2 \textbackslash\textbackslash ~ Study ID 2  \\
+\textbackslash And\\
+Author 3 \textbackslash\textbackslash ~ Study ID 3 \textbackslash\textbackslash ~ \\\}
+\end{small}
+\end{quote}
+
+\noindent If the title and author information does not fit in the area allocated, place
+\textbackslash setlength\textbackslash titlebox\{\textit{height}\}
+after the \textbackslash documentclass line where \{\textit{height}\} is something like 2.5in.
+
+
+\section{Tables and Figures}
+Normally a figure only spans a single column, like in Figure~\ref{figu:1}. But it is possible to have figures that span both columns, like in Figure~\ref{figu:2}. Wide figures can be helpful for benchmark tables and for visualisations of big levels. Levels can be included by taking a screen shot and including the produced file using \verb|\includegraphics|.
+\begin{figure}[h]
+\begin{center}
+\begin{tabular}{|c|c|} \hline
+A & B  \\  \hline
+1 & 2 \\
+3 & 4 \\ \hline
+\end{tabular}
+\caption{A figure containing a table.}\label{figu:1}
+\end{center}
+\end{figure}
+
+
+\subsubsection{\LaTeX{} Overflow.}
+\LaTeX{} users please beware: \LaTeX{} will sometimes put portions of the figure or table or an equation in the margin. If this happens, you need to scale the figure or table down, or reformat the equation. Check your log file! 
+
+
+% References and end of paper
+\bibliographystyle{aaai}
+\bibliography{bibliography}
+
+
+\end{document}
