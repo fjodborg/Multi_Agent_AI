@@ -141,19 +141,19 @@ class State:
         box_coords = defaultdict(list)
         for i in range(len(self.boxes)):
             for j in range(len(self.boxes[i])):
-                if self.box_at(i,j):
-                    box_coords[self.boxes[i][j]].append([i,j])
+                if self.box_at(i, j):
+                    box_coords[self.boxes[i][j]].append([i, j])
                 if len(box_coords) == n_boxes:
                     return box_coords
         return box_coords
-    
+
     def localize_boxes_vec(self, n_boxes):
         """Get position (row,col) of boxes as a vector `box_coords`."""
         box_coords = []
         for i in range(len(self.boxes)):
             for j in range(len(self.boxes[i])):
-                if self.box_at(i,j):
-                    box_coords.append(np.array([i,j]))
+                if self.box_at(i, j):
+                    box_coords.append(np.array([i, j]))
                 if len(box_coords) == n_boxes:
                     return box_coords
         return np.array(box_coords)
@@ -164,9 +164,8 @@ class State:
         for i in range(len(self.goals)):
             for j in range(len(self.goals[i])):
                 if self.goals[i][j]:
-                    goal_coords[self.goals[i][j]].append([i,j])
+                    goal_coords[self.goals[i][j]].append([i, j])
         return goal_coords
-
 
     def extract_plan(self) -> "[State, ...]":
         plan = []

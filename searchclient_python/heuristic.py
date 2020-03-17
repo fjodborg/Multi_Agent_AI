@@ -27,7 +27,7 @@ class Heuristic(metaclass=ABCMeta):
 
     def h_dict(self, state: "State") -> "int":
         # TODO add Ai coords
-        ai  = [state.agent_row, state.agent_col]
+        ai = [state.agent_row, state.agent_col]
         box_coords = state.localize_boxes(self.box_number)
         # TODO: use a sum instead of a min?
         fitness = [
@@ -38,16 +38,20 @@ class Heuristic(metaclass=ABCMeta):
             min(manh(box, ai) for box in box_coords[goal])
             for goal, coords in self.goal_coords.items()
         ]
-        
-        
-        return sum(fitness)+min(fitness_ai2box)
+
+        return sum(fitness) + min(fitness_ai2box)
 
     def h_vector(self, state: "State"):
         # added ai coords
         ai_coords = [state.agent_row, state.agent_col]
         box_coords = state.localize_boxes_vec(self.box_number)
         goal_coords = self.goal_coords
-        return sum([(abs(ai_coords - goal)+abs(box_coords - goal)).sum(axis=1).min() for goal in goal_coords])
+        return sum(
+            [
+                (abs(ai_coords - goal) + abs(box_coords - goal)).sum(axis=1).min()
+                for goal in goal_coords
+            ]
+        )
 
     def __call__(self, state):
         return self.h(state)

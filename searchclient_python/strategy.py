@@ -4,9 +4,10 @@ from time import perf_counter
 
 import memory
 
-from queue  import PriorityQueue
+from queue import PriorityQueue
 
 import sys
+
 
 class Strategy(metaclass=ABCMeta):
     def __init__(self):
@@ -115,6 +116,7 @@ class StrategyDFS(Strategy):
     def __repr__(self):
         return "Depth-first Search"
 
+
 class StrategyBestFirst2(Strategy):
     def __init__(self, heuristic: "Heuristic"):
         super().__init__()
@@ -147,15 +149,17 @@ class StrategyBestFirst2(Strategy):
     def __repr__(self):
         return "Best-first Search using {}".format(self.heuristic)
 
+
 class StrategyBestFirst(Strategy):
     count = 0
+
     def __init__(self, heuristic: "Heuristic"):
         super().__init__()
         self.heuristic = heuristic
         self.frontier = PriorityQueue()
         self.frontier_set = set()
-        
-        #self.fitness = {}
+
+        # self.fitness = {}
 
     def get_and_remove_leaf(self) -> "State":
         leaf = self.frontier.get()
@@ -164,9 +168,9 @@ class StrategyBestFirst(Strategy):
 
     def add_to_frontier(self, state: "State"):
         fitness = self.heuristic(state)
-        StrategyBestFirst.count+=1
-        self.frontier.put((fitness,StrategyBestFirst.count,state));
-        self.frontier_set.add((state));
+        StrategyBestFirst.count += 1
+        self.frontier.put((fitness, StrategyBestFirst.count, state))
+        self.frontier_set.add((state))
 
     def in_frontier(self, state: "State") -> "bool":
         return state in self.frontier_set
