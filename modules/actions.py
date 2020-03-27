@@ -76,7 +76,7 @@ class Literals(ABC):
         pass
 
 
-class StateInit(Literals):
+class Actions(Literals):
     def __init__(self):
         # it is (row, column) and not (x, y)
         self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
@@ -86,7 +86,7 @@ class StateInit(Literals):
         return tuple(map(operator.add, agtfrom[i], self.dir[agtdir]))
 
     def Move(self, agt, agtdir, i=0):
-        agtfrom = super().GetPos(self.agents, agt)
+        agtfrom = self.GetPos(self.agents, agt)
         if agtfrom is None:
             print("agent", agt, "does not exist")
             return None
@@ -99,25 +99,25 @@ class StateInit(Literals):
         # in Agent, the line below and in the AddAgent method
         # aka agtfrom[i] becomes agtfrom since agtfrom isn't a list anymore
         agtto = self.AddPos(agtfrom, agtdir, i)
-        if super().Free(agtto) == chr(32):
-            super().SetPos(self.agents, agt, agtto, i)
+        if self.Free(agtto) == chr(32):
+            self.SetPos(self.agents, agt, agtto, i)
             return "Agent " + agt + " is now at " + str(agtto) + " (row,col)"
         else:
             return "Pos " + str(agtto) + " (row,col) is not free"
 
     def Push(self, agt, box, boxdir):
-        super().Free(boxto)
-        super().Neighbour(agtfrom, boxfrom)
-        super().Neighbour(boxfrom, boxto)
-        super().BoxAt(box, agtfrom)
-        super().AgentAt(agt, agtfrom)
+        self.Free(boxto)
+        self.Neighbour(agtfrom, boxfrom)
+        self.Neighbour(boxfrom, boxto)
+        self.BoxAt(box, agtfrom)
+        self.AgentAt(agt, agtfrom)
 
     def Pull(agt, agtfrom, agtto, box, boxfrom):
-        super().Free(agtto)
-        super().Neighbour(agtto, boxfrom)
-        super().Neighbour(boxfrom, agtfrom)
-        super().BoxAt(box, agtfrom)
-        super().AgentAt(agt, agtfrom)
+        self.Free(agtto)
+        self.Neighbour(agtto, boxfrom)
+        self.Neighbour(boxfrom, agtfrom)
+        self.BoxAt(box, agtfrom)
+        self.AgentAt(agt, agtfrom)
 
     def Noop(self, agt):
         pass
@@ -125,7 +125,7 @@ class StateInit(Literals):
 
 def test():
     # remember to make walls, otherwise it isn't bound to the matrix!
-    state = StateInit()
+    state = Actions()
     state.addMap(
         [
             ["+", "+", "+", "+", "+"],
