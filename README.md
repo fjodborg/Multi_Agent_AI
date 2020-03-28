@@ -25,6 +25,27 @@ where
 * [ ] Open the repository.
 * [ ] Choose a license.
 
+## Installation
+The python client was packed as a module to ease its use. Once clones, it can be
+installed from source via `pip`.
+
+```bash
+git clone https://github.com/FjodBorg/Multi_Agent_AI.git
+cd Multi_Agent_AI
+pip install .
+```
+
+After that, it should have installed `numpy` and the package is now accesible as
+a regular python package.
+```python
+import multi_sokoban
+```
+
+Uninstalling the package can be done via pip.
+```bash
+pip uninstall multi_sokoban
+```
+
 ## Code guidelines
 [Flake8](https://pypi.org/project/flake8/) and [black](https://github.com/ambv/black) it.
 ```bash
