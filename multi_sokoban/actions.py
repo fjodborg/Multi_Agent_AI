@@ -30,37 +30,41 @@ class Literals(ABC):
             # if key already exists, make the value a list
             self.goals[key].append(value)
 
-    def addBox(self, key, value):
+    def addBox(self, key1, key2, value):
         # key is (letter, color)
+        key = (key1, key2)
         if key not in self.boxes:
             self.boxes[key] = [value]
         else:
             # if key already exists, make the value a list
             self.boxes[key].append(value)
 
-    def GetPos(self, objtype, obj):
+    def GetPos(self, objtype, obj, i=0):
         if obj in objtype:
-            return objtype[obj]
+            return objtype[obj][i]
         else:
             return None
 
-    def SetPos(self, objtype, obj, pos, i):
-        objtype[obj][i] = pos
-
-    def GaolAt(self, obj, pos):
-        pass
-
-    def BoxAt(self, obj, pos):
-        pass
+    def SetPos(self, objtype, obj, pos, i=0):
+        if type(objtype[obj][i]) == tuple:
+            objtype[obj][i] = pos
+        else:
+            return None
 
     def Free(self, pos):
-        return self.map[pos]
+        if self.map[pos] == chr(32) or self.map[pos].islower():
+            return True
+        else:
+            return False
 
     def Color(self, obj):
         pass
 
     def Neighbour(self, pos1, pos2):
-        pass
+        if abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1]) == 1:
+            return True
+        else:
+            return False
 
     @abstractmethod
     def Move(self):
@@ -83,9 +87,9 @@ class Actions(Literals):
         super().__init__()
 
     def AddPos(self, agtfrom, agtdir, i=0):
-        return tuple(map(operator.add, agtfrom[i], self.dir[agtdir]))
+        return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
 
-    def Move(self, agt, agtdir, i=0):
+    def Move(self, agt, agtdir):
         agtfrom = self.GetPos(self.agents, agt)
         if agtfrom is None:
             print("agent", agt, "does not exist")
@@ -93,78 +97,73 @@ class Actions(Literals):
         if agtdir not in self.dir:
             print("Direction", agtdir, "does not exist")
             return None
-        # TODO figure something out about having two ai's of the same type
-        # right now we assume one 1 ai of each type [look at variable i]
-        # if we can confirm that there only is one of each type, remove [i]
-        # in Agent, the line below and in the AddAgent method
-        # aka agtfrom[i] becomes agtfrom since agtfrom isn't a list anymore
-        agtto = self.AddPos(agtfrom, agtdir, i)
-        if self.Free(agtto) == chr(32):
-            self.SetPos(self.agents, agt, agtto, i)
-            return "Agent " + agt + " is now at " + str(agtto) + " (row,col)"
+        agtto = self.AddPos(agtfrom, agtdir)
+        if self.Free(agtto):
+            self.SetPos(self.agents, agt, agtto)
+            # maybe add it to the map and remove the old one?
+            print("Agent " + agt + " is now at " + str(agtto) + " (row,col)")
+            return True
         else:
-            return "Pos " + str(agtto) + " (row,col) is not free"
+            print("Pos " + str(agtto) + " (row,col) is not free")
+            return None
 
-    def Push(self, agt, box, boxdir):
-        self.Free(boxto)
-        self.Neighbour(agtfrom, boxfrom)
-        self.Neighbour(boxfrom, boxto)
-        self.BoxAt(box, agtfrom)
-        self.AgentAt(agt, agtfrom)
+    def Push(self, agt, boxid, boxcolor, boxdir, i=0):
+        box = (boxid, boxcolor)
+        agtfrom = self.GetPos(self.agents, agt)
+        boxfrom = self.GetPos(self.boxes, box, i)
+        if agtfrom is None:
+            print("agent", agt, "does not exist")
+            return None
+        if boxfrom is None:
+            print("Box", box, "does not exist")
+            return None
+        if boxdir not in self.dir:
+            print("Direction", boxdir, "does not exist")
+            return None
+        if self.Neighbour(agtfrom, boxfrom) != 1:
+            print("agent", agt, "and box", box, "are not neighbors")
+            return None
 
-    def Pull(agt, agtfrom, agtto, box, boxfrom):
-        self.Free(agtto)
-        self.Neighbour(agtto, boxfrom)
-        self.Neighbour(boxfrom, agtfrom)
-        self.BoxAt(box, agtfrom)
-        self.AgentAt(agt, agtfrom)
+        boxto = self.AddPos(boxfrom, boxdir, i)
+        if self.Free(boxto):
+            self.SetPos(self.agents, agt, boxfrom, i)
+            self.SetPos(self.boxes, box, boxto, i)
+            # maybe add it to the map and remove the old one?
+            print("Agent " + agt + " is now at " + str(boxto) + " (row,col)")
+            print("Box " + str(box) + " is now at " + str(boxfrom) + " (row,col)")
+            return True
+        else:
+            print("Pos " + str(boxto) + " (row,col) is not free")
+            return None
 
+    def Pull(self, agt, boxid, boxcolor, agtdir, i=0):
+        box = (boxid, boxcolor)
+        agtfrom = self.GetPos(self.agents, agt)
+        boxfrom = self.GetPos(self.boxes, box, i)
+        if agtfrom is None:
+            print("agent", agt, "does not exist")
+            return None
+        if boxfrom is None:
+            print("Box", box, "does not exist")
+            return None
+        if agtdir not in self.dir:
+            print("Direction", agtdir, "does not exist")
+            return None
+        if self.Neighbour(agtfrom, boxfrom) != 1:
+            print("agent", agt, "and box", box, "are not neighbors")
+            return None
+
+        agtto = self.AddPos(agtfrom, boxdir, i)
+        if self.Free(agtto):
+            self.SetPos(self.agents, agt, agtto, i)
+            self.SetPos(self.boxes, box, agtfrom, i)
+            # maybe add it to the map and remove the old one?
+            print("Agent " + agt + " is now at " + str(agtto) + " (row,col)")
+            print("Box " + str(box) + " is now at " + str(agtfrom) + " (row,col)")
+            return True
+        else:
+            print("Pos " + str(agtto) + " (row,col) is not free")
+            return None
+    
     def Noop(self, agt):
         pass
-
-
-def test():
-    # remember to make walls, otherwise it isn't bound to the matrix!
-    state = Actions()
-    state.addMap(
-        [
-            ["+", "+", "+", "+", "+"],
-            ["+", chr(32), chr(32), chr(32), "+"],
-            ["+", chr(32), chr(32), "+", "+"],
-            ["+", "+", chr(32), chr(32), "+"],
-            ["+", "+", "+", "+", "+"],
-        ]
-    )
-    print(state.map)
-    state.addAgent("b", (1, 1))  # key is color
-    print(state.agents)
-    print(state.Move("b", "S"))
-    print(state.agents)
-    print(state.Move("b", "E"))
-    print(state.agents)
-    print(state.Move("b", "S"))
-    print(state.agents)
-    state.addAgent("b", (1, 2))
-    state.addAgent("b", (1, 2))
-    state.addAgent("c", (1, 2))  # key is letter
-    state.addGoal("c", (1, 1))
-    state.addGoal("c", (1, 4))
-
-    state.addBox(("c", "c"), (1, 1))  # key is (letter, color)
-    state.addBox(("c", "c"), (1, 1))
-    state.addBox(("c", "b"), (5, 4))
-
-    """print(state.agents)
-    print(state.goals)
-    print(state.boxes)
-
-    print(state.agents["b"])"""
-
-
-# uncomment to see an example of the structure
-# test()
-
-# use
-# from modules import actions
-# to load the module from root
-# then call actions.test() to run the test
