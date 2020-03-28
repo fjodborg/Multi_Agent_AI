@@ -123,7 +123,7 @@ class Actions(Literals):
         pass
 
 
-def test():
+if __name__ == "__main__":
     # remember to make walls, otherwise it isn't bound to the matrix!
     state = Actions()
     state.addMap(
