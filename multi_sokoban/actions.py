@@ -80,7 +80,7 @@ class Literals(ABC):
         pass
 
 
-class Actions(Literals):
+class StateInit(Literals):
     def __init__(self):
         # it is (row, column) and not (x, y)
         self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}

@@ -3,7 +3,7 @@ import actions
 
 def test(nr):
     # remember to make walls, otherwise it isn't bound to the matrix!
-    state = actions.Actions()
+    state = actions.StateInit()
     state.addMap(
         [
             ["+", "+", "+", "+", "+"],
