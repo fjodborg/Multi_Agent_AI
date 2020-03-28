@@ -1,6 +1,6 @@
-import sys
+"""Define literals and actions schemas for the muli-PDDL framework."""
 import numpy as np
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import operator
 
 
@@ -154,11 +154,11 @@ def test():
     state.addBox(("c", "c"), (1, 1))
     state.addBox(("c", "b"), (5, 4))
 
-    '''print(state.agents)
+    """print(state.agents)
     print(state.goals)
     print(state.boxes)
 
-    print(state.agents["b"])'''
+    print(state.agents["b"])"""
 
 
 # uncomment to see an example of the structure
