@@ -12,14 +12,14 @@ java -jar "$SERVER/server.jar" -l "$SERVER/levels/$lvl" -c "python searchclient/
 where
 * `$SERVER` is the path to this repository.
 * `$method` is the search method (e.g. -bfs).
-* `mem` is the memory threshold tu be used the program.
+* `mem` is the memory threshold to be used the program.
 
 ## Objectives
 * [ ] Run _lvl1_ without getting an error.
 * [ ] Create required maps.
-* [ ] Choose a theoretical framework -> PPDL | BDI | POP | HTL.
+* [x] Choose a theoretical framework -> PPDL | BDI | POP | HTL.
 * [ ] Choose a method of communication -> online-planing, deadlocks avoidance.
-* [ ] Find paper for Sokoban-like with the chose framework and multiagent.
+* [x] Find paper for Sokoban-like with the chose framework and multiagent.
 * [ ] Solve all the levels with the agent.
 * [ ] Papers in AAAI style of 6 pages.
 * [ ] Open the repository.
@@ -35,7 +35,7 @@ cd Multi_Agent_AI
 pip install .
 ```
 
-After that, it should have installed `numpy` and the package is now accesible as
+After that, it should have installed `numpy` and the package is now accessible as
 a regular python package.
 ```python
 import multi_sokoban
