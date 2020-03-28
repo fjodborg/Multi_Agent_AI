@@ -153,7 +153,7 @@ class Actions(Literals):
             print("agent", agt, "and box", box, "are not neighbors")
             return None
 
-        agtto = self.AddPos(agtfrom, boxdir, i)
+        agtto = self.AddPos(agtfrom, agtdir, i)
         if self.Free(agtto):
             self.SetPos(self.agents, agt, agtto, i)
             self.SetPos(self.boxes, box, agtfrom, i)
@@ -164,6 +164,6 @@ class Actions(Literals):
         else:
             print("Pos " + str(agtto) + " (row,col) is not free")
             return None
-    
+
     def Noop(self, agt):
         pass
