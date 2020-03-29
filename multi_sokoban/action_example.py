@@ -4,6 +4,7 @@ import actions
 def test(nr):
     # remember to make walls, otherwise it isn't bound to the matrix!
     state = actions.StateInit()
+    # state2 = state.copy()
     state.addMap(
         [
             ["+", "+", "+", "+", "+"],
@@ -59,6 +60,26 @@ def test(nr):
         state.Pull("0", "B", "b", "S", 0)
         print(state.agents)
         print(state.boxes)
+    elif nr == 3:
+        state.addAgent("0", (1, 1))  # key is color
+        state.addBox("B", "b", (2, 2))
+        state.addGoal("b", (2, 2))
+        print(state.agents)
+        print(state.boxes)
+        state2 = actions.StateInit(state)
+        state.Move("0", "E")
+        # print(state.agents)
+        state.Pull("0", "B", "b", "W", 0)
+        print(state.agents)
+        print(state.boxes)
+        state.Pull("0", "B", "b", "S", 0)
+        print(state.agents)
+        print(state.boxes)
+        state.Pull("0", "B", "b", "S", 0)
+        print(state.agents, state2.agents)
+        print(state.boxes, state2.boxes)
+        state.addGoal("b", (2, 2))
+        print(state.goals, state2.goals)
 
 
-test(2)
+test(3)
