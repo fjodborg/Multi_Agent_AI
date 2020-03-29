@@ -1,14 +1,23 @@
 """Define literals and actions schemas for the muli-PDDL framework."""
 import numpy as np
-from abc import ABC, abstractmethod
 import operator
+import copy
 
 
-class Literals(ABC):
-    def __init__(self):
-        self.agents = {}  # hashtable
-        self.goals = {}  # hashtable
-        self.boxes = {}  # hashtable
+class Literals():
+    def __init__(self, parent: 'Literals' = None):
+        if parent is None:
+            self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
+            self.agents = {}  # hashtable
+            self.goals = {}  # hashtable
+            self.boxes = {}  # hashtable
+        else:
+            self.dir = parent.dir  # rigid
+            self.goals = parent.goals  # rigid
+            self.agents = copy.deepcopy(parent.agents)
+            self.boxes = copy.deepcopy(parent.boxes)
+            self.map = copy.deepcopy(parent.map)
+
         super().__init__()
 
     def addMap(self, map2):
@@ -66,7 +75,6 @@ class Literals(ABC):
         else:
             return False
 
-    @abstractmethod
     def Move(self):
         pass
 
@@ -81,10 +89,9 @@ class Literals(ABC):
 
 
 class StateInit(Literals):
-    def __init__(self):
+    def __init__(self, parent: 'Literals' = None):
         # it is (row, column) and not (x, y)
-        self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
-        super().__init__()
+        super().__init__(parent)
 
     def AddPos(self, agtfrom, agtdir, i=0):
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
