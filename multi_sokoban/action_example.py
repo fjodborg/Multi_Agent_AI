@@ -8,9 +8,9 @@ def test(nr):
     state.addMap(
         [
             ["+", "+", "+", "+", "+"],
-            ["+", chr(32), chr(32), chr(32), "+"],
+            ["+", "0", chr(32), chr(32), "+"],
             ["+", chr(32), "B", "+", "+"],
-            ["+", "+", "b", chr(32), "+"],
+            ["+", "+", "+", chr(32), "+"],
             ["+", "+", "+", "+", "+"],
         ]
     )
@@ -80,6 +80,17 @@ def test(nr):
         print(state.boxes, state2.boxes)
         state.addGoal("b", (2, 2))
         print(state.goals, state2.goals)
+    elif nr == 4:
+        state.addAgent("0", (1, 1))  # key is color
+        state.addBox("B", "b", (2, 2))
+        state.Move("0", "E")
+        print(state.map)
+        state.Pull("0", "B", "b", "W", 0)
+        print(state.map)
+        state.Pull("0", "B", "b", "S", 0)
+        print(state.map)
+        state.Push("0", "B", "b", "E", 0)
+        print(state.map)
 
 
-test(3)
+test(4)
