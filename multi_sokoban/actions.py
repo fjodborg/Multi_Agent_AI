@@ -28,7 +28,6 @@ class Literals():
         if key not in self.agents:
             self.agents[key] = [value]
         else:
-            # if key already exists, make the value a list
             self.agents[key].append(value)
 
     def addGoal(self, key, value):
@@ -36,7 +35,6 @@ class Literals():
         if key not in self.goals:
             self.goals[key] = [value]
         else:
-            # if key already exists, make the value a list
             self.goals[key].append(value)
 
     def addBox(self, key1, key2, value):
@@ -45,7 +43,6 @@ class Literals():
         if key not in self.boxes:
             self.boxes[key] = [value]
         else:
-            # if key already exists, make the value a list
             self.boxes[key].append(value)
 
     def GetPos(self, objtype, obj, i=0):
@@ -108,6 +105,11 @@ class StateInit(Literals):
         if self.Free(agtto):
             self.SetPos(self.agents, agt, agtto)
             # maybe add it to the map and remove the old one?
+            # protype
+            self.map[agtfrom] = chr(32)
+            self.map[agtto] = agt
+            # protype end
+
             print("Agent " + agt + " is now at " + str(agtto) + " (row,col)")
             return True
         else:
@@ -136,6 +138,12 @@ class StateInit(Literals):
             self.SetPos(self.agents, agt, boxfrom, i)
             self.SetPos(self.boxes, box, boxto, i)
             # maybe add it to the map and remove the old one?
+            # protype
+            self.map[agtfrom] = chr(32)
+            self.map[boxfrom] = agt
+            self.map[boxto] = boxid
+            # protype end
+
             print("Agent " + agt + " is now at " + str(boxto) + " (row,col)")
             print("Box " + str(box) + " is now at " + str(boxfrom) + " (row,col)")
             return True
@@ -165,12 +173,15 @@ class StateInit(Literals):
             self.SetPos(self.agents, agt, agtto, i)
             self.SetPos(self.boxes, box, agtfrom, i)
             # maybe add it to the map and remove the old one?
+            # protype
+            self.map[boxfrom] = chr(32)
+            self.map[agtfrom] = boxid
+            self.map[agtto] = agt
+            # protype end
+
             print("Agent " + agt + " is now at " + str(agtto) + " (row,col)")
             print("Box " + str(box) + " is now at " + str(agtfrom) + " (row,col)")
             return True
         else:
             print("Pos " + str(agtto) + " (row,col) is not free")
             return None
-
-    def Noop(self, agt):
-        pass
