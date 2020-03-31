@@ -8,7 +8,7 @@ def test(nr):
     state.addMap(
         [
             ["+", "+", "+", "+", "+"],
-            ["+", "0", chr(32), chr(32), "+"],
+            ["+", "+", chr(32), chr(32), "+"],
             ["+", chr(32), "B", "+", "+"],
             ["+", "+", "+", chr(32), "+"],
             ["+", "+", "+", "+", "+"],
@@ -16,81 +16,59 @@ def test(nr):
     )
     print(state.map)
     if nr == 0:
-        state.addAgent("0", (1, 1))  # key is color
-        state.addAgent("1", (1, 2))
-        print(state.agents)
-        state.Move("0", "W")
-        print(state.agents)
-        state.Move("1", "E")
-        print(state.agents)
-        state.Move("0", "S")
-        print(state.agents)
-        state.Move("0", "S")
-        print(state.agents)
-        state.addAgent("2", (1, 2))
-        state.addAgent("3", (1, 2))  # key is letter
-        state.addGoal("c", (1, 1))
-        state.addGoal("c", (1, 4))
-
-        state.addBox("C", "c", (1, 1))  # key is (letter, color)
-        state.addBox("C", "c", (1, 1))
-        state.addBox("C", "b", (5, 4))
+        # TODO  check if next State is explored!
+        #print(state.map)
+        state.addAgent("0", (1, 1))
+        state.addBox("C", (2, 2), "c")
+        state.addBox("C", (1, 2), "c")
+        state.addBox("C", (2, 1), "b")
+        newState = state.get_children()
+        print("\n\nFirst iteration\n")
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
+        leaf = newState[0]
+        children = leaf.get_children()
+        newState.extend(children)
+        
+        newState.remove(leaf)
+        del leaf
+        
+        print("\n\nSecond iteration using leaf 0\n")
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
+    
     elif nr == 1:
-        state.addAgent("0", (1, 1))  # key is color
-        state.addBox("B", "b", (2, 2))
-        state.Move("0", "E")
-        # print(state.agents)
-        state.Push("0", "B", "b", "W", 0)
-        print(state.agents)
-        print(state.boxes)
-        state.Push("0", "B", "b", "N", 0)
-        print(state.agents)
-        print(state.boxes)
-    elif nr == 2:
-        state.addAgent("0", (1, 1))  # key is color
-        state.addBox("B", "b", (2, 2))
-        state.Move("0", "E")
-        # print(state.agents)
-        state.Pull("0", "B", "b", "W", 0)
-        print(state.agents)
-        print(state.boxes)
-        state.Pull("0", "B", "b", "S", 0)
-        print(state.agents)
-        print(state.boxes)
-        state.Pull("0", "B", "b", "S", 0)
-        print(state.agents)
-        print(state.boxes)
-    elif nr == 3:
-        state.addAgent("0", (1, 1))  # key is color
-        state.addBox("B", "b", (2, 2))
-        state.addGoal("b", (2, 2))
-        print(state.agents)
-        print(state.boxes)
-        state2 = actions.StateInit(state)
-        state.Move("0", "E")
-        # print(state.agents)
-        state.Pull("0", "B", "b", "W", 0)
-        print(state.agents)
-        print(state.boxes)
-        state.Pull("0", "B", "b", "S", 0)
-        print(state.agents)
-        print(state.boxes)
-        state.Pull("0", "B", "b", "S", 0)
-        print(state.agents, state2.agents)
-        print(state.boxes, state2.boxes)
-        state.addGoal("b", (2, 2))
-        print(state.goals, state2.goals)
-    elif nr == 4:
-        state.addAgent("0", (1, 1))  # key is color
-        state.addBox("B", "b", (2, 2))
-        state.Move("0", "E")
-        print(state.map)
-        state.Pull("0", "B", "b", "W", 0)
-        print(state.map)
-        state.Pull("0", "B", "b", "S", 0)
-        print(state.map)
-        state.Push("0", "B", "b", "E", 0)
-        print(state.map)
+        state.addAgent("0", (1, 1))
+        state.addBox("C", (2, 2), "c")
+        state.addBox("C", (1, 2), "b")
+        state.addBox("C", (2, 1), "b")
+
+        frontier = []
+        frontierSet = set()
+        frontier.append(state)
+        # using getState rather than the whole state saves memory
+
+        newState = state.get_children()
+
+        print("\n\nFirst iteration\n")
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
+        leaf = newState[-1]
+        children = leaf.get_children()
+        newState.extend(children)
+        
+        #newState.remove(leaf)
+        #del leaf
+
+        print("\n\nSecond iteration using the last leaf\n")
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
+    
+        leaf = newState[-1]
+        children = leaf.get_children()
+        newState.extend(children)
+        
+        #newState.remove(leaf)
+        #del leaf
+
+        print("\n\nthird iteration using the last leaf\n")
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
 
 
-test(4)
+test(1)
