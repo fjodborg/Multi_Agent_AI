@@ -14,6 +14,7 @@ class Literals:
             self.prevState = None
             self.prevAction = None
             self.g = 0
+            self.explored = set()
         else:
             self.dir = parent.dir  # rigid
             self.goals = parent.goals  # rigid
@@ -23,29 +24,28 @@ class Literals:
             self.prevState = parent  # reference to previous state
             self.prevAction = None
             self.g = copy.deepcopy(parent.g) + 1
-        
+            self.explored = parent.explored
         super().__init__()
-
-    def getState(self):
-        return {self.agents, self.boxes}
 
     def addMap(self, map2):
         self.map = np.array(map2)
 
-    def addAgent(self, key, value, color='c'):
+    def addAgent(self, key, value, color="c"):
         # key is color
         self.map[value] = key
         self.agents[key] = [[value, color]]
 
     def addGoal(self, key, value):
         # key is letter
+        key = key.lower()
         if key not in self.goals:
             self.goals[key] = [[value]]
         else:
             self.goals[key].append([value])
 
-    def addBox(self, key, value, color='c'):
+    def addBox(self, key, value, color="c"):
         # key is (letter, color)
+        key = key.upper()
         self.map[value] = key
         if key not in self.boxes:
             self.boxes[key] = [[value, color]]
@@ -189,7 +189,7 @@ class StateInit(Literals):
         # print("Agent " + agt + " is now at " + str(agtto) + " (row,col)")
         # print("Box " + str(box) + " is now at " + str(agtfrom) + " (row,col)")
         return True
-    
+
     def Pull(self, agt, boxkey, boxdir, i):
         actionParams = self.__PullPrec(agt, boxkey, boxdir, i)
         if actionParams is not None:
@@ -197,7 +197,21 @@ class StateInit(Literals):
         else:
             return None
 
-    def get_children(self):
+    def minimalRep(self):
+        return str([self.agents, self.boxes])
+
+    def isExplored(self):
+        return self.minimalRep() in self.explored
+
+    def __addTo(self, children):
+        if not self.isExplored():
+            self.explored.add(self.minimalRep())
+            children.append(self)
+        else:
+            del self
+
+    def explore(self):
+        # only explores unexplored states and returns a list of children
         children = []
 
         for direction in self.dir:
@@ -206,38 +220,48 @@ class StateInit(Literals):
                 actionParams = self.__MovePrec(agtkey, direction)
                 if actionParams is not None:
                     child = StateInit(self)
-                    child.prevAction = ['Move', actionParams]
+                    child.prevAction = ["Move", actionParams]
                     child.__MoveEffect(*actionParams)
-                    children.append(child)
-                 
+                    child.__addTo(children)
+
                 # TODO reformat these nested loops and if statements!
 
                 # This can be perhaps be optimized by only looking at boxes at the
                 # neighboring tiles of the agent
                 for boxkey in self.boxes:
                     for i in range(len(self.boxes[boxkey])):
+
                         boxcolor = self.boxes[boxkey][i][1]
-                        
+
                         # [agent letter][agent number (0 since it is unique)][color]
                         if self.agents[agtkey][0][1] == boxcolor:
                             actionParams = self.__PullPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
-                                child.prevAction = ['Pull', actionParams]
+                                child.prevAction = ["Pull", actionParams]
                                 child.__PullEffect(*actionParams)
-                                children.append(child)
+                                child.__addTo(children)
+                                if ["Pull", ("0", "B", (1, 2), (1, 1), (2, 2), 0)] == [
+                                    "Pull",
+                                    actionParams,
+                                ]:
+                                    print(
+                                        "\n\n\n\n\n\nwtf\n\n\n\n\n",
+                                        boxcolor,
+                                        self.agents[agtkey][0][1],
+                                    )
 
                             actionParams = self.__PushPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
-                                child.prevAction = ['Push', actionParams]
+                                child.prevAction = ["Push", actionParams]
                                 child.__PushEffect(*actionParams)
-                                children.append(child)
-        
+                                child.__addTo(children)
+
         for agtkey in self.agents:
             # TODO make a noop function
             child = StateInit(self)
-            child.prevAction = ['Noop', None]
-            children.append(child)
-        
+            child.prevAction = ["Noop", None]
+            child.__addTo(children)
+
         return children
