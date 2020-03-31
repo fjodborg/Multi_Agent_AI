@@ -16,59 +16,41 @@ def test(nr):
     )
     print(state.map)
     if nr == 0:
-        # TODO  check if next State is explored!
-        #print(state.map)
         state.addAgent("0", (1, 1))
-        state.addBox("C", (2, 2), "c")
+        state.addBox("b", (2, 2), "b")
         state.addBox("C", (1, 2), "c")
         state.addBox("C", (2, 1), "b")
-        newState = state.get_children()
+        leaf = state
+        frontier = []
+        frontier.append(leaf)
+
+        newState = state.explore()
+
         print("\n\nFirst iteration\n")
         [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
         leaf = newState[0]
-        children = leaf.get_children()
-        newState.extend(children)
-        
-        newState.remove(leaf)
-        del leaf
-        
-        print("\n\nSecond iteration using leaf 0\n")
-        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
-    
-    elif nr == 1:
-        state.addAgent("0", (1, 1))
-        state.addBox("C", (2, 2), "c")
-        state.addBox("C", (1, 2), "b")
-        state.addBox("C", (2, 1), "b")
+        newChildren = leaf.explore()
+        print(newChildren)
+        newState.extend(newChildren)
 
-        frontier = []
-        frontierSet = set()
-        frontier.append(state)
-        # using getState rather than the whole state saves memory
-
-        newState = state.get_children()
-
-        print("\n\nFirst iteration\n")
-        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
-        leaf = newState[-1]
-        children = leaf.get_children()
-        newState.extend(children)
-        
-        #newState.remove(leaf)
-        #del leaf
+        # newState.remove(leaf)
+        # del leaf
 
         print("\n\nSecond iteration using the last leaf\n")
         [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
-    
-        leaf = newState[-1]
-        children = leaf.get_children()
+
+        leaf = newState[0]
+        children = leaf.explore()
         newState.extend(children)
-        
-        #newState.remove(leaf)
-        #del leaf
+
+        # newState.remove(leaf)
+        # del leaf
 
         print("\n\nthird iteration using the last leaf\n")
-        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
+        [
+            print(child.map, child.prevAction, child.minimalRep(), " cost:", child.g)
+            for child in newState
+        ]
 
 
-test(1)
+test(2)
