@@ -12,7 +12,7 @@ class Literals:
             self.goals = {}  # hashtable
             self.boxes = {}  # hashtable
             self.prevState = None
-            self.prevAction = None
+            self.actionPerformed = None
             self.g = 0
             self.explored = set()
         else:
@@ -22,7 +22,7 @@ class Literals:
             self.boxes = copy.deepcopy(parent.boxes)
             self.map = copy.deepcopy(parent.map)
             self.prevState = parent  # reference to previous state
-            self.prevAction = None
+            self.actionPerformed = None
             self.g = copy.deepcopy(parent.g) + 1
             self.explored = parent.explored
         super().__init__()
@@ -31,7 +31,7 @@ class Literals:
         self.map = np.array(map2)
 
     def addAgent(self, key, value, color="c"):
-        # key is color
+        # key is number
         self.map[value] = key
         self.agents[key] = [[value, color]]
 
@@ -210,6 +210,16 @@ class StateInit(Literals):
         else:
             del self
 
+    def bestPath(self):
+        # function returns the list of actions used to reach the state
+        path = []
+        state = self
+        while state.actionPerformed is not None:
+            path.append(state.actionPerformed)
+            state = state.prevState
+
+        return path[::-1]
+
     def explore(self):
         # only explores unexplored states and returns a list of children
         children = []
@@ -220,7 +230,7 @@ class StateInit(Literals):
                 actionParams = self.__MovePrec(agtkey, direction)
                 if actionParams is not None:
                     child = StateInit(self)
-                    child.prevAction = ["Move", actionParams]
+                    child.actionPerformed = ["Move", actionParams]
                     child.__MoveEffect(*actionParams)
                     child.__addTo(children)
 
@@ -238,7 +248,7 @@ class StateInit(Literals):
                             actionParams = self.__PullPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
-                                child.prevAction = ["Pull", actionParams]
+                                child.actionPerformed = ["Pull", actionParams]
                                 child.__PullEffect(*actionParams)
                                 child.__addTo(children)
                                 if ["Pull", ("0", "B", (1, 2), (1, 1), (2, 2), 0)] == [
@@ -254,14 +264,14 @@ class StateInit(Literals):
                             actionParams = self.__PushPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
-                                child.prevAction = ["Push", actionParams]
+                                child.actionPerformed = ["Push", actionParams]
                                 child.__PushEffect(*actionParams)
                                 child.__addTo(children)
 
         for agtkey in self.agents:
             # TODO make a noop function
             child = StateInit(self)
-            child.prevAction = ["Noop", None]
+            child.actionPerformed = ["Noop", None]
             child.__addTo(children)
 
         return children

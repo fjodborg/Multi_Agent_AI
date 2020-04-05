@@ -24,11 +24,11 @@ def test(nr):
         frontier = []
         frontier.append(leaf)
 
-        newState = state.explore()
+        newState = leaf.explore()
 
         print("\n\nFirst iteration\n")
         [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
-        leaf = newState[0]
+        leaf = newState[-1]
         newChildren = leaf.explore()
         print(newChildren)
         newState.extend(newChildren)
@@ -39,7 +39,7 @@ def test(nr):
         print("\n\nSecond iteration using the last leaf\n")
         [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
 
-        leaf = newState[0]
+        leaf = newState[-1]
         children = leaf.explore()
         newState.extend(children)
 
@@ -52,5 +52,50 @@ def test(nr):
             for child in newState
         ]
 
+        leaf = newState[-1]
+        print(leaf.bestPath())
+    if nr == 1:
+        state.addAgent("0", (1, 1), "c")
+        state.addBox("B", (2, 2), "c")
+        state.addBox("C", (1, 2), "c")
+        state.addBox("C", (2, 1), "b")
+        leaf = state
+        frontier = []
+        frontier.append(leaf)
 
-test(2)
+        newState = leaf.explore()
+
+        print("\n\nFirst iteration\n")
+        [print(child.map, child.actionPerformed, " cost:", child.g) for child in newState]
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        newChildren = leaf.explore()
+        print(newChildren)
+        newState.extend(newChildren)
+
+        newState.remove(leaf)
+        del leaf
+
+        print("\n\nSecond iteration using the last leaf\n")
+        [print(child.map, child.actionPerformed, " cost:", child.g) for child in newState]
+
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        children = leaf.explore()
+        newState.extend(children)
+
+        newState.remove(leaf)
+        del leaf
+
+        print("\n\nthird iteration using the last leaf\n")
+        [
+            print(child.map, child.actionPerformed, child.minimalRep(), " cost:", child.g)
+            for child in newState
+        ]
+
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        print(leaf.bestPath())
+
+
+test(1)
