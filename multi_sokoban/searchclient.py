@@ -1,6 +1,7 @@
 """Client that receives messages from the server."""
 import argparse
 import re
+import string
 import sys
 
 import numpy as np
@@ -8,10 +9,10 @@ import numpy as np
 from _io import TextIOWrapper
 from typing import List
 
-from .actions import Actions
+from .actions import StateInit
+from .aStar import PriorityQueue
 from heuristic import AStar, WAStar, Greedy
 from .memory import MAX_USAGE, get_usage
-from .strategy import Strategy, StrategyBestFirst
 
 
 class ParseError(Exception):
@@ -29,9 +30,13 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(self, server_messages: TextIOWrapper, strategy: Strategy = None):
+    def __init__(
+        self, server_messages: TextIOWrapper, strategy: Strategy = None
+    ):
         """Init object."""
-        self.colors_re = re.compile(r"^[a-z]+:\s*[0-9A-Z](\s*,\s*[0-9A-Z])*\s*$")
+        self.colors_re = re.compile(
+            r"^[a-z]+:\s*[0-9A-Z](\s*,\s*[0-9A-Z])*\s*$"
+        )
         self.invalid_re = re.compile(r"[^A-Za-z0-9+ ]")
         self._strategy = self.add_strategy(strategy)
         self.initial_state = self.parse_map(server_messages)
@@ -43,6 +48,10 @@ class SearchClient:
 
     @strategy.setter
     def strategy(self, strategy: str):
+        self.strategy = PriorityQueue()
+        # this is, of course, wrong
+        # we need to have a way to build progammatically the PriorityQueue
+        # given a search algorithm
         if isinstance(strategy, Strategy):
             self._strategy = strategy
         elif strategy == "astar":
@@ -52,9 +61,10 @@ class SearchClient:
         elif strategy == "greedy":
             self._strategy = StrategyBestFirst(Greedy(self.initial_state))
 
-    def parse_map(self, server_messages: TextIOWrapper) -> Actions:
+    def parse_map(self, server_messages: TextIOWrapper) -> StateInit:
         """Parse the initial server message into a map."""
         line = server_messages.readline().rstrip()
+        # TODO: deal with colors
         if self.colors_re.fullmatch(line) is not None:
             raise NotImplementedError("Client does not support colors.")
 
@@ -72,7 +82,22 @@ class SearchClient:
             line = server_messages.readline().rstrip()
 
         map = np.array(map)
-        state = Actions()
+        state = StateInit()
+        # TODO: this logic should be moved to actions
+        # TODO: encode color
+        # add map don't parse agents and boxes
+        all_objects = []
+        for obj in string.digits + string.ascii_uppercase:
+            agent_pos = np.where(map == obj)
+            for x, y in zip(agent_pos[0], agent_pos[1]):
+                all_objects.append([obj, (x, y), "c"])
+            map[agent_pos] = " "
+        for obj, pos, color in all_objects:
+            x, y = pos
+            if obj in string.digits:
+                state.addAgent(obj, (x, y), color)
+            else:
+                state.addBox(obj, (x, y), color)
         state.addMap(map)
         return state
 
@@ -88,7 +113,9 @@ class SearchClient:
 
         while True:
             if iterations == 1000:
-                print(self.strategy.search_status(), file=sys.stderr, flush=True)
+                print(
+                    self.strategy.search_status(), file=sys.stderr, flush=True
+                )
                 iterations = 0
 
             if get_usage() > MAX_USAGE:
@@ -170,7 +197,9 @@ def run_loop(strategy: str, memory: float):
             file=sys.stderr,
             flush=True,
         )
-        print("{}.".format(strategy.search_status()), file=sys.stderr, flush=True)
+        print(
+            "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
+        )
 
         for state in solution:
             print(state.action, flush=True)
