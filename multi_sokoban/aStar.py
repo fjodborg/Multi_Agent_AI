@@ -1,8 +1,10 @@
-import heapq
 import collections
-from _operator import ne
-from pip._vendor.cachecontrol import heuristics
+import heapq
 from builtins import next
+
+from pip._vendor.cachecontrol import heuristics
+
+from _operator import ne
 
 
 class Grid:

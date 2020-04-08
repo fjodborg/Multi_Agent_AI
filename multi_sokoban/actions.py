@@ -1,7 +1,8 @@
 """Define literals and actions schemas for the muli-PDDL framework."""
-import numpy as np
-import operator
 import copy
+import operator
+
+import numpy as np
 
 
 class Literals:

@@ -3,15 +3,15 @@ import argparse
 import re
 import string
 import sys
+from typing import List
 
 import numpy as np
 
 from _io import TextIOWrapper
-from typing import List
+from heuristic import AStar, Greedy, WAStar
 
 from .actions import StateInit
 from .aStar import PriorityQueue
-from heuristic import AStar, WAStar, Greedy
 from .memory import MAX_USAGE, get_usage
 
 
@@ -30,13 +30,9 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(
-        self, server_messages: TextIOWrapper, strategy: Strategy = None
-    ):
+    def __init__(self, server_messages: TextIOWrapper, strategy: Strategy = None):
         """Init object."""
-        self.colors_re = re.compile(
-            r"^[a-z]+:\s*[0-9A-Z](\s*,\s*[0-9A-Z])*\s*$"
-        )
+        self.colors_re = re.compile(r"^[a-z]+:\s*[0-9A-Z](\s*,\s*[0-9A-Z])*\s*$")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+ ]")
         self._strategy = self.add_strategy(strategy)
         self.initial_state = self.parse_map(server_messages)
@@ -113,9 +109,7 @@ class SearchClient:
 
         while True:
             if iterations == 1000:
-                print(
-                    self.strategy.search_status(), file=sys.stderr, flush=True
-                )
+                print(self.strategy.search_status(), file=sys.stderr, flush=True)
                 iterations = 0
 
             if get_usage() > MAX_USAGE:
@@ -197,9 +191,7 @@ def run_loop(strategy: str, memory: float):
             file=sys.stderr,
             flush=True,
         )
-        print(
-            "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
-        )
+        print("{}.".format(strategy.search_status()), file=sys.stderr, flush=True)
 
         for state in solution:
             print(state.action, flush=True)

@@ -27,10 +27,7 @@ def test(nr):
         newState = leaf.explore()
 
         print("\n\nFirst iteration\n")
-        [
-            print(child.map, child.prevAction, " cost:", child.g)
-            for child in newState
-        ]
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
         leaf = newState[-1]
         newChildren = leaf.explore()
         print(newChildren)
@@ -40,10 +37,7 @@ def test(nr):
         # del leaf
 
         print("\n\nSecond iteration using the last leaf\n")
-        [
-            print(child.map, child.prevAction, " cost:", child.g)
-            for child in newState
-        ]
+        [print(child.map, child.prevAction, " cost:", child.g) for child in newState]
 
         leaf = newState[-1]
         children = leaf.explore()
@@ -54,13 +48,7 @@ def test(nr):
 
         print("\n\nthird iteration using the last leaf\n")
         [
-            print(
-                child.map,
-                child.prevAction,
-                child.minimalRep(),
-                " cost:",
-                child.g,
-            )
+            print(child.map, child.prevAction, child.minimalRep(), " cost:", child.g,)
             for child in newState
         ]
 
@@ -108,11 +96,7 @@ def test(nr):
         print("\n\nthird iteration using the last leaf\n")
         [
             print(
-                child.map,
-                child.actionPerformed,
-                child.minimalRep(),
-                " cost:",
-                child.g,
+                child.map, child.actionPerformed, child.minimalRep(), " cost:", child.g,
             )
             for child in newState
         ]
