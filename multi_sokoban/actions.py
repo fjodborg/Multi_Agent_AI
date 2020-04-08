@@ -8,6 +8,7 @@ import numpy as np
 class Literals:
     def __init__(self, parent: "Literals" = None):
         if parent is None:
+            # if no parent is present!
             self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
             self.agents = {}  # hashtable
             self.goals = {}  # hashtable
@@ -17,6 +18,7 @@ class Literals:
             self.g = 0
             self.explored = set()
         else:
+            # if a parent is present!
             self.dir = parent.dir  # rigid
             self.goals = parent.goals  # rigid
             self.agents = copy.deepcopy(parent.agents)
@@ -204,7 +206,7 @@ class StateInit(Literals):
     def isExplored(self):
         return self.minimalRep() in self.explored
 
-    def __addTo(self, children):
+    def __addToExplored(self, children):
         if not self.isExplored():
             self.explored.add(self.minimalRep())
             children.append(self)
@@ -233,7 +235,7 @@ class StateInit(Literals):
                     child = StateInit(self)
                     child.actionPerformed = ["Move", actionParams]
                     child.__MoveEffect(*actionParams)
-                    child.__addTo(children)
+                    child.__addToExplored(children)
 
                 # TODO reformat these nested loops and if statements!
 
@@ -251,7 +253,7 @@ class StateInit(Literals):
                                 child = StateInit(self)
                                 child.actionPerformed = ["Pull", actionParams]
                                 child.__PullEffect(*actionParams)
-                                child.__addTo(children)
+                                child.__addToExplored(children)
                                 if ["Pull", ("0", "B", (1, 2), (1, 1), (2, 2), 0)] == [
                                     "Pull",
                                     actionParams,
@@ -267,12 +269,12 @@ class StateInit(Literals):
                                 child = StateInit(self)
                                 child.actionPerformed = ["Push", actionParams]
                                 child.__PushEffect(*actionParams)
-                                child.__addTo(children)
+                                child.__addToExplored(children)
 
         for agtkey in self.agents:
             # TODO make a noop function
             child = StateInit(self)
             child.actionPerformed = ["Noop", None]
-            child.__addTo(children)
+            child.__addToExplored(children)
 
         return children
