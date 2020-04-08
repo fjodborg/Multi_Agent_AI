@@ -40,6 +40,7 @@ class PriorityQueue:
     def put(self, item, priority):
         heapq.heappush(self.elements, (priority, item))
 
+    #this priority queue to return the lowest value first by using heapq.
     def get(self):
         return heapq.heappop(self.elements)[1]
 
