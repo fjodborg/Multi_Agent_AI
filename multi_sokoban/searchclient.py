@@ -37,6 +37,7 @@ class SearchClient:
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+ ]")
         self._strategy = self.add_strategy(strategy)
+        self.colors = {}
         self.initial_state = self.parse_map(server_messages)
 
     @property
@@ -59,21 +60,19 @@ class SearchClient:
         elif strategy == "greedy":
             self._strategy = StrategyBestFirst(Greedy(self.initial_state))
 
+    def add_strategy(self, strategy: str):
+        """Initialize strategy, just for the __init__ method."""
+        self.strategy = strategy
+
     def parse_map(self, server_messages: TextIOWrapper) -> StateInit:
         """Parse the initial server message into a map."""
-        # flush the whole map message
         # a level has a header with color specifications followed by the map
         # the map starts after the line "#initial"
         line = server_messages.readline().rstrip()
         initial = False  # mark start of level map
-        max_col = 0
-        max_row = 0
         map = []
-        colors = {}
         while line:
             if initial:
-                max_row += 1
-                max_col = max(max_col, len(line))
                 map.append(line)
                 for char in line:
                     if self.invalid_re.match(char):
@@ -84,20 +83,25 @@ class SearchClient:
                     continue
                 color = self.colors_re.search(line)
                 if color:
-                    col_count = np.unique(list(colors.values()))
+                    col_count = np.unique(list(self.colors.values()))
                     for col in color.groups:
-                        colors[col] = str(col_count)
+                        self.colors[col] = str(col_count)
             line = server_messages.readline().rstrip()
+        return self.build_map(np.array(map))
 
-        map = np.array(map)
+    def build_map(self, map: np.array) -> StateInit:
+        """Build the StateInit from the parsed map.
+
+        addMap just parses rigid positions (not agent and boxes), so
+        get the positions of the agents and boxes and remove them from map
+        """
         state = StateInit()
         all_objects = []
-        # addMap just parses rigid positions (not agent and boxes), so
-        # get the positions of the agents and boxes and remove them from map
-        for obj in string.digits + string.ascii_uppercase:
+        possible_objects = string.digits + string.ascii_uppercase
+        for obj in possible_objects:
             agent_pos = np.where(map == obj)
             for x, y in zip(agent_pos[0], agent_pos[1]):
-                all_objects.append([obj, (x, y), colors[obj]])
+                all_objects.append([obj, (x, y), self.colors[obj]])
             map[agent_pos] = " "
         # it is required to add the map first and then the rest level objects
         state.addMap(map)
