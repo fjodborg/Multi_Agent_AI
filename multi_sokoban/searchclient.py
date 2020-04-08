@@ -30,9 +30,11 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(self, server_messages: TextIOWrapper, strategy: Strategy = None):
+    def __init__(
+        self, server_messages: TextIOWrapper, strategy: Strategy = None
+    ):
         """Init object."""
-        self.colors_re = re.compile(r"^[a-z]+:\s*[0-9A-Z](\s*,\s*[0-9A-Z])*\s*$")
+        self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+ ]")
         self._strategy = self.add_strategy(strategy)
         self.initial_state = self.parse_map(server_messages)
@@ -59,42 +61,52 @@ class SearchClient:
 
     def parse_map(self, server_messages: TextIOWrapper) -> StateInit:
         """Parse the initial server message into a map."""
-        line = server_messages.readline().rstrip()
-        # TODO: deal with colors
-        if self.colors_re.fullmatch(line) is not None:
-            raise NotImplementedError("Client does not support colors.")
-
         # flush the whole map message
+        # a level has a header with color specifications followed by the map
+        # the map starts after the line "#initial"
+        line = server_messages.readline().rstrip()
+        initial = False  # mark start of level map
         max_col = 0
         max_row = 0
         map = []
+        colors = {}
         while line:
-            max_row += 1
-            max_col = max(max_col, len(line))
-            map.append(line)
-            for char in line:
-                if self.invalid_re.match(char):
-                    raise ParseError(f"Invalid character in level: {char}")
+            if initial:
+                max_row += 1
+                max_col = max(max_col, len(line))
+                map.append(line)
+                for char in line:
+                    if self.invalid_re.match(char):
+                        raise ParseError(f"Invalid character in level: {char}")
+            else:
+                if line.find("#initial") != -1:
+                    initial = True
+                    continue
+                color = self.colors_re.search(line)
+                if color:
+                    col_count = np.unique(list(colors.values()))
+                    for col in color.groups:
+                        colors[col] = str(col_count)
             line = server_messages.readline().rstrip()
 
         map = np.array(map)
         state = StateInit()
-        # TODO: this logic should be moved to actions
-        # TODO: encode color
-        # add map don't parse agents and boxes
         all_objects = []
+        # addMap just parses rigid positions (not agent and boxes), so
+        # get the positions of the agents and boxes and remove them from map
         for obj in string.digits + string.ascii_uppercase:
             agent_pos = np.where(map == obj)
             for x, y in zip(agent_pos[0], agent_pos[1]):
-                all_objects.append([obj, (x, y), "c"])
+                all_objects.append([obj, (x, y), colors[obj]])
             map[agent_pos] = " "
+        # it is required to add the map first and then the rest level objects
+        state.addMap(map)
         for obj, pos, color in all_objects:
             x, y = pos
             if obj in string.digits:
                 state.addAgent(obj, (x, y), color)
             else:
                 state.addBox(obj, (x, y), color)
-        state.addMap(map)
         return state
 
     def search(self) -> List[np.array, ...]:
@@ -109,7 +121,9 @@ class SearchClient:
 
         while True:
             if iterations == 1000:
-                print(self.strategy.search_status(), file=sys.stderr, flush=True)
+                print(
+                    self.strategy.search_status(), file=sys.stderr, flush=True
+                )
                 iterations = 0
 
             if get_usage() > MAX_USAGE:
@@ -191,7 +205,9 @@ def run_loop(strategy: str, memory: float):
             file=sys.stderr,
             flush=True,
         )
-        print("{}.".format(strategy.search_status()), file=sys.stderr, flush=True)
+        print(
+            "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
+        )
 
         for state in solution:
             print(state.action, flush=True)
