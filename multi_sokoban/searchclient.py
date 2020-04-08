@@ -31,7 +31,7 @@ class SearchClient:
     """Contain the AI, strategy and parsing."""
 
     def __init__(
-        self, server_messages: TextIOWrapper, strategy: Strategy = None
+        self, server_messages: TextIOWrapper, strategy: PriorityQueue = None
     ):
         """Init object."""
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
@@ -41,7 +41,7 @@ class SearchClient:
         self.initial_state = self.parse_map(server_messages)
 
     @property
-    def strategy(self) -> Strategy:
+    def strategy(self) -> PriorityQueue:
         """Get strategy, the setter handles different types of inputs."""
         return self._strategy
 
