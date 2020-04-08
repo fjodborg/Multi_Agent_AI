@@ -7,6 +7,7 @@ import numpy as np
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
+        # initializes the literals
         if parent is None:
             # if no parent is present!
             self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
@@ -25,49 +26,60 @@ class Literals:
             self.boxes = copy.deepcopy(parent.boxes)
             self.map = copy.deepcopy(parent.map)
             self.prevState = parent  # reference to previous state
-            self.actionPerformed = None
+            self.actionPerformed = None  # gets defined when action is chosen
             self.g = copy.deepcopy(parent.g) + 1
             self.explored = parent.explored
         super().__init__()
 
     def addMap(self, map2):
+        # initialized a map with only walls
         self.map = np.array(map2)
 
-    def addAgent(self, key, value, color="c"):
-        # key is number
-        self.map[value] = key
-        self.agents[key] = [[value, color]]
+    def addAgent(self, key, pos, color="c"):
+        # Adds an agent to the map and to a hashtable
+        # key is the agent number and color is the color of the agent
+        self.map[pos] = key
+        self.agents[key] = [[pos, color]]
 
-    def addGoal(self, key, value):
-        # key is letter
+    def addGoal(self, key, pos):
+        # Adds a goal to a hashtable
+        # key is a letter
         key = key.lower()
         if key not in self.goals:
-            self.goals[key] = [[value]]
+            self.goals[key] = [[pos]]
         else:
-            self.goals[key].append([value])
+            self.goals[key].append([pos])
 
-    def addBox(self, key, value, color="c"):
-        # key is (letter, color)
+    def addBox(self, key, pos, color="c"):
+        # Adds a box to the map and to a hashtable
+        # key is a letter
         key = key.upper()
-        self.map[value] = key
+        self.map[pos] = key
         if key not in self.boxes:
-            self.boxes[key] = [[value, color]]
+            self.boxes[key] = [[pos, color]]
         else:
-            self.boxes[key].append([value, color])
+            self.boxes[key].append([pos, color])
 
     def getPos(self, objtype, obj, i=0):
+        # gets the position of an object getPos(objecttype, the key, the index (if multiple)) 
+        # returns None if not in hashtable
         if obj in objtype:
             return objtype[obj][i][0]
         else:
             return None
 
     def setPos(self, objtype, obj, pos, i=0):
+        # sets the position of an object
+        # setPos(objecttype, the key, position, the index (if multiple))
+        # returns None if not in hashtable
         if type(objtype[obj][i][0]) == tuple:
             objtype[obj][i][0] = pos
         else:
             return None
 
     def Free(self, pos):
+        # checks if position in map is free
+        # returns true if it is free and false otherwise
         if self.map[pos] == chr(32) or self.map[pos].islower():
             return True
         else:
@@ -77,6 +89,7 @@ class Literals:
         pass
 
     def Neighbour(self, pos1, pos2):
+        # Returns true if the 2 positions are neighbours, otherwise false
         if abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1]) == 1:
             return True
         else:
@@ -85,13 +98,17 @@ class Literals:
 
 class StateInit(Literals):
     def __init__(self, parent: "Literals" = None):
+        # initializes the state
         # it is (row, column) and not (x, y)
         super().__init__(parent)
 
     def __AddPos(self, agtfrom, agtdir):
+        # simply adds two positions together
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
 
     def __MovePrec(self, agt, agtdir):
+        # returns the movement parameters if the preconditions are met
+        # otherwise it returns 0
         agtfrom = self.getPos(self.agents, agt)
         if agtfrom is None:
             print("agent", agt, "does not exist")
@@ -107,6 +124,8 @@ class StateInit(Literals):
             return None
 
     def __MoveEffect(self, agt, agtfrom, agtto):
+        # Moves the object with the given parameters
+        # Does not check preconditions
         self.setPos(self.agents, agt, agtto)
         self.map[agtfrom] = chr(32)
         self.map[agtto] = agt
@@ -114,6 +133,7 @@ class StateInit(Literals):
         return True
 
     def Move(self, agt, agtdir):
+        # moves the object in the given direction, it checks the precondition and does the movemnt
         actionParams = self.__MovePrec(agt, agtdir)
         if actionParams is not None:
             return self.__MoveEffect(*actionParams)
@@ -121,6 +141,8 @@ class StateInit(Literals):
             return None
 
     def __PushPrec(self, agt, boxkey, boxdir, i=0):
+        # returns the movement parameters if the preconditions are met
+        # otherwise it returns 0
         agtfrom = self.getPos(self.agents, agt)
         boxfrom = self.getPos(self.boxes, boxkey, i)
         if agtfrom is None:
@@ -144,6 +166,8 @@ class StateInit(Literals):
             return None
 
     def __PushEffect(self, agt, boxkey, agtfrom, boxfrom, boxto, i):
+        # Moves the objects with the given parameters
+        # Does not check preconditions
         self.setPos(self.agents, agt, boxfrom, 0)  # agents are unique thus 0
         self.setPos(self.boxes, boxkey, boxto, i)
         self.map[agtfrom] = chr(32)
@@ -154,6 +178,7 @@ class StateInit(Literals):
         return True
 
     def Push(self, agt, boxkey, boxdir, i):
+        # moves the objects in the given direction, it checks the precondition and does the movemnt
         actionParams = self.__PushPrec(agt, boxkey, boxdir, i)
         if actionParams is not None:
             return self.__PushEffect(*actionParams)
@@ -161,6 +186,8 @@ class StateInit(Literals):
             return None
 
     def __PullPrec(self, agt, boxkey, agtdir, i=0):
+        # Moves the object with the given parameters
+        # Does not check preconditions
         agtfrom = self.getPos(self.agents, agt)
         boxfrom = self.getPos(self.boxes, boxkey, i)
         if agtfrom is None:
@@ -184,6 +211,8 @@ class StateInit(Literals):
             return None
 
     def __PullEffect(self, agt, boxkey, agtfrom, agtto, boxfrom, i):
+        # Moves the objects with the given parameters
+        # Does not check preconditions
         self.setPos(self.agents, agt, agtto, 0)  # agents are unique thus 0
         self.setPos(self.boxes, boxkey, agtfrom, i)
         self.map[boxfrom] = chr(32)
@@ -194,6 +223,7 @@ class StateInit(Literals):
         return True
 
     def Pull(self, agt, boxkey, boxdir, i):
+        # moves the objects in the given direction, it checks the precondition and does the movemnt
         actionParams = self.__PullPrec(agt, boxkey, boxdir, i)
         if actionParams is not None:
             return self.__PullEffect(*actionParams)
@@ -201,12 +231,15 @@ class StateInit(Literals):
             return None
 
     def minimalRep(self):
+        # returns the minimal representation of the states
         return str([self.agents, self.boxes])
 
     def isExplored(self):
+        # returns true if the state is explored
         return self.minimalRep() in self.explored
 
     def __addToExplored(self, children):
+        # adds the state to the explored list
         if not self.isExplored():
             self.explored.add(self.minimalRep())
             children.append(self)
@@ -220,16 +253,18 @@ class StateInit(Literals):
         while state.actionPerformed is not None:
             path.append(state.actionPerformed)
             state = state.prevState
-
+        # Reverse the order
         return path[::-1]
 
     def explore(self):
-        # only explores unexplored states and returns a list of children
+        # Explores unexplroed states and returns a list of children
         children = []
 
+        # Loop iterales through every possible action
         for direction in self.dir:
             for agtkey in self.agents:
-
+                
+                # Checks a Move action if it is possible it is appended to the the children
                 actionParams = self.__MovePrec(agtkey, direction)
                 if actionParams is not None:
                     child = StateInit(self)
@@ -248,22 +283,14 @@ class StateInit(Literals):
 
                         # [agent letter][agent number (0 since it is unique)][color]
                         if self.agents[agtkey][0][1] == boxcolor:
+                            # Checks a pull action if it is possible it is appended to the the children
                             actionParams = self.__PullPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
                                 child.actionPerformed = ["Pull", actionParams]
                                 child.__PullEffect(*actionParams)
                                 child.__addToExplored(children)
-                                if ["Pull", ("0", "B", (1, 2), (1, 1), (2, 2), 0)] == [
-                                    "Pull",
-                                    actionParams,
-                                ]:
-                                    print(
-                                        "\n\n\n\n\n\nwtf\n\n\n\n\n",
-                                        boxcolor,
-                                        self.agents[agtkey][0][1],
-                                    )
-
+                            # Checks a Push action if it is possible it is appended to the the children
                             actionParams = self.__PushPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
