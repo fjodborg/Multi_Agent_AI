@@ -61,7 +61,7 @@ class Literals:
             self.boxes[key].append([pos, color])
 
     def getPos(self, objtype, obj, i=0):
-        # gets the position of an object getPos(objecttype, the key, the index (if multiple)) 
+        # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
         if obj in objtype:
             return objtype[obj][i][0]
@@ -263,7 +263,7 @@ class StateInit(Literals):
         # Loop iterales through every possible action
         for direction in self.dir:
             for agtkey in self.agents:
-                
+
                 # Checks a Move action if it is possible it is appended to the the children
                 actionParams = self.__MovePrec(agtkey, direction)
                 if actionParams is not None:
