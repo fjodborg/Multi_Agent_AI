@@ -59,6 +59,7 @@ def test(nr):
         state.addBox("B", (2, 2), "c")
         state.addBox("C", (1, 2), "c")
         state.addBox("C", (2, 1), "b")
+        state.addGoal("c", (3, 3))
         leaf = state
         frontier = []
         frontier.append(leaf)
@@ -77,7 +78,7 @@ def test(nr):
         newState.extend(newChildren)
 
         newState.remove(leaf)
-        del leaf
+        # del leaf
 
         print("\n\nSecond iteration using the last leaf\n")
         [
@@ -91,7 +92,7 @@ def test(nr):
         newState.extend(children)
 
         newState.remove(leaf)
-        del leaf
+        # del leaf
 
         print("\n\nthird iteration using the last leaf\n")
         [
@@ -104,6 +105,20 @@ def test(nr):
         leaf = newState[-1]
         print(leaf.actionPerformed)
         print(leaf.bestPath())
+        print(
+            leaf.getPos(leaf.boxes, "C", 0),
+            leaf.getPos(leaf.boxes, "C", 1),
+            leaf.getPos(leaf.goals, "c"),
+        )
+        print(
+            "Agent par:",
+            leaf.getAgentByKey("0"),
+            "Boxes par:",
+            leaf.getBoxesByKey("C"),
+            "Goal par:",
+            leaf.getGoalsByKey("c"),
+        )
+        print()
 
 
 test(1)

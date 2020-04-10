@@ -102,6 +102,27 @@ class StateInit(Literals):
         # it is (row, column) and not (x, y)
         super().__init__(parent)
 
+    def getAgentByKey(self, key):
+        # same as getPos, just for all agents with the given key
+        if key in self.agents:
+            return self.agents[key]
+        else:
+            return None
+
+    def getBoxesByKey(self, key):
+        # same as getPos, just for all Boxes with the given key
+        if key in self.boxes:
+            return self.boxes[key]
+        else:
+            return None
+
+    def getGoalsByKey(self, key):
+        # same as getPos, just for all Goal with the given key
+        if key in self.goals:
+            return self.goals[key]
+        else:
+            return None
+
     def __AddPos(self, agtfrom, agtdir):
         # simply adds two positions together
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
