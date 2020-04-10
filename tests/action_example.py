@@ -60,6 +60,7 @@ def test(nr):
         state.addBox("C", (1, 2), "c")
         state.addBox("C", (2, 1), "b")
         state.addGoal("c", (3, 3))
+        state.addGoal("b", (2, 3))
         leaf = state
         frontier = []
         frontier.append(leaf)
@@ -117,6 +118,8 @@ def test(nr):
             leaf.getBoxesByKey("C"),
             "Goal par:",
             leaf.getGoalsByKey("c"),
+            "all goals:",
+            leaf.getGoals()
         )
         print()
 

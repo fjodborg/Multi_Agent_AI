@@ -123,6 +123,10 @@ class StateInit(Literals):
         else:
             return None
 
+    def getGoals(self):
+        # returns all the keys
+        return list(self.goals.keys())
+
     def __AddPos(self, agtfrom, agtdir):
         # simply adds two positions together
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
