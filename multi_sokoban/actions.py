@@ -48,9 +48,9 @@ class Literals:
         # key is a letter
         key = key.lower()
         if key not in self.goals:
-            self.goals[key] = [[pos]]
+            self.goals[key] = [pos]
         else:
-            self.goals[key].append([pos])
+            self.goals[key].append(pos)
 
     def addBox(self, key, pos, color="c"):
         # Adds a box to the map and to a hashtable
@@ -274,7 +274,14 @@ class StateInit(Literals):
             del self
 
     def isGoalState(self):
-        raise NotImplementedError
+        # checks if the state is a goal state
+        keys = self.getGoals()
+        for key in keys:
+            goals = self.getGoalsByKey(key)
+            for pos in goals:
+                if self.map[pos] != key.upper():
+                    return False
+        return True
 
     def bestPath(self):
         # function returns the list of actions used to reach the state

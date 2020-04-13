@@ -121,7 +121,78 @@ def test(nr):
             "all goals:",
             leaf.getGoals(),
         )
-        leaf.h = 5
-        print("cost for", leaf, "to goal is", leaf.h)
+        leaf.h = 0
+        print("cost for\n", leaf, "to goal is", leaf.h)
+    if nr == 2:
+        state.addAgent("0", (1, 1), "c")
+        state.addBox("B", (2, 2), "c")
+        state.addBox("C", (1, 2), "c")
+        state.addBox("C", (2, 1), "b")
+        state.addGoal("b", (1, 2))
+        state.addGoal("c", (1, 3))
+        state.addGoal("c", (2, 1))
+        leaf = state
+        frontier = []
+        frontier.append(leaf)
 
-test(1)
+        newState = leaf.explore()
+
+        print("\n\nFirst iteration\n")
+        [
+            print(child.map, child.actionPerformed, " cost:", child.g, "   cost to goal:", child.h)
+            for child in newState
+        ]
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        newChildren = leaf.explore()
+        print(newChildren)
+        newState.extend(newChildren)
+
+        newState.remove(leaf)
+        # del leaf
+
+        print("\n\nSecond iteration using the last leaf\n")
+        [
+            print(child.map, child.actionPerformed, " cost:", child.g, "   cost to goal:", child.h)
+            for child in newState
+        ]
+
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        children = leaf.explore()
+        newState.extend(children)
+
+        newState.remove(leaf)
+        # del leaf
+
+        print("\n\nthird iteration using the last leaf\n")
+        [
+            print(
+                child.map, child.actionPerformed, child.minimalRep(), " cost:", child.g, "   cost to goal:", child.h
+            )
+            for child in newState
+        ]
+
+        leaf = newState[-1]
+        print(leaf.actionPerformed)
+        print(leaf.bestPath())
+        print(
+            leaf.getPos(leaf.boxes, "C", 0),
+            leaf.getPos(leaf.boxes, "C", 1),
+            leaf.getPos(leaf.goals, "c"),
+        )
+        print(
+            "Agent par:",
+            leaf.getAgentByKey("0"),
+            "Boxes par:",
+            leaf.getBoxesByKey("C"),
+            "Goal par:",
+            leaf.getGoalsByKey("c"),
+            "all goals:",
+            leaf.getGoals(),
+        )
+        leaf.h = 0
+        print("cost for\n", leaf.map, "to goal is", leaf.h)
+        print("is it in goal state?", leaf.isGoalState())
+
+test(2)
