@@ -30,9 +30,7 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(
-        self, server_messages: TextIOWrapper, strategy: PriorityQueue = None
-    ):
+    def __init__(self, server_messages: TextIOWrapper, strategy: PriorityQueue = None):
         """Init object."""
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+ ]")
@@ -128,9 +126,7 @@ class SearchClient:
 
         while True:
             if iterations == 1000:
-                print(
-                    self.strategy.search_status(), file=sys.stderr, flush=True
-                )
+                print(self.strategy.search_status(), file=sys.stderr, flush=True)
                 iterations = 0
 
             if get_usage() > MAX_USAGE:
@@ -212,9 +208,7 @@ def run_loop(strategy: str, memory: float):
             file=sys.stderr,
             flush=True,
         )
-        print(
-            "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
-        )
+        print("{}.".format(strategy.search_status()), file=sys.stderr, flush=True)
 
         for state in solution:
             print(state.action, flush=True)

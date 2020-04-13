@@ -119,9 +119,9 @@ def test(nr):
             "Goal par:",
             leaf.getGoalsByKey("c"),
             "all goals:",
-            leaf.getGoals()
+            leaf.getGoals(),
         )
-        print()
-
+        leaf.h = 5
+        print("cost for", leaf, "to goal is", leaf.h)
 
 test(1)

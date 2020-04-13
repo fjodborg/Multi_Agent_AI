@@ -17,6 +17,7 @@ class Literals:
             self.prevState = None
             self.actionPerformed = None
             self.g = 0
+            self.h = None
             self.explored = set()
         else:
             # if a parent is present!
@@ -28,6 +29,7 @@ class Literals:
             self.prevState = parent  # reference to previous state
             self.actionPerformed = None  # gets defined when action is chosen
             self.g = copy.deepcopy(parent.g) + 1
+            self.h = None
             self.explored = parent.explored
         super().__init__()
 
@@ -270,6 +272,9 @@ class StateInit(Literals):
             children.append(self)
         else:
             del self
+
+    def isGoalState(self):
+        raise NotImplementedError
 
     def bestPath(self):
         # function returns the list of actions used to reach the state
