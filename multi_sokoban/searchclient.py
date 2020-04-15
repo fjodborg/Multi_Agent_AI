@@ -8,10 +8,9 @@ from typing import List
 import numpy as np
 
 from _io import TextIOWrapper
-from multi_sokoban.emergency_aStar import aStarSearch
-
 from multi_sokoban.actions import StateInit
 from multi_sokoban.aStar import PriorityQueue
+from multi_sokoban.emergency_aStar import aStarSearch
 
 # from .memory import MAX_USAGE, get_usage
 
@@ -31,9 +30,7 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(
-        self, server_messages: TextIOWrapper, strategy: PriorityQueue = None
-    ):
+    def __init__(self, server_messages: TextIOWrapper, strategy: PriorityQueue = None):
         """Init object."""
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
@@ -81,13 +78,7 @@ class SearchClient:
                 if line.find("#goal") != -1:
                     goal = True
                 else:
-
                     map.append(list(line))
-                    # for char in line:
-                    #     if self.invalid_re.match(char):
-                    #         raise ParseError(
-                    #             f"Invalid character in level({char}). Line: {line}"
-                    #         )
             else:
                 if line.find("#initial") != -1:
                     initial = True
@@ -138,11 +129,7 @@ class SearchClient:
 
     def search(self) -> List:
         """Apply search algorithm."""
-        print(
-            f"Starting search with strategy {self.strategy}.",
-            file=sys.stderr,
-            flush=True,
-        )
+        println(f"Starting search with strategy {self.strategy}.")
         # self.strategy.add_to_frontier(self.initial_state)
         # iterations = 0
 
@@ -225,15 +212,12 @@ def run_loop(strategy: str, memory: float):
     solution = client.search()
     if solution is None:
         # print(strategy.search_status(), file=sys.stderr, flush=True)
-        print("Unable to solve level.", file=sys.stderr, flush=True)
+        println("Unable to solve level.")
         sys.exit(0)
     else:
-        print("\nSummary for {}.".format(strategy), file=sys.stderr, flush=True)
-        print(
-            "Found solution of length {}.".format(len(solution)),
-            file=sys.stderr,
-            flush=True,
-        )
+        println("\nSummary for {}.".format(strategy))
+        println("Found solution of length {}.".format(len(solution)))
+        println(f"{solution}")
         # print(
         #     "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
         # )
@@ -242,12 +226,8 @@ def run_loop(strategy: str, memory: float):
             print(state, flush=True)
             response = server_messages.readline().rstrip()
             if "false" in response:
-                print(
-                    'Server responsed with "{}" to the action "{}" applied in:\n{}\n'.format(
-                        response, state, state
-                    ),
-                    file=sys.stderr,
-                    flush=True,
+                println(
+                    f"Server responsed with '{response}' to the action '{response}' applied in:\n{solution}\n"
                 )
                 break
 

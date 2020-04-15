@@ -11,7 +11,12 @@ class Literals:
         if parent is None:
             # if no parent is present!
             self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
-            self.deltaPos = {(-1, 0): "N", (0, 1): "E", (1, 0): "S", (0, -1): "W"}
+            self.deltaPos = {
+                (-1, 0): "N",
+                (0, 1): "E",
+                (1, 0): "S",
+                (0, -1): "W",
+            }
             self.agents = {}  # hashtable
             self.goals = {}  # hashtable
             self.boxes = {}  # hashtable

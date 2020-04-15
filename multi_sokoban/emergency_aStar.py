@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+
 from multi_sokoban import actions
 
 count = 0

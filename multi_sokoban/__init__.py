@@ -1,5 +1,5 @@
 """Main init file, defining exposed API."""
 from .actions import Literals, StateInit
-from .aStar import PriorityQueue
+from .emergency_aStar import aStarSearch
 
-__all__ = ["Literals", "StateInit", "PriorityQueue"]
+__all__ = ["Literals", "StateInit", "aStarSearch"]
