@@ -17,4 +17,4 @@ mem=2048
 
 echo "Memory allocated: $mem"
 
-java -jar "$SERVER/server.jar" -l "$SERVER/levels/$lvl" -c "python multi_sokoban/searchclient.py $method --max-memory $mem" -g 150 -t 300
+java -jar "$SERVER/server.jar" -l "$SERVER/levels/$lvl" -c "python $SERVER/multi_sokoban/searchclient.py $method --max-memory $mem" -g 150 -t 300
