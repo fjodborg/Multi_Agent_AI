@@ -75,6 +75,3 @@ def test(nr):
         print(state.map)
         path, goalState = aStarSearch(state)
         print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
-
-
-test(0)
