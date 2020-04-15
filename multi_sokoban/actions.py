@@ -133,7 +133,7 @@ class StateInit(Literals):
         # returns all the keys
         return list(self.goals.keys())
 
-    def __AddPos(self, agtfrom, agtdir):
+    def __addPos(self, agtfrom, agtdir):
         # simply adds two positions together
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
 
@@ -152,7 +152,7 @@ class StateInit(Literals):
         if agtdir not in self.dir:
             # # # print("Direction", agtdir, "does not exist")
             return None
-        agtto = self.__AddPos(agtfrom, agtdir)
+        agtto = self.__addPos(agtfrom, agtdir)
         if self.Free(agtto):
             return (agt, agtfrom, agtto)
         else:
@@ -194,7 +194,7 @@ class StateInit(Literals):
             # # # print("agent", agt, "and box", boxkey, "are not neighbors")
             return None
 
-        boxto = self.__AddPos(boxfrom, boxdir)
+        boxto = self.__addPos(boxfrom, boxdir)
         if self.Free(boxto):
             return (agt, boxkey, agtfrom, boxfrom, boxto, i)
         else:
@@ -239,7 +239,7 @@ class StateInit(Literals):
             # # # print("agent", agt, "and box", boxkey, "are not neighbors")
             return None
 
-        agtto = self.__AddPos(agtfrom, agtdir)
+        agtto = self.__addPos(agtfrom, agtdir)
         if self.Free(agtto):
             return (agt, boxkey, agtfrom, agtto, boxfrom, i)
         else:
@@ -327,8 +327,8 @@ class StateInit(Literals):
                         state.actionPerformed[1][1], state.actionPerformed[1][2]
                     )
                     cmd = "Move(" + parm1 + ")"
-                elif cmd == "Noop":
-                    cmd = "Noop()"
+                elif cmd == "NoOp":
+                    cmd = "NoOp()"
 
                 path.append(cmd)
                 state = state.prevState
@@ -380,7 +380,7 @@ class StateInit(Literals):
         for agtkey in self.agents:
             # TODO make a noop function
             child = StateInit(self)
-            child.actionPerformed = ["Noop", None]
+            child.actionPerformed = ["NoOp", None]
             child.__addToExplored(children)
 
         return children
