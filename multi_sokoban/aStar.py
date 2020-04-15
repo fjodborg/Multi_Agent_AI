@@ -1,16 +1,6 @@
-import collections
+"""Astart priority queue."""
 import heapq
-import multi_sokoban
-from builtins import next
-from actions import Literals
-from lib2to3.pgen2 import literals
-import fractions
-import actions
-from asyncio.queues import PriorityQueue
-import _tracemalloc
-from searchclient_python import action, heuristic
-from tests import action_example
-from test import test_userlist
+from multi_sokoban import actions
 
 
 class PriorityQueue:
@@ -83,7 +73,7 @@ def aStarSearch(startState):
         if leaf.isGoalState():
             return leaf.bestPath()
 
-        explored_states = leaf.explor()
+        explored_states = leaf.explore()
         frontier.put(explored_states)
 
     #         for elements in frontier:
@@ -113,7 +103,7 @@ def getBestState(frontier):
             boxParams = element.getBoxesByKey(key)
 
             for goalPos in goalPositions:
-                for boxPos, color in boxParams:
+                for boxPos, _ in boxParams:
 
                     boxPos = element.getAgentByKey(key)
                     goalPos = frontier.getBoxByKey(key)
