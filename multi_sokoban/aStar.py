@@ -1,55 +1,57 @@
 import collections
 import heapq
+import multi_sokoban
 from builtins import next
-
-from pip._vendor.cachecontrol import heuristics
-
-from _operator import ne
-
-
-class Grid:
-    def __init__(self, width, hight):
-        self.width = width
-        self.hight = hight
-        self.walls = []
-
-    def in_bounds(self, iD):
-        (x, y) = iD
-        return 0 <= x < self.width and 0 <= y < self.hight
-
-    def passable(self, iD):
-        return iD not in self.walls
-
-    def neighbors(self, iD):
-        (x, y) = iD
-        results = [(x + 1, y), (x, y - 1), (x - 1, y), (x, y + 1)]
-        if (x + y) % 2 == 0:
-            results.reverse()
-            results = filter(self.in_bounds, results)
-            results = filter(self.passable, results)
-            return results
-
+from actions import Literals
+from lib2to3.pgen2 import literals
+import fractions
+import actions
+from asyncio.queues import PriorityQueue
+import _tracemalloc
+from searchclient_python import action, heuristic
+from tests import action_example
+from test import test_userlist
 
 class PriorityQueue:
     def __init__(self):
         self.elements = []
-
+ 
     def empty(self):
         return len(self.elements) == 0
-
+ 
     def put(self, item, priority):
         heapq.heappush(self.elements, (priority, item))
+<<<<<<< HEAD
+ 
+    #this priority queue returns the lowest value first by using heapq.
+=======
 
     # this priority queue returns the lowest value first by using heapq.
+>>>>>>> branch 'master' of https://github.com/FjodBorg/Multi_Agent_AI.git
     def get(self):
         return heapq.heappop(self.elements)[1]
+<<<<<<< HEAD
+     
+    #heuristic function that tells us how close we are to the goal, by calculating the cost.
+=======
 
     # heuristic function that tells us how close we are to the goal, by calculating the cost.
+>>>>>>> branch 'master' of https://github.com/FjodBorg/Multi_Agent_AI.git
     def heuristic(self, a, b):
         (x1, y1) = a
         (x2, y2) = b
         return abs(x1 - x2) + abs(y1 - y2)
+            
 
+<<<<<<< HEAD
+    #The A* algorithm uses the actual distance from the start (costThisfar) and the estimated distance to the goal (spaceSearchCost).
+def aStarSearch(startState):
+    count = 0  # creating an id for every child
+    
+    frontier = PriorityQueue()
+    
+    startPos = actions.StateInit()
+=======
     # The A* algorithm uses the actual distance from the start (costThisfar) and the estimated distance to the goal (spaceSearchCost).
     def aStarSearch(self, searchSpace, start, goal):
         count = 0  # creating an id for every child
@@ -59,20 +61,96 @@ class PriorityQueue:
         costThisFar = {}
         cameFrom[start] = None
         costThisFar[start] = 0
+>>>>>>> branch 'master' of https://github.com/FjodBorg/Multi_Agent_AI.git
 
-        while not frontier.empty():
-            current = frontier.get()
+<<<<<<< HEAD
+    frontier.put(startPos, getBestState(startState) , count)
+    
+#     cameFrom = {} # cameFrom keeps track of visited nodes.
+#     costThisFar = {}
+#     cameFrom[start] = None
+#     costThisFar[start] = 0
+    
+#    frontier = initialState #(Given by function call)
+# while/for loop:
+#   leaf = getBestState(frontier) 
+#   if leaf.IsGoalState():
+#      return leaf.bestPath()
+#   explored_states = leaf.explore()
+#   frontier.add(explored_states)
+# getBestState(frontier) 
+#   for all elements in frontier:
+#      pos of box - pos of goals
+#   return shortest distance
 
-            # Look ends if goal is found.
-            if current == goal:
-                break
+    while not frontier.empty():
+        count+=1
+        leaf = getBestState(frontier)
+        
+        #current = frontier.get()
+        
+        # Loop ends if goal is found.
+        if leaf.isGoalState():
+            return leaf.bestPath()
 
-            for next in searchSpace.neighbors(current):
-                newCost = costThisFar[current] + searchSpace.cost(current, next)
-                if next not in costThisFar or newCost < costThisFar[next]:
-                    costThisFar[next] = newCost
-                    priority = newCost + heuristics(goal, next)
-                    frontier.put(next, priority)
-                    cameFrom[next] = current
+        
+        explored_states = leaf.explor()
+        frontier.put(explored_states)
 
-        return cameFrom, costThisFar
+#         for elements in frontier:
+#           
+#            # newCost = costThisFar[current] + searchSpace.cost(current, next)
+#             
+#             if elements not in costThisFar or newCost < costThisFar[next]:
+#                 costThisFar[next] = newCost
+#                 newCost + heuristics(goal, next) #priority = actions.explore() #
+#                 frontier.put(next, priority)
+#                 cameFrom[next] = current
+
+    return 
+
+def getBestState(frontier):
+    i = -1
+    hMap = {}
+    for element in frontier:
+        i+=1
+        if element.h is None: 
+            continue
+        
+        keys = element.getGoals()
+        for key in keys:
+            goalPositions = element.getGoalsByKey(key)
+            boxParams = element.getBoxesByKey(key)
+            
+            for goalPos in goalPositions:
+                for boxPos,color in boxParams:
+                    
+                    boxPos = element.getAgentByKey(key)
+                    goalPos = frontier.getBoxByKey(key)  
+                    # storing the distances between boxes and goals for every state                   
+                    hMap[i] = heuristic(boxPos, goalPos) 
+        #Returns the shortest distance by sorting the smallest value by key
+        element.h = min(hMap, k = hMap.get())
+        return element.h
+        
+=======
+#         while not frontier.empty():
+#             current = frontier.get()
+# 
+#             # Look ends if goal is found.
+#             if current == goal:
+#                 break
+>>>>>>> branch 'master' of https://github.com/FjodBorg/Multi_Agent_AI.git
+
+
+
+
+
+
+
+
+
+
+
+
+
