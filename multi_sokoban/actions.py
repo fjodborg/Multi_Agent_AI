@@ -11,6 +11,7 @@ class Literals:
         if parent is None:
             # if no parent is present!
             self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
+            self.deltaPos = {(-1, 0): "N", (0, 1): "E", (1, 0): "S", (0, -1): "W"}
             self.agents = {}  # hashtable
             self.goals = {}  # hashtable
             self.boxes = {}  # hashtable
@@ -22,6 +23,7 @@ class Literals:
         else:
             # if a parent is present!
             self.dir = parent.dir  # rigid
+            self.deltaPos = parent.deltaPos  # rigid
             self.goals = parent.goals  # rigid
             self.agents = copy.deepcopy(parent.agents)
             self.boxes = copy.deepcopy(parent.boxes)
@@ -134,6 +136,11 @@ class StateInit(Literals):
     def __AddPos(self, agtfrom, agtdir):
         # simply adds two positions together
         return tuple(map(operator.add, agtfrom, self.dir[agtdir]))
+
+    def __getDir(self, agtfrom, agtto):
+        # returns the direction the agent moved
+        dir = (agtto[0]-agtfrom[0], agtto[1]-agtfrom[1])
+        return self.deltaPos[dir]
 
     def __MovePrec(self, agt, agtdir):
         # returns the movement parameters if the preconditions are met
@@ -285,13 +292,36 @@ class StateInit(Literals):
                     return False
         return True
 
-    def bestPath(self):
+    def bestPath(self, format=0):
         # function returns the list of actions used to reach the state
         path = []
         state = self
-        while state.actionPerformed is not None:
-            path.append(state.actionPerformed)
-            state = state.prevState
+        if format == 1:
+            # format used by actions
+            while state.actionPerformed is not None:
+                path.append(state.actionPerformed)
+                state = state.prevState
+        else:
+            # format used by server
+            while state.actionPerformed is not None:
+                #print(state.actionPerformed, state.actionPerformed[0])
+                cmd = state.actionPerformed[0]
+                if cmd == "Push":
+                    parm1 = self.__getDir(state.actionPerformed[1][2], state.actionPerformed[1][3])
+                    parm2 = self.__getDir(state.actionPerformed[1][3], state.actionPerformed[1][4])
+                    cmd = "Push("+parm1+","+parm2+")"
+                elif cmd == "Pull":
+                    parm1 = self.__getDir(state.actionPerformed[1][2], state.actionPerformed[1][3])
+                    parm2 = self.__getDir(state.actionPerformed[1][3], state.actionPerformed[1][4])
+                    cmd = "Pull("+parm1+","+parm2+")"
+                elif cmd == "Move":
+                    parm1 = self.__getDir(state.actionPerformed[1][1], state.actionPerformed[1][2])
+                    cmd = "Move("+parm1+")"
+                elif cmd == "Noop":
+                    cmd = "Noop()"
+
+                path.append(cmd)
+                state = state.prevState
         # Reverse the order
         return path[::-1]
 
@@ -333,6 +363,7 @@ class StateInit(Literals):
                 if actionParams is not None:
                     child = StateInit(self)
                     child.actionPerformed = ["Move", actionParams]
+                    
                     child.__MoveEffect(*actionParams)
                     child.__addToExplored(children)
 
