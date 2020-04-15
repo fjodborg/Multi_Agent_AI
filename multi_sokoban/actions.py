@@ -112,6 +112,7 @@ class StateInit(Literals):
             return None
 
     def getBoxesByKey(self, key):
+        key = key.upper()
         # same as getPos, just for all Boxes with the given key
         if key in self.boxes:
             return self.boxes[key]
@@ -119,6 +120,7 @@ class StateInit(Literals):
             return None
 
     def getGoalsByKey(self, key):
+        key = key.lower()
         # same as getPos, just for all Goal with the given key
         if key in self.goals:
             return self.goals[key]
@@ -138,16 +140,16 @@ class StateInit(Literals):
         # otherwise it returns 0
         agtfrom = self.getPos(self.agents, agt)
         if agtfrom is None:
-            print("agent", agt, "does not exist")
+            # # # print("agent", agt, "does not exist")
             return None
         if agtdir not in self.dir:
-            print("Direction", agtdir, "does not exist")
+            # # # print("Direction", agtdir, "does not exist")
             return None
         agtto = self.__AddPos(agtfrom, agtdir)
         if self.Free(agtto):
             return (agt, agtfrom, agtto)
         else:
-            print("Pos " + str(agtto) + " (row,col) is not free")
+            # # # print("Pos " + str(agtto) + " (row,col) is not free")
             return None
 
     def __MoveEffect(self, agt, agtfrom, agtto):
@@ -173,23 +175,23 @@ class StateInit(Literals):
         agtfrom = self.getPos(self.agents, agt)
         boxfrom = self.getPos(self.boxes, boxkey, i)
         if agtfrom is None:
-            print("agent", agt, "does not exist")
+            # # # print("agent", agt, "does not exist")
             return None
         if boxfrom is None:
-            print("Box", boxkey, "does not exist")
+            # # # print("Box", boxkey, "does not exist")
             return None
         if boxdir not in self.dir:
-            print("Direction", boxdir, "does not exist")
+            # # # print("Direction", boxdir, "does not exist")
             return None
         if self.Neighbour(agtfrom, boxfrom) != 1:
-            print("agent", agt, "and box", boxkey, "are not neighbors")
+            # # # print("agent", agt, "and box", boxkey, "are not neighbors")
             return None
 
         boxto = self.__AddPos(boxfrom, boxdir)
         if self.Free(boxto):
             return (agt, boxkey, agtfrom, boxfrom, boxto, i)
         else:
-            print("Pos " + str(boxto) + " (row,col) is not free")
+            # # # print("Pos " + str(boxto) + " (row,col) is not free")
             return None
 
     def __PushEffect(self, agt, boxkey, agtfrom, boxfrom, boxto, i):
@@ -218,23 +220,23 @@ class StateInit(Literals):
         agtfrom = self.getPos(self.agents, agt)
         boxfrom = self.getPos(self.boxes, boxkey, i)
         if agtfrom is None:
-            print("agent", agt, "does not exist")
+            # # # print("agent", agt, "does not exist")
             return None
         if boxfrom is None:
-            print("Box", boxkey, "does not exist")
+            # # # print("Box", boxkey, "does not exist")
             return None
         if agtdir not in self.dir:
-            print("Direction", agtdir, "does not exist")
+            # # # print("Direction", agtdir, "does not exist")
             return None
         if self.Neighbour(agtfrom, boxfrom) != 1:
-            print("agent", agt, "and box", boxkey, "are not neighbors")
+            # # # print("agent", agt, "and box", boxkey, "are not neighbors")
             return None
 
         agtto = self.__AddPos(agtfrom, agtdir)
         if self.Free(agtto):
             return (agt, boxkey, agtfrom, agtto, boxfrom, i)
         else:
-            print("Pos " + str(agtto) + " (row,col) is not free")
+            # # # print("Pos " + str(agtto) + " (row,col) is not free")
             return None
 
     def __PullEffect(self, agt, boxkey, agtfrom, agtto, boxfrom, i):
@@ -301,14 +303,6 @@ class StateInit(Literals):
         for direction in self.dir:
             for agtkey in self.agents:
 
-                # Checks a Move action if it is possible it is appended to the the children
-                actionParams = self.__MovePrec(agtkey, direction)
-                if actionParams is not None:
-                    child = StateInit(self)
-                    child.actionPerformed = ["Move", actionParams]
-                    child.__MoveEffect(*actionParams)
-                    child.__addToExplored(children)
-
                 # TODO reformat these nested loops and if statements!
 
                 # This can be perhaps be optimized by only looking at boxes at the
@@ -334,6 +328,13 @@ class StateInit(Literals):
                                 child.actionPerformed = ["Push", actionParams]
                                 child.__PushEffect(*actionParams)
                                 child.__addToExplored(children)
+                # Checks a Move action if it is possible it is appended to the the children
+                actionParams = self.__MovePrec(agtkey, direction)
+                if actionParams is not None:
+                    child = StateInit(self)
+                    child.actionPerformed = ["Move", actionParams]
+                    child.__MoveEffect(*actionParams)
+                    child.__addToExplored(children)
 
         for agtkey in self.agents:
             # TODO make a noop function
