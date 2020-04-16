@@ -311,7 +311,7 @@ class StateInit(Literals):
             while state.actionPerformed is not None:
                 # print(state.actionPerformed, state.actionPerformed[0])
                 cmd = state.actionPerformed[0]
-                if cmd == "Push":
+                if cmd == "Push": # (agtfrom, boxfrom, boxto)
                     parm1 = self.__getDir(
                         state.actionPerformed[1][2], state.actionPerformed[1][3]
                     )
@@ -319,12 +319,12 @@ class StateInit(Literals):
                         state.actionPerformed[1][3], state.actionPerformed[1][4]
                     )
                     cmd = "Push(" + parm1 + "," + parm2 + ")"
-                elif cmd == "Pull":
+                elif cmd == "Pull": # (agtfrom, agtto, boxfrom)
                     parm1 = self.__getDir(
                         state.actionPerformed[1][2], state.actionPerformed[1][3]
                     )
                     parm2 = self.__getDir(
-                        state.actionPerformed[1][3], state.actionPerformed[1][4]
+                        state.actionPerformed[1][4], state.actionPerformed[1][2]
                     )
                     cmd = "Pull(" + parm1 + "," + parm2 + ")"
                 elif cmd == "Move":
