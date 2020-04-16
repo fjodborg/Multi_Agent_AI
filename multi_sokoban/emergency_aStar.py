@@ -19,7 +19,9 @@ class BestFirstSearch(ABC):
     """Abstract class for BFS."""
 
     def __init__(
-        self, init_state: actions.StateInit, heuristic: Callable = default_heuristic,
+        self,
+        init_state: actions.StateInit,
+        heuristic: Callable = default_heuristic,
     ):
         """Initialize strategy."""
         self.frontier = PriorityQueue()
@@ -74,11 +76,16 @@ class aStarSearch(BestFirstSearch):
             self.frontier.put((state.h, self.count, state))
         self.leaf = self.frontier.get()[2]
 
+    def __str__(self):
+        """Printable descriptuion."""
+        return "A* Best First Search"
+
 
 def aStarSearch_func(initState):
     """Functional legacy approach."""
     global count
-    # count = 0 should be static and only initialized in the start, it's needed for unique hashes
+    # count = 0 should be static and only initialized in the start,
+    # it's needed for unique hashes
     frontier = PriorityQueue()
     leaf = initState
     calcHuristicsFor(leaf)
@@ -113,5 +120,3 @@ def calcHuristicsFor(states):
                     # goalPos = state.getBoxesByKey(key)
                     totalCost += default_heuristic(boxPos, goalPos)
         state.h = state.g + totalCost
-
-

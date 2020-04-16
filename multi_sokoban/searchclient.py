@@ -138,10 +138,11 @@ class SearchClient:
                 iterations = 0
 
             if get_usage() > MAX_USAGE:
-                raise ResourceLimit("Maximum  nbn usage exceeded.")
+                raise ResourceLimit("Maximum memory usage exceeded.")
                 return None
 
             if self.strategy.frontier_empty():
+                println("Frontier empty!")
                 return None
 
             self.strategy.get_and_remove_leaf()
@@ -162,7 +163,7 @@ def parse_arguments() -> argparse.ArgumentParser:
         metavar="<MB>",
         type=float,
         default=2048.0,
-        help="The maximum memory usage allowed in MB (soft limit, default 2048).",
+        help="The maximum memory usage allowed in MB (soft limit).",
     )
     strategy_group = parser.add_mutually_exclusive_group()
     strategy_group.add_argument(
@@ -199,23 +200,18 @@ def run_loop(strategy: str, memory: float):
     client = SearchClient(server_messages, strategy)
     solution = client.search()
     if solution is None:
-        # print(strategy.search_status(), file=sys.stderr, flush=True)
         println("Unable to solve level.")
-        sys.exit(0)
+        sys.exit(1)
     else:
         println("\nSummary for {}.".format(strategy))
         println("Found solution of length {}.".format(len(solution)))
-        println(f"{solution}")
-        # print(
-        #     "{}.".format(strategy.search_status()), file=sys.stderr, flush=True
-        # )
-
         for state in solution:
             print(state, flush=True)
             response = server_messages.readline().rstrip()
             if "false" in response:
                 println(
-                    f"Server responsed with '{response}' to the action '{response}' applied in:\n{solution}\n"
+                    f"Server responsed with '{response}' to the action"
+                    f" '{state}' applied in:\n{solution}\n"
                 )
                 break
 
