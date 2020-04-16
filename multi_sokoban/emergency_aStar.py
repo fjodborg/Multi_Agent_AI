@@ -115,29 +115,3 @@ def calcHuristicsFor(states):
         state.h = state.g + totalCost
 
 
-def test(nr):
-    if nr == 0:
-        # remember to make walls, otherwise it isn't bound to the matrix!
-        state = actions.StateInit()
-        # state2 = state.copy()
-        state.addMap(
-            [
-                ["+", "+", "+", "+", "+"],
-                ["+", chr(32), chr(32), chr(32), "+"],
-                ["+", chr(32), chr(32), chr(32), "+"],
-                ["+", chr(32), chr(32), chr(32), "+"],
-                ["+", "+", "+", "+", "+"],
-            ]
-        )
-
-        state.addAgent("0", (1, 2), "b")
-        # state.addBox("B", (2, 2), "c")
-        state.addBox("B", (2, 2), "c")
-        state.addBox("B", (3, 2), "b")
-        # state.addGoal("b", (2, 2))
-        state.addGoal("b", (3, 1))
-        # state.addGoal("c", (1, 3))
-        # state.addGoal("c", (2, 1))
-        print(state.map)
-        path, goalState = aStarSearch(state)
-        print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
