@@ -318,7 +318,7 @@ class StateInit(Literals):
                     parm2 = self.__getDir(
                         state.actionPerformed[1][3], state.actionPerformed[1][4]
                     )
-                    cmd = "Push(" + parm1 + "," + parm2 + ")"
+                    cmd = f"Push({parm1},{parm2})"
                 elif cmd == "Pull": # (agtfrom, agtto, boxfrom)
                     parm1 = self.__getDir(
                         state.actionPerformed[1][2], state.actionPerformed[1][3]
@@ -331,7 +331,7 @@ class StateInit(Literals):
                     parm1 = self.__getDir(
                         state.actionPerformed[1][1], state.actionPerformed[1][2]
                     )
-                    cmd = "Move(" + parm1 + ")"
+                    cmd = f"Move({parm1})"
                 elif cmd == "NoOp":
                     cmd = "NoOp()"
 
