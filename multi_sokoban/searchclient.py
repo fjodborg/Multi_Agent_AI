@@ -9,8 +9,7 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import aStarSearch, BestFirstSearch
-
+from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
 from multi_sokoban.memory import MAX_USAGE, get_usage
 
 

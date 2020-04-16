@@ -1,11 +1,9 @@
 """Astar search."""
+from abc import ABC, abstractmethod
 from queue import PriorityQueue
+from typing import Callable, List
 
 from multi_sokoban import actions
-
-from abc import ABC, abstractmethod
-
-from typing import List, Callable
 
 count = 0
 
@@ -21,9 +19,7 @@ class BestFirstSearch(ABC):
     """Abstract class for BFS."""
 
     def __init__(
-        self,
-        init_state: actions.StateInit,
-        heuristic: Callable = default_heuristic,
+        self, init_state: actions.StateInit, heuristic: Callable = default_heuristic,
     ):
         """Initialize strategy."""
         self.frontier = PriorityQueue()
