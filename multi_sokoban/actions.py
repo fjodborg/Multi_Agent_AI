@@ -324,7 +324,7 @@ class StateInit(Literals):
                         state.actionPerformed[1][2], state.actionPerformed[1][3]
                     )
                     parm2 = self.__getDir(
-                        state.actionPerformed[1][4], state.actionPerformed[1][2]
+                        state.actionPerformed[1][2], state.actionPerformed[1][4]
                     )
                     cmd = f"Pull({parm1},{parm2})"
                 elif cmd == "Move":
