@@ -95,7 +95,7 @@ def aStarSearch_func(initState):
             frontier.put((state.h, count, state))
         leaf = frontier.get()[2]
 
-    return leaf.bestPath(), leaf, frontier
+    return leaf.bestPath(), leaf
 
 
 def calcHuristicsFor(states):
