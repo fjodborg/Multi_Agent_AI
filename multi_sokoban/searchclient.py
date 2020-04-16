@@ -3,13 +3,12 @@ import argparse
 import re
 import string
 import sys
-from typing import List
+from typing import List, Callable
 
 import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.aStar import PriorityQueue
 from multi_sokoban.emergency_aStar import aStarSearch
 
 # from .memory import MAX_USAGE, get_usage
@@ -30,7 +29,7 @@ class ResourceLimit(Exception):
 class SearchClient:
     """Contain the AI, strategy and parsing."""
 
-    def __init__(self, server_messages: TextIOWrapper, strategy: PriorityQueue = None):
+    def __init__(self, server_messages: TextIOWrapper, strategy: str):
         """Init object."""
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
@@ -39,7 +38,7 @@ class SearchClient:
         self.initial_state = self.parse_map(server_messages)
 
     @property
-    def strategy(self) -> PriorityQueue:
+    def strategy(self) -> Callable:
         """Get strategy, the setter handles different types of inputs."""
         return self._strategy
 
