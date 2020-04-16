@@ -46,11 +46,8 @@ class BestFirstSearch(ABC):
             for key in keys:
                 goalPositions = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
-                # print(goalPositions,boxParams, state.getAgentByKey('0'))
                 for goalPos in goalPositions:
                     for boxPos, _color in boxParams:
-                        # boxPos = state.getAgentByKey(key)
-                        # goalPos = state.getBoxesByKey(key)
                         total_cost += self.heuristic(boxPos, goalPos)
             state.h = state.g + total_cost
 
@@ -95,11 +92,10 @@ def aStarSearch_func(initState):
         calcHuristicsFor(exploredStates)
         for state in exploredStates:
             count += 1
-            # print(state.h, count)
             frontier.put((state.h, count, state))
         leaf = frontier.get()[2]
 
-    return leaf.bestPath(), leaf
+    return leaf.bestPath(), leaf, frontier
 
 
 def calcHuristicsFor(states):
@@ -113,10 +109,7 @@ def calcHuristicsFor(states):
         for key in keys:
             goalPositions = state.getGoalsByKey(key)
             boxParams = state.getBoxesByKey(key)
-            # print(goalPositions,boxParams, state.getAgentByKey('0'))
             for goalPos in goalPositions:
                 for boxPos, _color in boxParams:
-                    # boxPos = state.getAgentByKey(key)
-                    # goalPos = state.getBoxesByKey(key)
                     totalCost += default_heuristic(boxPos, goalPos)
         state.h = state.g + totalCost

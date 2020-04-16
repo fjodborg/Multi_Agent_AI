@@ -9,7 +9,7 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
+from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch, aStarSearch_func
 from multi_sokoban.memory import MAX_USAGE, get_usage
 
 
@@ -67,6 +67,7 @@ class SearchClient:
         goal = False  # mark start of level map
         map = []
         goal_state = []
+        col_count = 0
         while line:
             if goal:
                 if line.find("#end") != -1:
@@ -83,9 +84,9 @@ class SearchClient:
                 else:
                     color = self.colors_re.search(line)
                     if color:
-                        col_count = np.unique(list(self.colors.values()))
+                        col_count += 1
                         for col in color.groups():
-                            self.colors[col] = str(col_count)
+                            self.colors[col] = col_count
             line = server_messages.readline()[:-1]  # chop last
 
     def build_map(self, map: List, goal_state: List) -> StateInit:
@@ -101,16 +102,16 @@ class SearchClient:
         # it is required to add the map first and then the rest level objects
         state.addMap(map)
         for obj, pos, color in all_objects:
-            x, y = pos
+            row, col = pos
             if obj in string.digits:
-                state.addAgent(obj, (x, y), color)
+                state.addAgent(obj, (row, col), color)
             elif obj in string.ascii_uppercase:
-                state.addBox(obj, (x, y), color)
+                state.addBox(obj, (row, col), color)
         goals = string.ascii_uppercase
         all_objects = self._locate_objects(np.array(goal_state), goals)
         for obj, pos, _ in all_objects:
-            x, y = pos
-            state.addGoal(obj, (x, y))
+            row, col = pos
+            state.addGoal(obj, (row, col))
         return state
 
     def _locate_objects(self, map: np.array, possible_objects: str) -> List:
@@ -130,9 +131,8 @@ class SearchClient:
         println(f"Starting search with strategy {self.strategy}.")
 
         iterations = 0
-        self.strategy.get_and_remove_leaf()
-
         while not self.strategy.leaf.isGoalState():
+            # println(self.strategy.leaf.h)
             if iterations == 1000:
                 println(f"{self.strategy.count} nodes explored")
                 iterations = 0
@@ -141,11 +141,12 @@ class SearchClient:
                 raise ResourceLimit("Maximum memory usage exceeded.")
                 return None
 
+            self.strategy.get_and_remove_leaf()
+
             if self.strategy.frontier_empty():
                 println("Frontier empty!")
                 return None
 
-            self.strategy.get_and_remove_leaf()
 
             if self.strategy.leaf.isGoalState():
                 return self.strategy.walk_best_path()
