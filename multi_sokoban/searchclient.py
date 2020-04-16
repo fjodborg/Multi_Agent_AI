@@ -88,7 +88,6 @@ class SearchClient:
                         color = color_matched[1]
                         for obj in line[len(color)+5:].split(", "):
                             self.colors[obj] = color
-            println(self.colors)
             line = server_messages.readline()[:-1]  # chop last
 
     def build_map(self, map: List, goal_state: List) -> StateInit:
