@@ -3,15 +3,15 @@ import argparse
 import re
 import string
 import sys
-from typing import List, Callable
+from typing import List
 
 import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import aStarSearch
+from multi_sokoban.emergency_aStar import aStarSearch, BestFirstSearch
 
-# from .memory import MAX_USAGE, get_usage
+from multi_sokoban.memory import MAX_USAGE, get_usage
 
 
 class ParseError(Exception):
@@ -33,27 +33,27 @@ class SearchClient:
         """Init object."""
         self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
-        self._strategy = self.add_strategy(strategy)
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
+        self._strategy = None
+        self.add_strategy(strategy)
 
     @property
-    def strategy(self) -> Callable:
+    def strategy(self) -> BestFirstSearch:
         """Get strategy, the setter handles different types of inputs."""
         return self._strategy
 
     @strategy.setter
     def strategy(self, strategy: str):
-        # we need to have a way to build progammatically the PriorityQueue
-        # given a search algorithm
-        if strategy == "astar":
-            self._strategy = aStarSearch
-        elif strategy == "wastar":
-            raise NotImplementedError
-            # self._strategy = StrategyBestFirst(WAStar(self.initial_state, 5))
-        elif strategy == "greedy":
-            raise NotImplementedError
-            # self._strategy = StrategyBestFirst(Greedy(self.initial_state))
+        if isinstance(strategy, BestFirstSearch):
+            self._strategy = strategy(self.initial_state)
+        else:
+            if strategy == "astar":
+                self._strategy = aStarSearch(self.initial_state)
+            elif strategy == "wastar":
+                raise NotImplementedError
+            elif strategy == "greedy":
+                raise NotImplementedError
 
     def add_strategy(self, strategy: str):
         """Initialize strategy, just for the __init__ method."""
@@ -129,38 +129,28 @@ class SearchClient:
     def search(self) -> List:
         """Apply search algorithm."""
         println(f"Starting search with strategy {self.strategy}.")
-        # self.strategy.add_to_frontier(self.initial_state)
-        # iterations = 0
 
-        path, goalState = aStarSearch(self.initial_state)
-        return path
-        # while True:
-        # if iterations == 1000:
-        #     print(
-        #         self.strategy.search_status(), file=sys.stderr, flush=True
-        #     )
-        #     iterations = 0
-        #
-        # if get_usage() > MAX_USAGE:
-        #     raise ResourceLimit("Maximum  nbn usage exceeded.")
-        #     return None
-        #
-        # if self.strategy.frontier_empty():
-        #     return None
-        #
-        # leaf = self.strategy.get_and_remove_leaf()
-        #
-        # if leaf.is_goal_state():
-        #     return leaf.extract_plan()
-        #
-        # self.strategy.add_to_explored(leaf)
-        # for child_state in leaf.get_children():
-        #     if not self.strategy.is_explored(
-        #         child_state
-        #     ) and not self.strategy.in_frontier(child_state):
-        #         self.strategy.add_to_frontier(child_state)
+        iterations = 0
+        self.strategy.get_and_remove_leaf()
 
-        # iterations += 1
+        while not self.strategy.leaf.isGoalState():
+            if iterations == 1000:
+                println(f"{self.strategy.count} nodes explored")
+                iterations = 0
+
+            if get_usage() > MAX_USAGE:
+                raise ResourceLimit("Maximum  nbn usage exceeded.")
+                return None
+
+            if self.strategy.frontier_empty():
+                return None
+
+            self.strategy.get_and_remove_leaf()
+
+            if self.strategy.leaf.isGoalState():
+                return self.strategy.walk_best_path()
+
+            iterations += 1
 
 
 def parse_arguments() -> argparse.ArgumentParser:
