@@ -30,7 +30,7 @@ class SearchClient:
 
     def __init__(self, server_messages: TextIOWrapper, strategy: str):
         """Init object."""
-        self.colors_re = re.compile(r"^[a-z]+:\s*([0-9])\s*,\s*([0-9A-Z]+)")
+        self.colors_re = re.compile(r"^([a-z]+):\s*([0-9])\s*,\s*([0-9A-Z]+)")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
@@ -82,11 +82,13 @@ class SearchClient:
                 if line.find("#initial") != -1:
                     initial = True
                 else:
-                    color = self.colors_re.search(line)
-                    if color:
+                    color_matched = self.colors_re.search(line)
+                    if color_matched:
                         col_count += 1
-                        for col in color.groups():
-                            self.colors[col] = col_count
+                        color = color_matched[1]
+                        for obj in line[len(color)+5:].split(", "):
+                            self.colors[obj] = color
+            println(self.colors)
             line = server_messages.readline()[:-1]  # chop last
 
     def build_map(self, map: List, goal_state: List) -> StateInit:
