@@ -114,6 +114,7 @@ class SearchClient:
         for obj, pos, _ in all_objects:
             row, col = pos
             state.addGoal(obj, (row, col))
+        state.updateGoalColors()
         return state
 
     def _locate_objects(self, map: np.array, possible_objects: str) -> List:

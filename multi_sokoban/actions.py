@@ -50,7 +50,7 @@ class Literals:
         self.map[pos] = key
         self.agents[key] = [[pos, color]]
 
-    def addGoal(self, key, pos, color="c"):
+    def addGoal(self, key, pos, color=None):
         # Adds a goal to a hashtable
         # key is a letter
         key = key.lower()
@@ -68,6 +68,14 @@ class Literals:
             self.boxes[key] = [[pos, color]]
         else:
             self.boxes[key].append([pos, color])
+        
+    def updateGoalColors(self):
+        goalKeys = self.getGoalKeys()
+        for key in goalKeys:
+            goalParams = self.getGoalsByKey(key)
+            for i in range(len(goalParams)):
+                if self.goals[key][i][1] is None:
+                    self.goals[key][i][1] = self.boxes[key.upper()][i][1]
 
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
