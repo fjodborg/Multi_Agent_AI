@@ -5,6 +5,8 @@ from typing import Callable, List
 
 from multi_sokoban import actions
 
+import sys
+
 count = 0
 
 
@@ -39,15 +41,21 @@ class BestFirstSearch(ABC):
         """Calculate heuristic for states in place."""
         if type(states) is not list:
             states = [states]
+        if len(states) == 0:
+            return None
+
+        goalKeys = states[0].getGoalKeys()
 
         for state in states:
             total_cost = 0
-            keys = state.getGoals()
-            for key in keys:
+            
+            for key in goalKeys:
                 goalPositions = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
                 for goalPos in goalPositions:
-                    for boxPos, _color in boxParams:
+                    for boxPos, color in boxParams:
+                        #print(state.agentsByColor[color], file=sys.stderr, flush=True)
+
                         total_cost += self.heuristic(boxPos, goalPos)
             state.h = state.g + total_cost
 
@@ -78,6 +86,7 @@ class aStarSearch(BestFirstSearch):
         return "A* Best First Search"
 
 
+'''
 def aStarSearch_func(initState):
     """Functional legacy approach."""
     global count
@@ -96,8 +105,6 @@ def aStarSearch_func(initState):
         leaf = frontier.get()[2]
 
     return leaf.bestPath(), leaf
-
-
 def calcHuristicsFor(states):
     """Functional legacy approach."""
     if type(states) is not list:
@@ -113,3 +120,4 @@ def calcHuristicsFor(states):
                 for boxPos, _color in boxParams:
                     totalCost += default_heuristic(boxPos, goalPos)
         state.h = state.g + totalCost
+'''

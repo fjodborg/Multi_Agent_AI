@@ -50,7 +50,7 @@ class Literals:
         self.map[pos] = key
         self.agents[key] = [[pos, color]]
 
-    def addGoal(self, key, pos):
+    def addGoal(self, key, pos, color="c"):
         # Adds a goal to a hashtable
         # key is a letter
         key = key.lower()
@@ -113,30 +113,31 @@ class StateInit(Literals):
 
     def getAgentByKey(self, key):
         # same as getPos, just for all agents with the given key
-        if key in self.agents:
-            return self.agents[key]
-        else:
-            return None
+        #if key not in self.agents:
+        #    return None
+        return self.agents[key]
 
     def getBoxesByKey(self, key):
         key = key.upper()
         # same as getPos, just for all Boxes with the given key
-        if key in self.boxes:
-            return self.boxes[key]
-        else:
-            return None
+        #if key not in self.boxes:
+        #    return None
+        return self.boxes[key]
 
     def getGoalsByKey(self, key):
         key = key.lower()
         # same as getPos, just for all Goal with the given key
-        if key in self.goals:
-            return self.goals[key]
-        else:
-            return None
+        #if key not in self.goals:
+        #    return None
+        return self.goals[key]
 
-    def getGoals(self):
+    def getGoalKeys(self):
         # returns all the keys
         return list(self.goals.keys())
+    
+    def getAgentKeys(self):
+        # returns all the keys
+        return list(self.agents.keys())
 
     def __addPos(self, agtfrom, agtdir):
         # simply adds two positions together
@@ -289,7 +290,7 @@ class StateInit(Literals):
 
     def isGoalState(self):
         # checks if the state is a goal state
-        keys = self.getGoals()
+        keys = self.getGoalKeys()
         for key in keys:
             goals = self.getGoalsByKey(key)
             for pos in goals:
