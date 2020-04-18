@@ -15,14 +15,16 @@ class Manager:
         """Initialize with the whole problem definition `top_problem`."""
         self.top_problem = top_problem
         self.strategy = strategy
-        self.tasks = []
+        self.tasks = {}
         # TODO: move status to BFS class
-        self.status = []
+        self.status = {}
+        self.freed_agents = {}
 
     def run(self) -> List:
         """Perform the task sharing."""
         self.divide_problem()
-        return self.solve_world()
+        self.solve_world()
+        return self.join_tasks()
 
     def divide_problem(self):
         """Subdivide the problem in terms of box colors."""
@@ -39,8 +41,9 @@ class Manager:
             for external_agent in ext_agents:
                 if external_agent != agent:
                     del task.agents[external_agent]
-            self.tasks.append(task)
-            self.status.append(None)
+
+            self.tasks[goal] = (task, agent)
+            self.status[goal] = None
 
     def bidding(self, task: StateInit, agents):
         """Request a heuristic from the agents to solve a particular task."""
@@ -67,23 +70,47 @@ class Manager:
 
         """
         searcher = self.strategy(task)
-        println(f"MAP\n{task.map}\n\ngoals -> {task.goals}\nagents -> {task.agents}")
-        return search(searcher)
+        # println(f"goals -> {task.goals}\n"
+        #         f"agents -> {task.agents}\nboxes -> {task.boxes}\n")
+        path, strategy = search(searcher)
+        return path, strategy.leaf
 
-    def solve_world(self) -> List:
-        """Solve the top problem.
+    def solve_world(self):
+        """Solve the top problem."""
+        to_del = []
+        for goal, val in self.tasks.items():
+            task, agent = val
+            if agent in self.freed_agents:
+                # substitute this task with previous task using the agent
+                prev_task = self.freed_agents[agent]
+                pos, color = list(task.goals.values())[0][0]
+                prev_task.addGoal(goal, pos, color)
+                task = prev_task
+                to_del.append(goal)
+            path, last_state = self.solve_task(task)
+            if path is not None:
+                self.freed_agents[agent] = last_state
+                if goal not in to_del:
+                    self.tasks[goal] = (last_state, self.tasks[goal][1])
+                prev_goal = list(last_state.goals.keys())[0]
+                self.status[prev_goal] = path
+                # make sure that we are not removing the correct one
+                if prev_goal in to_del:
+                    to_del.remove(prev_goal)
+        for goal in to_del:
+            del self.status[goal]
+            del self.tasks[goal]
+
+    def join_tasks(self) -> List:
+        """Join all the task in one big path.
 
         Returns
         -------
-        self.status:
-            list of lists. Each sublist is a path of actions.
+        list of actions to the best solution
 
         """
-        for task in self.tasks:
-            path = self.solve_task(task)
-            if path is not None:
-                self.status[self.tasks.index(task)] = path
-        return self.status
+        # TODO: come up with server communication
+        return [action for path in self.status.values() for action in path]
 
 
 def search(strategy: BestFirstSearch) -> List:
@@ -96,22 +123,21 @@ def search(strategy: BestFirstSearch) -> List:
     """
     iterations = 0
     while not strategy.leaf.isGoalState():
-        # println(self.strategy.leaf.h)
         if iterations == 1000:
             println(f"{strategy.count} nodes explored")
             iterations = 0
 
         if get_usage() > MAX_USAGE:
             raise ResourceLimit("Maximum memory usage exceeded.")
-            return None
+            return None, strategy
 
         strategy.get_and_remove_leaf()
 
         if strategy.frontier_empty():
             println("Frontier empty!")
-            return None
+            return None, strategy
 
         if strategy.leaf.isGoalState():
-            return strategy.walk_best_path()
+            return strategy.walk_best_path(), strategy
 
         iterations += 1

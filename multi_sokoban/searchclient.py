@@ -129,7 +129,7 @@ class SearchClient:
 
         boss = Manager(self.initial_state, self.strategy)
         paths = boss.run()
-        println(f"{paths}")
+        return paths
 
         # iterations = 0
         # while not self.strategy.leaf.isGoalState():
@@ -206,6 +206,7 @@ def run_loop(strategy: str, memory: float):
     else:
         println("\nSummary for {}.".format(strategy))
         println("Found solution of length {}.".format(len(solution)))
+        println(f"Solution -> {solution}")
         for state in solution:
             print(state, flush=True)
             response = server_messages.readline().rstrip()
