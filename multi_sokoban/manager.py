@@ -117,7 +117,7 @@ class Manager:
         )
         paths = [self.status[agent] for agent in sorted_agents]
         println(paths)
-        return [":".join(actions) for actions in zip(*paths)]
+        return [";".join(actions) for actions in zip(*paths)]
 
 
 def search(strategy: BestFirstSearch) -> List:
