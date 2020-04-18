@@ -3,9 +3,9 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .utils import println, ResourceLimit
-from .memory import MAX_USAGE, get_usage
 from .emergency_aStar import BestFirstSearch
+from .memory import MAX_USAGE, get_usage
+from .utils import ResourceLimit, println
 
 
 class Manager:
@@ -19,6 +19,7 @@ class Manager:
         # TODO: move status to BFS class
         self.status = {}
         self.freed_agents = {}
+        self.agent_to_status = {}
 
     def run(self) -> List:
         """Perform the task sharing."""
@@ -44,6 +45,7 @@ class Manager:
 
             self.tasks[goal] = (task, agent)
             self.status[goal] = None
+            self.agent_to_status[goal] = agent
 
     def bidding(self, task: StateInit, agents):
         """Request a heuristic from the agents to solve a particular task."""
@@ -109,8 +111,13 @@ class Manager:
         list of actions to the best solution
 
         """
-        # TODO: come up with server communication
-        return [action for path in self.status.values() for action in path]
+        # WARNING: ths fails if there are more than 10 agents
+        sorted_agents = sorted(
+            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
+        )
+        paths = [self.status[agent] for agent in sorted_agents]
+        println(paths)
+        return [":".join(actions) for actions in zip(*paths)]
 
 
 def search(strategy: BestFirstSearch) -> List:
@@ -138,6 +145,7 @@ def search(strategy: BestFirstSearch) -> List:
             return None, strategy
 
         if strategy.leaf.isGoalState():
+            println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
             return strategy.walk_best_path(), strategy
 
         iterations += 1
