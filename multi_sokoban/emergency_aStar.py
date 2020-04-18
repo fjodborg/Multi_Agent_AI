@@ -150,7 +150,6 @@ def calcHuristicsFor(states):
         agtBoxCost = 0
         agtBoxCosts = []
         
-
         for key in goalKeys:
             goalParams = state.getGoalsByKey(key)
             boxParams = state.getBoxesByKey(key)
@@ -163,7 +162,6 @@ def calcHuristicsFor(states):
                     for agentKey in agentKeys:
                         agentPos = state.getAgentsByKey(agentKey)[0][0]
                         boxGoalCost += default_heuristic(boxPos, goalPos)
-                        #agtBoxCost += default_heuristic(agentPos, boxPos)
                         agtBoxCosts.append(default_heuristic(agentPos, boxPos))
                         # print(goalPos, boxPos, goalColor, agentPos, agentKey)
             #print(agtBoxCost, file=sys.stderr, flush=True)

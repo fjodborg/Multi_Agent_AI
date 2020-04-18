@@ -151,7 +151,7 @@ class SearchClient:
                 return None
 
             if self.strategy.leaf.isGoalState():
-                println(f"Total of {self.strategy.count} nodes explored") 
+                println(f"Total of {len(self.strategy.leaf.explored)} nodes explored") 
                 return self.strategy.walk_best_path()
 
             iterations += 1
