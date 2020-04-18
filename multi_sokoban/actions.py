@@ -3,7 +3,7 @@ import copy
 import operator
 
 import numpy as np
-import sys
+
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -320,7 +320,7 @@ class StateInit(Literals):
                         state.actionPerformed[1][3], state.actionPerformed[1][4]
                     )
                     cmd = f"Push({parm1},{parm2})"
-                elif cmd == "Pull": # (agtfrom, agtto, boxfrom)
+                elif cmd == "Pull":  # (agtfrom, agtto, boxfrom)
                     parm1 = self.__getDir(
                         state.actionPerformed[1][2], state.actionPerformed[1][3]
                     )

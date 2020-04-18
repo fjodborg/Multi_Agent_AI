@@ -30,7 +30,7 @@ class SearchClient:
 
     def __init__(self, server_messages: TextIOWrapper, strategy: str):
         """Init object."""
-        self.colors_re = re.compile(r"^([a-z]+):\s*([0-9])\s*,\s*([0-9A-Z]+)")
+        self.colors_re = re.compile(r"^([a-z]+):\s*([0-9])\s*")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
@@ -87,7 +87,7 @@ class SearchClient:
                         col_count += 1
                         color = color_matched[1]
                         self.colors[color_matched[2]] = color
-                        for obj in line[len(color)+5:].split(", "):
+                        for obj in line[len(color) + 5 :].split(", "):
                             self.colors[obj] = color
             line = server_messages.readline()[:-1]  # chop last
 
@@ -148,7 +148,6 @@ class SearchClient:
             if self.strategy.frontier_empty():
                 println("Frontier empty!")
                 return None
-
 
             if self.strategy.leaf.isGoalState():
                 return self.strategy.walk_best_path()

@@ -3,7 +3,7 @@ hospital
 #levelname
 MAExample
 #colors
-blue: 0, A, B
+red: 0, A, B
 #initial
 ++++++++++++++++++++++
 +0 A                 +
