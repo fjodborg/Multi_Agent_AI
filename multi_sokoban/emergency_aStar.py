@@ -61,6 +61,8 @@ class BestFirstSearch(ABC):
         for state in states:
             boxGoalCost = 0
             agtBoxCost = 0
+            agtBoxCosts = []
+            
             for key in goalKeys:
                 goalParams = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
@@ -72,15 +74,18 @@ class BestFirstSearch(ABC):
                         agentKeys = state.getAgentsByColor(goalColor)
                         for agentKey in agentKeys:
                             agentPos = state.getAgentsByKey(agentKey)[0][0]
-                            boxGoalCost += self.heuristic(boxPos, goalPos)
-                            agtBoxCost += self.heuristic(agentPos, boxPos)
+                            boxGoalCost += default_heuristic(boxPos, goalPos)
+                            #agtBoxCost += default_heuristic(agentPos, boxPos)
+                            agtBoxCosts.append(default_heuristic(agentPos, boxPos))
                             # print(goalPos, boxPos, goalColor, agentPos, agentKey)
                 #print(agtBoxCost, file=sys.stderr, flush=True)
+            agtBoxCost = min(agtBoxCosts)
             state.h = boxGoalCost + agtBoxCost
             state.f = state.g + state.h
             #state.updateParentCost(total_cost)
-            
 
+
+            
     def walk_best_path(self):
         """Return the solution."""
         return self.leaf.bestPath()
@@ -108,7 +113,6 @@ class aStarSearch(BestFirstSearch):
         return "A* Best First Search"
 
 
-
 def aStarSearch_func(initState):
     """Functional legacy approach."""
     global count
@@ -121,9 +125,11 @@ def aStarSearch_func(initState):
     while not leaf.isGoalState():
         exploredStates = leaf.explore()
         calcHuristicsFor(exploredStates)
+
         for state in exploredStates:
             count += 1
             frontier.put((state.h, count, state))
+            
         leaf = frontier.get()[2]
 
     return leaf.bestPath(), leaf
@@ -142,6 +148,8 @@ def calcHuristicsFor(states):
     for state in states:
         boxGoalCost = 0
         agtBoxCost = 0
+        agtBoxCosts = []
+        
 
         for key in goalKeys:
             goalParams = state.getGoalsByKey(key)
@@ -155,9 +163,11 @@ def calcHuristicsFor(states):
                     for agentKey in agentKeys:
                         agentPos = state.getAgentsByKey(agentKey)[0][0]
                         boxGoalCost += default_heuristic(boxPos, goalPos)
-                        agtBoxCost += (default_heuristic(agentPos, boxPos))
+                        #agtBoxCost += default_heuristic(agentPos, boxPos)
+                        agtBoxCosts.append(default_heuristic(agentPos, boxPos))
                         # print(goalPos, boxPos, goalColor, agentPos, agentKey)
             #print(agtBoxCost, file=sys.stderr, flush=True)
+        agtBoxCost = min(agtBoxCosts)
         state.h = boxGoalCost + agtBoxCost
         state.f = state.g + state.h
         #state.updateParentCost(total_cost)

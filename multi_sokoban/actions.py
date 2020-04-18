@@ -411,5 +411,5 @@ class StateInit(Literals):
             child = StateInit(self)
             child.actionPerformed = ["NoOp", None]
             child.__addToExplored(children)
-
+        
         return children

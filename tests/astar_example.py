@@ -404,5 +404,49 @@ def test(nr):
         path, goalState = emergency_aStar.aStarSearch_func(state)
         print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
         print("nodes explored:", len(goalState.explored))
+    if nr == 5:
+        state = actions.StateInit()
+        state.addMap(
+            [
+                ["+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+",],
+                ["+"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","+",],
+                ["+"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","+","+","+","+",],
+                ["+"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","+",],
+                ["+"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","+","+"," ","+",],
+                ["+"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","+"," ","+",],
+                ["+ ","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+","+",],
+            ]
+        )
+        state.addAgent("0", (1, 1), "b")
+        state.addBox("A", (1, 17), "b")
+        state.addBox("A", (5, 1), "b")
+        state.addGoal("a", (5, 17), "b")
+        state.addGoal("a", (4, 17), "b")
+        print(state.map)
+        path, goalState = emergency_aStar.aStarSearch_func(state)
+        print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
+        print("nodes explored:", len(goalState.explored))
+    if nr == 6:
+        state = actions.StateInit()
+        state.addMap(
+            [
+                ["+","+","+","+","+","+","+",],
+                ["+"," "," "," "," "," ","+",],
+                ["+"," "," ","+","+","+","+",],
+                ["+"," "," "," "," "," ","+",],
+                ["+"," "," ","+","+"," ","+",],
+                ["+"," "," "," ","+"," ","+",],
+                ["+","+","+","+","+","+","+",],
+            ]
+        )
+        state.addAgent("0", (1, 1), "b")
+        state.addBox("A", (1, 5), "b")
+        state.addBox("A", (5, 1), "b")
+        state.addGoal("a", (5, 5), "b")
+        state.addGoal("a", (4, 5), "b")
+        print(state.map)
+        path, goalState = emergency_aStar.aStarSearch_func(state)
+        print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
+        print("nodes explored:", len(goalState.explored))
 
 test(4)
