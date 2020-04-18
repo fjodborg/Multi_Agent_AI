@@ -55,9 +55,9 @@ class Literals:
         # key is a letter
         key = key.lower()
         if key not in self.goals:
-            self.goals[key] = [pos]
+            self.goals[key] = [[pos, color]]
         else:
-            self.goals[key].append(pos)
+            self.goals[key].append([pos, color])
 
     def addBox(self, key, pos, color="c"):
         # Adds a box to the map and to a hashtable
@@ -293,7 +293,7 @@ class StateInit(Literals):
         keys = self.getGoalKeys()
         for key in keys:
             goals = self.getGoalsByKey(key)
-            for pos in goals:
+            for pos, color in goals:
                 if self.map[pos] != key.upper():
                     return False
         return True

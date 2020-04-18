@@ -43,14 +43,15 @@ class BestFirstSearch(ABC):
             return None
 
         goalKeys = states[0].getGoalKeys()
-
+        agentKeys = states[0].getAgentKeys()
+        print(states[0].agents, file=sys.stderr, flush=True)
         for state in states:
             total_cost = 0
             
             for key in goalKeys:
                 goalPositions = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
-                for goalPos in goalPositions:
+                for goalPos, color in goalPositions:
                     for boxPos, color in boxParams:
                         #print(state.agentsByColor[color], file=sys.stderr, flush=True)
 
