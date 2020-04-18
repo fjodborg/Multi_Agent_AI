@@ -11,17 +11,11 @@ from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
 from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
 from multi_sokoban.memory import MAX_USAGE, get_usage
-from multi_sokoban.utils import println
+from multi_sokoban.utils import println, ResourceLimit
 
 
 class ParseError(Exception):
     """Define parsing error exception."""
-
-    pass
-
-
-class ResourceLimit(Exception):
-    """Define limit of resources exception."""
 
     pass
 
