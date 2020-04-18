@@ -11,6 +11,7 @@ from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
 from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
 from multi_sokoban.memory import MAX_USAGE, get_usage
+from multi_sokoban.utils import println
 
 
 class ParseError(Exception):
@@ -111,9 +112,9 @@ class SearchClient:
                 state.addBox(obj, (row, col), color)
         goals = string.ascii_uppercase
         all_objects = self._locate_objects(np.array(goal_state), goals)
-        for obj, pos, _ in all_objects:
+        for obj, pos, color in all_objects:
             row, col = pos
-            state.addGoal(obj, (row, col))
+            state.addGoal(obj, (row, col), color)
         return state
 
     def _locate_objects(self, map: np.array, possible_objects: str) -> List:
@@ -216,11 +217,6 @@ def run_loop(strategy: str, memory: float):
                     f" '{state}' applied in:\n{solution}\n"
                 )
                 break
-
-
-def println(msg):
-    """Print to stderr."""
-    print(msg, file=sys.stderr, flush=True)
 
 
 if __name__ == "__main__":
