@@ -151,9 +151,12 @@ class SearchClient:
                 return None
 
             if self.strategy.leaf.isGoalState():
+                println(f"Total of {self.strategy.count} nodes explored") 
                 return self.strategy.walk_best_path()
 
             iterations += 1
+            
+         
 
 
 def parse_arguments() -> argparse.ArgumentParser:
