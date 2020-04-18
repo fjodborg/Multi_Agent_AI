@@ -53,10 +53,12 @@ class BestFirstSearch(ABC):
             for key in goalKeys:
                 goalParams = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
+                #agentParams = state.getAgentByKey(key)
                 for goalPos, goalColor in goalParams:
-                    for boxPos, boxColor in boxParams:
+                    for boxPos, _ in boxParams:
                         #print(state.agentsByColor[color], file=sys.stderr, flush=True)
-
+                        #for agentPos, agentColor in agentParams:
+                        #    pass
                         total_cost += self.heuristic(boxPos, goalPos)
             state.h = state.g + total_cost
 

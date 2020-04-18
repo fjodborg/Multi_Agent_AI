@@ -17,8 +17,9 @@ class Literals:
                 (1, 0): "S",
                 (0, -1): "W",
             }
-            self.agents = {}  # hashtable
             self.goals = {}  # hashtable
+            self.agentColor = {}  # hashtable
+            self.agents = {}  # hashtable
             self.boxes = {}  # hashtable
             self.prevState = None
             self.actionPerformed = None
@@ -30,6 +31,7 @@ class Literals:
             self.dir = parent.dir  # rigid
             self.deltaPos = parent.deltaPos  # rigid
             self.goals = parent.goals  # rigid
+            self.agentColor = parent.agentColor  # rigid
             self.agents = copy.deepcopy(parent.agents)
             self.boxes = copy.deepcopy(parent.boxes)
             self.map = copy.deepcopy(parent.map)
@@ -50,6 +52,12 @@ class Literals:
         self.map[pos] = key
         self.agents[key] = [[pos, color]]
 
+        # This is only used to get easy access to agents by color
+        if key not in self.agentColor:
+            self.agentColor[key] = [key]
+        else:
+            self.goals[key].append([pos, color])
+
     def addGoal(self, key, pos, color=None):
         # Adds a goal to a hashtable
         # key is a letter
@@ -69,14 +77,6 @@ class Literals:
         else:
             self.boxes[key].append([pos, color])
         
-    def updateGoalColors(self):
-        goalKeys = self.getGoalKeys()
-        for key in goalKeys:
-            goalParams = self.getGoalsByKey(key)
-            for i in range(len(goalParams)):
-                if self.goals[key][i][1] is None:
-                    self.goals[key][i][1] = self.boxes[key.upper()][i][1]
-
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
