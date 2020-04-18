@@ -30,7 +30,7 @@ class SearchClient:
 
     def __init__(self, server_messages: TextIOWrapper, strategy: str):
         """Init object."""
-        self.colors_re = re.compile(r"^([a-z]+):\s*([0-9])\s*,\s*([0-9A-Z]+)")
+        self.colors_re = re.compile(r"^([a-z]+):\s*([0-9])\s*")
         self.invalid_re = re.compile(r"[^A-Za-z0-9+]")
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
