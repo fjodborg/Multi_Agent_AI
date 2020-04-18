@@ -449,4 +449,4 @@ def test(nr):
         print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
         print("nodes explored:", len(goalState.explored))
 
-test(4)
+test(6)
