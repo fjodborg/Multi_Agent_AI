@@ -35,9 +35,9 @@ class Manager:
                     del task.goals[external_goal]
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
-            ext_agents = list(task.goals.keys())
+            ext_agents = list(task.agents.keys())
             for external_agent in ext_agents:
-                if external_goal != agent:
+                if external_agent != agent:
                     del task.agents[external_agent]
             self.tasks.append(task)
             self.status.append(None)
@@ -49,8 +49,9 @@ class Manager:
     def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
         # a task is guaranteed to have exactly one goal
-        color_of = list(task.goals)[0][1]
-        ok_agents = [k for k, v in task.agents.items() if color_of == v[1]]
+        # color_of = list(task.goals)[0][1]
+        color_of = list(task.goals.values())[0][0][1]
+        ok_agents = [k for k, v in task.agents.items() if color_of == v[0][1]]
         if len(ok_agents) > 1:
             selected_agent = self.bidding(task, ok_agents)
         else:
@@ -66,6 +67,7 @@ class Manager:
 
         """
         searcher = self.strategy(task)
+        println(f"MAP\n{task.map}\n\ngoals -> {task.goals}\nagents -> {task.agents}")
         return search(searcher)
 
     def solve_world(self) -> List:

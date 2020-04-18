@@ -10,8 +10,8 @@ import numpy as np
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
 from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
-from multi_sokoban.memory import MAX_USAGE, get_usage
-from multi_sokoban.utils import println, ResourceLimit
+from multi_sokoban.manager import Manager
+from multi_sokoban.utils import println
 
 
 class ParseError(Exception):
@@ -40,10 +40,10 @@ class SearchClient:
     @strategy.setter
     def strategy(self, strategy: str):
         if isinstance(strategy, BestFirstSearch):
-            self._strategy = strategy(self.initial_state)
+            self._strategy = strategy
         else:
             if strategy == "astar":
-                self._strategy = aStarSearch(self.initial_state)
+                self._strategy = aStarSearch
             elif strategy == "wastar":
                 raise NotImplementedError
             elif strategy == "greedy":
@@ -82,7 +82,7 @@ class SearchClient:
                         col_count += 1
                         color = color_matched[1]
                         self.colors[color_matched[2]] = color
-                        for obj in line[len(color) + 5 :].split(", "):
+                        for obj in line[len(color) + 5:].split(", "):
                             self.colors[obj] = color
             line = server_messages.readline()[:-1]  # chop last
 
@@ -127,27 +127,31 @@ class SearchClient:
         """Apply search algorithm."""
         println(f"Starting search with strategy {self.strategy}.")
 
-        iterations = 0
-        while not self.strategy.leaf.isGoalState():
-            # println(self.strategy.leaf.h)
-            if iterations == 1000:
-                println(f"{self.strategy.count} nodes explored")
-                iterations = 0
+        boss = Manager(self.initial_state, self.strategy)
+        paths = boss.run()
+        println(f"{paths}")
 
-            if get_usage() > MAX_USAGE:
-                raise ResourceLimit("Maximum memory usage exceeded.")
-                return None
-
-            self.strategy.get_and_remove_leaf()
-
-            if self.strategy.frontier_empty():
-                println("Frontier empty!")
-                return None
-
-            if self.strategy.leaf.isGoalState():
-                return self.strategy.walk_best_path()
-
-            iterations += 1
+        # iterations = 0
+        # while not self.strategy.leaf.isGoalState():
+        #     # println(self.strategy.leaf.h)
+        #     if iterations == 1000:
+        #         println(f"{self.strategy.count} nodes explored")
+        #         iterations = 0
+        #
+        #     if get_usage() > MAX_USAGE:
+        #         raise ResourceLimit("Maximum memory usage exceeded.")
+        #         return None
+        #
+        #     self.strategy.get_and_remove_leaf()
+        #
+        #     if self.strategy.frontier_empty():
+        #         println("Frontier empty!")
+        #         return None
+        #
+        #     if self.strategy.leaf.isGoalState():
+        #         return self.strategy.walk_best_path()
+        #
+        #     iterations += 1
 
 
 def parse_arguments() -> argparse.ArgumentParser:
