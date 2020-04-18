@@ -131,28 +131,6 @@ class SearchClient:
         paths = boss.run()
         return paths
 
-        # iterations = 0
-        # while not self.strategy.leaf.isGoalState():
-        #     # println(self.strategy.leaf.h)
-        #     if iterations == 1000:
-        #         println(f"{self.strategy.count} nodes explored")
-        #         iterations = 0
-        #
-        #     if get_usage() > MAX_USAGE:
-        #         raise ResourceLimit("Maximum memory usage exceeded.")
-        #         return None
-        #
-        #     self.strategy.get_and_remove_leaf()
-        #
-        #     if self.strategy.frontier_empty():
-        #         println("Frontier empty!")
-        #         return None
-        #
-        #     if self.strategy.leaf.isGoalState():
-        #         return self.strategy.walk_best_path()
-        #
-        #     iterations += 1
-
 
 def parse_arguments() -> argparse.ArgumentParser:
     """Parse CLI arguments, such as strategy and  nbn limit."""

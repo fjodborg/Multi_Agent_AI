@@ -17,19 +17,22 @@ class Literals:
                 (1, 0): "S",
                 (0, -1): "W",
             }
-            self.agents = {}  # hashtable
             self.goals = {}  # hashtable
+            self.agentColor = {}  # hashtable
+            self.agents = {}  # hashtable
             self.boxes = {}  # hashtable
             self.prevState = None
             self.actionPerformed = None
             self.g = 0
             self.h = None
+            self.f = None
             self.explored = set()
         else:
             # if a parent is present!
             self.dir = parent.dir  # rigid
             self.deltaPos = parent.deltaPos  # rigid
             self.goals = parent.goals  # rigid
+            self.agentColor = parent.agentColor  # rigid
             self.agents = copy.deepcopy(parent.agents)
             self.boxes = copy.deepcopy(parent.boxes)
             self.map = copy.deepcopy(parent.map)
@@ -37,6 +40,7 @@ class Literals:
             self.actionPerformed = None  # gets defined when action is chosen
             self.g = copy.deepcopy(parent.g) + 1
             self.h = None
+            self.f = None
             self.explored = parent.explored
         super().__init__()
 
@@ -50,7 +54,13 @@ class Literals:
         self.map[pos] = key
         self.agents[key] = [[pos, color]]
 
-    def addGoal(self, key, pos, color="c"):
+        # This is only used to get easy access to agents by color
+        if color not in self.agentColor:
+            self.agentColor[color] = [key]
+        else:
+            self.agentColor[color].append(key)
+
+    def addGoal(self, key, pos, color=None):
         # Adds a goal to a hashtable
         # key is a letter
         key = key.lower()
@@ -111,33 +121,46 @@ class StateInit(Literals):
         # it is (row, column) and not (x, y)
         super().__init__(parent)
 
-    def getAgentByKey(self, key):
+    def getAgentsByKey(self, key):
         # same as getPos, just for all agents with the given key
-        #if key not in self.agents:
+        # if key not in self.agents:
         #    return None
         return self.agents[key]
+
+    def getAgentsByColor(self, color):
+        # same as getPos, just for all agents with the given key
+        return self.agentColor[color]
 
     def getBoxesByKey(self, key):
         key = key.upper()
         # same as getPos, just for all Boxes with the given key
-        #if key not in self.boxes:
+        # if key not in self.boxes:
         #    return None
         return self.boxes[key]
 
     def getGoalsByKey(self, key):
         key = key.lower()
         # same as getPos, just for all Goal with the given key
-        #if key not in self.goals:
+        # if key not in self.goals:
         #    return None
         return self.goals[key]
 
     def getGoalKeys(self):
         # returns all the keys
         return list(self.goals.keys())
-    
+
     def getAgentKeys(self):
         # returns all the keys
         return list(self.agents.keys())
+
+    '''def updateParentCost(self, total_cost):
+        state = self.prevState
+        i = 0
+        while state is not None:
+            i += 1
+            state.h = total_cost + i
+            state.f = state.g + state.h
+            state = state.prevState'''
 
     def __addPos(self, agtfrom, agtdir):
         # simply adds two positions together
@@ -388,5 +411,5 @@ class StateInit(Literals):
             child = StateInit(self)
             child.actionPerformed = ["NoOp", None]
             child.__addToExplored(children)
-
+        
         return children
