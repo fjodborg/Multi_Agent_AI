@@ -53,10 +53,10 @@ class Literals:
         self.agents[key] = [[pos, color]]
 
         # This is only used to get easy access to agents by color
-        if key not in self.agentColor:
-            self.agentColor[key] = [key]
+        if color not in self.agentColor:
+            self.agentColor[color] = [key]
         else:
-            self.goals[key].append([pos, color])
+            self.agentColor[color].append([key])
 
     def addGoal(self, key, pos, color=None):
         # Adds a goal to a hashtable
