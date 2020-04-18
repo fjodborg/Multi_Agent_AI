@@ -1,5 +1,6 @@
 """Task sharing MA communication."""
 from copy import deepcopy
+from typing import List
 
 from .actions import StateInit
 from .utils import println, ResourceLimit
@@ -18,7 +19,7 @@ class Manager:
         # TODO: move status to BFS class
         self.status = []
 
-    def run(self):
+    def run(self) -> List:
         """Perform the task sharing."""
         self.divide_problem()
         return self.solve_world()
@@ -45,7 +46,7 @@ class Manager:
         """Request a heuristic from the agents to solve a particular task."""
         raise NotImplementedError
 
-    def broadcast_task(self, task: StateInit):
+    def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
         # a task is guaranteed to have exactly one goal
         color_of = list(task.goals)[0][1]
@@ -56,13 +57,26 @@ class Manager:
             selected_agent = ok_agents[0]
         return selected_agent
 
-    def solve_task(self, task):
-        """Search for task."""
+    def solve_task(self, task) -> List:
+        """Search for task.
+
+        Returns
+        -------
+        Path to the solutions (in actions) or none.
+
+        """
         searcher = self.strategy(task)
         return search(searcher)
 
-    def solve_world(self):
-        """Solve the top problem."""
+    def solve_world(self) -> List:
+        """Solve the top problem.
+
+        Returns
+        -------
+        self.status:
+            list of lists. Each sublist is a path of actions.
+
+        """
         for task in self.tasks:
             path = self.solve_task(task)
             if path is not None:
@@ -70,8 +84,14 @@ class Manager:
         return self.status
 
 
-def search(strategy: BestFirstSearch):
-    """Search function."""
+def search(strategy: BestFirstSearch) -> List:
+    """Search function.
+
+    Returns
+    -------
+    Path to the solutions (in actions) or none.
+
+    """
     iterations = 0
     while not strategy.leaf.isGoalState():
         # println(self.strategy.leaf.h)
