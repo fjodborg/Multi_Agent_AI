@@ -25,6 +25,7 @@ class Literals:
             self.actionPerformed = None
             self.g = 0
             self.h = None
+            self.f = None
             self.explored = set()
         else:
             # if a parent is present!
@@ -39,6 +40,7 @@ class Literals:
             self.actionPerformed = None  # gets defined when action is chosen
             self.g = copy.deepcopy(parent.g) + 1
             self.h = None
+            self.f = None
             self.explored = parent.explored
         super().__init__()
 
@@ -76,7 +78,7 @@ class Literals:
             self.boxes[key] = [[pos, color]]
         else:
             self.boxes[key].append([pos, color])
-        
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
@@ -121,7 +123,7 @@ class StateInit(Literals):
 
     def getAgentsByKey(self, key):
         # same as getPos, just for all agents with the given key
-        #if key not in self.agents:
+        # if key not in self.agents:
         #    return None
         return self.agents[key]
 
@@ -132,25 +134,33 @@ class StateInit(Literals):
     def getBoxesByKey(self, key):
         key = key.upper()
         # same as getPos, just for all Boxes with the given key
-        #if key not in self.boxes:
+        # if key not in self.boxes:
         #    return None
         return self.boxes[key]
 
     def getGoalsByKey(self, key):
         key = key.lower()
         # same as getPos, just for all Goal with the given key
-        #if key not in self.goals:
+        # if key not in self.goals:
         #    return None
         return self.goals[key]
-    
 
     def getGoalKeys(self):
         # returns all the keys
         return list(self.goals.keys())
-    
+
     def getAgentKeys(self):
         # returns all the keys
         return list(self.agents.keys())
+
+    '''def updateParentCost(self, total_cost):
+        state = self.prevState
+        i = 0
+        while state is not None:
+            i += 1
+            state.h = total_cost + i
+            state.f = state.g + state.h
+            state = state.prevState'''
 
     def __addPos(self, agtfrom, agtdir):
         # simply adds two positions together
