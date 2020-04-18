@@ -56,7 +56,7 @@ class Literals:
         if color not in self.agentColor:
             self.agentColor[color] = [key]
         else:
-            self.agentColor[color].append([key])
+            self.agentColor[color].append(key)
 
     def addGoal(self, key, pos, color=None):
         # Adds a goal to a hashtable
@@ -119,11 +119,15 @@ class StateInit(Literals):
         # it is (row, column) and not (x, y)
         super().__init__(parent)
 
-    def getAgentByKey(self, key):
+    def getAgentsByKey(self, key):
         # same as getPos, just for all agents with the given key
         #if key not in self.agents:
         #    return None
         return self.agents[key]
+
+    def getAgentsByColor(self, color):
+        # same as getPos, just for all agents with the given key
+        return self.agentColor[color]
 
     def getBoxesByKey(self, key):
         key = key.upper()
@@ -138,6 +142,7 @@ class StateInit(Literals):
         #if key not in self.goals:
         #    return None
         return self.goals[key]
+    
 
     def getGoalKeys(self):
         # returns all the keys

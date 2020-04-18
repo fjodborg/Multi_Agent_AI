@@ -45,21 +45,25 @@ class BestFirstSearch(ABC):
         #print(states[0].goals, file=sys.stderr, flush=True)
 
         goalKeys = states[0].getGoalKeys()
-        agentKeys = states[0].getAgentKeys()
+        # agentKeys = states[0].getAgentsKeys()
         #print(states[0].agents, file=sys.stderr, flush=True)
         for state in states:
             total_cost = 0
-            
+
             for key in goalKeys:
                 goalParams = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
-                #agentParams = state.getAgentByKey(key)
+                
+                # find every position of goals and boxes with the given key
                 for goalPos, goalColor in goalParams:
                     for boxPos, _ in boxParams:
-                        #print(state.agentsByColor[color], file=sys.stderr, flush=True)
-                        #for agentPos, agentColor in agentParams:
-                        #    pass
-                        total_cost += self.heuristic(boxPos, goalPos)
+                        agentKeys = state.getAgentsByColor(goalColor)
+                        for agentKey in agentKeys:
+                            agentPos = state.getAgentsByKey(agentKey)[0][0]
+                            total_cost += self.heuristic(boxPos, goalPos)
+                            total_cost += self.heuristic(agentPos, boxPos)
+                            #print(goalPos, boxPos, goalColor, agentPos, agentKey)
+                        
             state.h = state.g + total_cost
 
     def walk_best_path(self):
