@@ -72,8 +72,8 @@ class Manager:
 
         """
         searcher = self.strategy(task)
-        # println(f"goals -> {task.goals}\n"
-        #         f"agents -> {task.agents}\nboxes -> {task.boxes}\n")
+        println(f"goals -> {task.goals}\n"
+                f"agents -> {task.agents}\nboxes -> {task.boxes}\n")
         path, strategy = search(searcher)
         return path, strategy.leaf
 
@@ -88,6 +88,7 @@ class Manager:
                 pos, color = list(task.goals.values())[0][0]
                 prev_task.addGoal(goal, pos, color)
                 task = prev_task
+                task.explored = set()
                 to_del.append(goal)
             path, last_state = self.solve_task(task)
             if path is not None:
