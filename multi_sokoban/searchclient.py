@@ -9,8 +9,9 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
+from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch, greedySearch
 from multi_sokoban.manager import Manager
+
 from multi_sokoban.utils import println
 
 
@@ -47,7 +48,7 @@ class SearchClient:
             elif strategy == "wastar":
                 raise NotImplementedError
             elif strategy == "greedy":
-                raise NotImplementedError
+                self._strategy = greedySearch(self.initial_state)
 
     def add_strategy(self, strategy: str):
         """Initialize strategy, just for the __init__ method."""
