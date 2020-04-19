@@ -43,13 +43,13 @@ class BestFirstSearch(ABC):
         def keyMethod(key):
 
         def posMethod1(a):
-        
+
         def posMethod2(a):
 
         def agentMethod1(state, agentKey, boxPos, goalPos):
     '''
 
-  
+
     def walk_best_path(self):
         """Return the solution."""
         return self.leaf.bestPath()
@@ -111,7 +111,7 @@ def calcHuristicsFor(states):
         for key in goalKeys:
             goalParams = state.getGoalsByKey(key)
             boxParams = state.getBoxesByKey(key)
-            # maybe add some temporary costs here for each key 
+            # maybe add some temporary costs here for each key
 
             # find every position of goals and boxes with the given key
             for goalPos, goalColor in goalParams:
@@ -127,7 +127,7 @@ def calcHuristicsFor(states):
                     for agentKey in agentKeys:
                         agentPos = state.getAgentsByKey(agentKey)[0][0]
                         agtBoxCosts.append(default_heuristic(agentPos, boxPos))
-                    
+
                     boxGoalCosts.append(default_heuristic(boxPos, goalPos))
 
                 if len(boxGoalCosts) > 0:
@@ -139,7 +139,7 @@ def calcHuristicsFor(states):
                 #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
 
 
-        
+
         #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
         state.h = boxGoalCost + agtBoxCost
         state.f = state.h + state.g

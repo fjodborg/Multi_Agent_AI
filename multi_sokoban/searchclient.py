@@ -48,7 +48,7 @@ class SearchClient:
             elif strategy == "wastar":
                 raise NotImplementedError
             elif strategy == "greedy":
-                self._strategy = greedySearch(self.initial_state)
+                self._strategy = greedySearch
 
     def add_strategy(self, strategy: str):
         """Initialize strategy, just for the __init__ method."""
