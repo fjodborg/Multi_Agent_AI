@@ -62,30 +62,44 @@ class BestFirstSearch(ABC):
             boxGoalCost = 0
             agtBoxCost = 0
             agtBoxCosts = []
-            
             for key in goalKeys:
                 goalParams = state.getGoalsByKey(key)
                 boxParams = state.getBoxesByKey(key)
+                # maybe add some temporary costs here for each key 
 
                 # find every position of goals and boxes with the given key
                 for goalPos, goalColor in goalParams:
+                    boxGoalCosts = []
+                    # agtBoxCosts = []
                     for boxPos, _ in boxParams:
                         # only take agents with the same color as goalColor
                         agentKeys = state.getAgentsByColor(goalColor)
+
+                        if default_heuristic(goalPos, boxPos) == 0:
+                            continue
+
                         for agentKey in agentKeys:
                             agentPos = state.getAgentsByKey(agentKey)[0][0]
-                            boxGoalCost += default_heuristic(boxPos, goalPos)
-                            #agtBoxCost += default_heuristic(agentPos, boxPos)
                             agtBoxCosts.append(default_heuristic(agentPos, boxPos))
-                            # print(goalPos, boxPos, goalColor, agentPos, agentKey)
-                #print(agtBoxCost, file=sys.stderr, flush=True)
-            agtBoxCost = min(agtBoxCosts)
-            state.h = boxGoalCost + agtBoxCost
-            state.f = state.g + state.h
-            #state.updateParentCost(total_cost)
+                        
+                        boxGoalCosts.append(default_heuristic(boxPos, goalPos))
+
+                    if len(boxGoalCosts) > 0:
+                        boxGoalCost += min(boxGoalCosts)
+                if len(agtBoxCosts) > 0:
+                    agtBoxCost += sum(agtBoxCosts)
+                    # Min doesn't work with SAFirefly
+                    # agtBoxCost += min(agtBoxCosts)
+                    #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
 
 
             
+            #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
+            state.h = boxGoalCost + agtBoxCost
+            state.f = state.h + state.g
+
+
+  
     def walk_best_path(self):
         """Return the solution."""
         return self.leaf.bestPath()
@@ -93,6 +107,24 @@ class BestFirstSearch(ABC):
     def frontier_empty(self):
         """Return if solution couldn't be solved."""
         return self.frontier.empty()
+
+
+class greedySearch(BestFirstSearch):
+    """BFS with greedy."""
+
+    def get_and_remove_leaf(self):
+        """Apply the heuristic and update the frontier."""
+        explored_states = self.leaf.explore()
+        self.calc_heuristic_for(explored_states)
+
+        for state in explored_states:
+            self.count += 1
+            self.frontier.put((state.h, self.count, state))
+        self.leaf = self.frontier.get()[2]
+
+    def __str__(self):
+        """Printable descriptuion."""
+        return "greedy Best First Search"
 
 
 class aStarSearch(BestFirstSearch):
@@ -118,17 +150,26 @@ def aStarSearch_func(initState):
     global count
     # count = 0 should be static and only initialized in the start,
     # it's needed for unique hashes
+
     frontier = PriorityQueue()
     leaf = initState
     calcHuristicsFor(leaf)
-
+    # print("Initilized properties\n",
+    #     leaf.map,
+    #     "\n",
+    #     leaf.boxes,
+    #     leaf.goals,
+    #     leaf.agents,
+    #     file=sys.stderr,
+    #     flush=True
+    # )
     while not leaf.isGoalState():
         exploredStates = leaf.explore()
         calcHuristicsFor(exploredStates)
 
         for state in exploredStates:
             count += 1
-            frontier.put((state.h, count, state))
+            frontier.put((state.f, count, state))
             
         leaf = frontier.get()[2]
 
@@ -163,10 +204,7 @@ def calcHuristicsFor(states):
                         agentPos = state.getAgentsByKey(agentKey)[0][0]
                         boxGoalCost += default_heuristic(boxPos, goalPos)
                         agtBoxCosts.append(default_heuristic(agentPos, boxPos))
-                        # print(goalPos, boxPos, goalColor, agentPos, agentKey)
             #print(agtBoxCost, file=sys.stderr, flush=True)
         agtBoxCost = min(agtBoxCosts)
         state.h = boxGoalCost + agtBoxCost
         state.f = state.g + state.h
-        #state.updateParentCost(total_cost)
-

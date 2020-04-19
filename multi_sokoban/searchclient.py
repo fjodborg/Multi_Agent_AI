@@ -9,7 +9,7 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch
+from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch, greedySearch, aStarSearch_func
 from multi_sokoban.memory import MAX_USAGE, get_usage
 from multi_sokoban.utils import println
 
@@ -53,7 +53,7 @@ class SearchClient:
             elif strategy == "wastar":
                 raise NotImplementedError
             elif strategy == "greedy":
-                raise NotImplementedError
+                self._strategy = greedySearch(self.initial_state)
 
     def add_strategy(self, strategy: str):
         """Initialize strategy, just for the __init__ method."""
@@ -135,7 +135,7 @@ class SearchClient:
 
         iterations = 0
         while not self.strategy.leaf.isGoalState():
-            # println(self.strategy.leaf.h)
+            # println(self.strategy.leaf.h)      
             if iterations == 1000:
                 println(f"{self.strategy.count} nodes explored")
                 iterations = 0

@@ -439,12 +439,12 @@ def test(nr):
                 ["+","+","+","+","+","+","+",],
             ]
         )
-        state.addAgent("0", (1, 1), "b")
-        state.addBox("A", (1, 5), "b")
-        state.addBox("A", (5, 1), "b")
-        state.addGoal("a", (5, 5), "b")
-        state.addGoal("a", (4, 5), "b")
-        print(state.map)
+        state.addAgent("0", (1, 1), "red")
+        state.addBox("A", (1, 5), "red")
+        state.addBox("A", (5, 1), "red")
+        state.addGoal("a", (5, 5), "red")
+        state.addGoal("a", (4, 5), "red")
+        #print(state.map)
         path, goalState = emergency_aStar.aStarSearch_func(state)
         print(path, "\n", goalState.map, goalState.goals, goalState.boxes)
         print("nodes explored:", len(goalState.explored))
