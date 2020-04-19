@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import BestFirstSearch
+from .emergency_aStar import BestFirstSearch, aStarSearch_func, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
 
@@ -129,6 +129,12 @@ def search(strategy: BestFirstSearch) -> List:
     Path to the solutions (in actions) or none.
 
     """
+
+    #  Legacy function, but it takes a strategy rather than a leaf as argument
+    # return aStarSearch_func(strategy)
+
+
+    # This version gives an errors in some scenareos
     iterations = 0
     while not strategy.leaf.isGoalState():
         if iterations == 1000:
@@ -140,10 +146,11 @@ def search(strategy: BestFirstSearch) -> List:
             return None, strategy
 
         strategy.get_and_remove_leaf()
-
+        '''
         if strategy.frontier_empty():
             println("Frontier empty!")
             return None, strategy
+        '''
 
         if strategy.leaf.isGoalState():
             println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")

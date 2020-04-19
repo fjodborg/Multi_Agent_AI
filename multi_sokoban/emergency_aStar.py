@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from multi_sokoban import actions
 
-import sys
+from .utils import println
 
 count = 0
 
@@ -93,6 +93,28 @@ class aStarSearch(BestFirstSearch):
     def __str__(self):
         """Printable descriptuion."""
         return "A* Best First Search"
+
+
+def aStarSearch_func(strategy):
+    """Functional legacy approach."""
+    global count
+    # count = 0 should be static and only initialized in the start,
+    # it's needed for unique hashes
+
+    frontier = PriorityQueue()
+    leaf = strategy.leaf
+    calcHuristicsFor(leaf)
+    while not leaf.isGoalState():
+        exploredStates = leaf.explore()
+        calcHuristicsFor(exploredStates)
+
+        for state in exploredStates:
+            count += 1
+            frontier.put((state.f, count, state))
+            
+        leaf = frontier.get()[2]
+
+    return leaf.bestPath(), strategy
 
 
 def calcHuristicsFor(states):
