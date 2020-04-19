@@ -135,7 +135,7 @@ class SearchClient:
 
         iterations = 0
         while not self.strategy.leaf.isGoalState():
-            # println(self.strategy.leaf.h)      
+            # println(self.strategy.leaf.h)
             if iterations == 1000:
                 println(f"{self.strategy.count} nodes explored")
                 iterations = 0

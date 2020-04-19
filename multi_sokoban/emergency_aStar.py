@@ -28,7 +28,7 @@ class BestFirstSearch(ABC):
         self.heuristic = heuristic
         self.leaf = init_state
         self.count = 0
-        self.calc_heuristic_for(self.leaf)
+        calcHuristicsFor(self.leaf)
 
     @abstractmethod
     def get_and_remove_leaf(self):
@@ -49,56 +49,6 @@ class BestFirstSearch(ABC):
         def agentMethod1(state, agentKey, boxPos, goalPos):
     '''
 
-    def calc_heuristic_for(self, states: List[actions.StateInit]):
-        """Calculate heuristic for states in place."""
-        if type(states) is not list:
-            states = [states]
-        if len(states) == 0:
-            return None
-
-        goalKeys = states[0].getGoalKeys()
-
-        for state in states:
-            boxGoalCost = 0
-            agtBoxCost = 0
-            agtBoxCosts = []
-            for key in goalKeys:
-                goalParams = state.getGoalsByKey(key)
-                boxParams = state.getBoxesByKey(key)
-                # maybe add some temporary costs here for each key 
-
-                # find every position of goals and boxes with the given key
-                for goalPos, goalColor in goalParams:
-                    boxGoalCosts = []
-                    # agtBoxCosts = []
-                    for boxPos, _ in boxParams:
-                        # only take agents with the same color as goalColor
-                        agentKeys = state.getAgentsByColor(goalColor)
-
-                        if default_heuristic(goalPos, boxPos) == 0:
-                            continue
-
-                        for agentKey in agentKeys:
-                            agentPos = state.getAgentsByKey(agentKey)[0][0]
-                            agtBoxCosts.append(default_heuristic(agentPos, boxPos))
-                        
-                        boxGoalCosts.append(default_heuristic(boxPos, goalPos))
-
-                    if len(boxGoalCosts) > 0:
-                        boxGoalCost += min(boxGoalCosts)
-                if len(agtBoxCosts) > 0:
-                    agtBoxCost += sum(agtBoxCosts)
-                    # Min doesn't work with SAFirefly
-                    # agtBoxCost += min(agtBoxCosts)
-                    #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
-
-
-            
-            #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
-            state.h = boxGoalCost + agtBoxCost
-            state.f = state.h + state.g
-
-
   
     def walk_best_path(self):
         """Return the solution."""
@@ -115,7 +65,7 @@ class greedySearch(BestFirstSearch):
     def get_and_remove_leaf(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
-        self.calc_heuristic_for(explored_states)
+        calcHuristicsFor(explored_states)
 
         for state in explored_states:
             self.count += 1
@@ -133,7 +83,7 @@ class aStarSearch(BestFirstSearch):
     def get_and_remove_leaf(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
-        self.calc_heuristic_for(explored_states)
+        calcHuristicsFor(explored_states)
 
         for state in explored_states:
             self.count += 1
@@ -145,39 +95,7 @@ class aStarSearch(BestFirstSearch):
         return "A* Best First Search"
 
 
-def aStarSearch_func(initState):
-    """Functional legacy approach."""
-    global count
-    # count = 0 should be static and only initialized in the start,
-    # it's needed for unique hashes
-
-    frontier = PriorityQueue()
-    leaf = initState
-    calcHuristicsFor(leaf)
-    # print("Initilized properties\n",
-    #     leaf.map,
-    #     "\n",
-    #     leaf.boxes,
-    #     leaf.goals,
-    #     leaf.agents,
-    #     file=sys.stderr,
-    #     flush=True
-    # )
-    while not leaf.isGoalState():
-        exploredStates = leaf.explore()
-        calcHuristicsFor(exploredStates)
-
-        for state in exploredStates:
-            count += 1
-            frontier.put((state.f, count, state))
-            
-        leaf = frontier.get()[2]
-
-    return leaf.bestPath(), leaf
-
-
 def calcHuristicsFor(states):
-    """Functional legacy approach."""
     """Calculate heuristic for states in place."""
     if type(states) is not list:
         states = [states]
@@ -190,21 +108,38 @@ def calcHuristicsFor(states):
         boxGoalCost = 0
         agtBoxCost = 0
         agtBoxCosts = []
-        
         for key in goalKeys:
             goalParams = state.getGoalsByKey(key)
             boxParams = state.getBoxesByKey(key)
+            # maybe add some temporary costs here for each key 
 
             # find every position of goals and boxes with the given key
             for goalPos, goalColor in goalParams:
+                boxGoalCosts = []
+                # agtBoxCosts = []
                 for boxPos, _ in boxParams:
                     # only take agents with the same color as goalColor
                     agentKeys = state.getAgentsByColor(goalColor)
+
+                    if default_heuristic(goalPos, boxPos) == 0:
+                        continue
+
                     for agentKey in agentKeys:
                         agentPos = state.getAgentsByKey(agentKey)[0][0]
-                        boxGoalCost += default_heuristic(boxPos, goalPos)
                         agtBoxCosts.append(default_heuristic(agentPos, boxPos))
-            #print(agtBoxCost, file=sys.stderr, flush=True)
-        agtBoxCost = min(agtBoxCosts)
+                    
+                    boxGoalCosts.append(default_heuristic(boxPos, goalPos))
+
+                if len(boxGoalCosts) > 0:
+                    boxGoalCost += min(boxGoalCosts)
+            if len(agtBoxCosts) > 0:
+                agtBoxCost += sum(agtBoxCosts)
+                # Min doesn't work with SAFirefly
+                # agtBoxCost += min(agtBoxCosts)
+                #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
+
+
+        
+        #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
         state.h = boxGoalCost + agtBoxCost
-        state.f = state.g + state.h
+        state.f = state.h + state.g
