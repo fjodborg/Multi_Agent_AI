@@ -25,6 +25,10 @@ class Manager:
         """Perform the task sharing."""
         self.divide_problem()
         self.solve_world()
+    
+        new_paths = self.choose_priority_path()
+        #println(new_paths)
+
         return self.join_tasks()
 
     def divide_problem(self):
@@ -77,16 +81,15 @@ class Manager:
         path, strategy = search(searcher)
         return path, strategy.leaf
 
-    def choose_priority_path(self, paths):
-        initPos = ([[initPos[0][0]] for initPos in list(self.top_problem.agents.values())])
+    def convert2pos(self, initPos, paths):
         pos = initPos
-        ##  Ask how to access the latest state
+
         i = 0 
-        println(f"pos: {pos}")
+        #println(f"pos: {pos}")
         for agt in paths:
             for action in agt:
                 prefix = action[0]
-                #println(f"pos: {pos}")
+                #println(f"pos: {pos[i][-1]}")
                 if type(pos[i][-1]) == list:
                     [row, col] = pos[i][-1][0]
                 else:
@@ -117,93 +120,34 @@ class Manager:
                 
             i += 1
 
-        indicies = [0] * len(paths)
-        println(pos)
-             
-        changeHappend = True
-        while changeHappend:
-            changeHappend = False
-            for agtIdx in range(len(paths)):
-                i = indicies[agtIdx] + 1
-                path = paths[agtIdx]
-                # println(f"{i},{len(path)}")
-                if i >= len(path):
-                    continue
-                else: 
+        return pos
 
-                    newPathLength = len(path)
-                    for occupiedIdx in range(len(paths)):
-                        if occupiedIdx == agtIdx:
-                            continue
-                        j = indicies[occupiedIdx]
-                        #println(indicies) 
-                        #println(f"agtIdx{pos[agtIdx][i]}, occIdx{pos[occupiedIdx][j]}") 
-                            
-                        #println(f"agtIdx{pos[agtIdx][i]}, occIdx{pos[occupiedIdx][j]}") 
-                        if pos[agtIdx][i] == pos[occupiedIdx][j]:  #occupiedList[occupiedIdx]:
-                            # TODO take boxes into account, this is probably why you get tuple integer problems
-                            
-                            #println(indicies)
-                            println("Collission between agents!")
-                            #println(f"agtIdx{pos[agtIdx][i]}, occIdx{pos[occupiedIdx][j]}") 
-                            #  ts = traceback steps
-                            ts = 0
-                            
-                            while pos[agtIdx][i + ts] == pos[occupiedIdx][j - ts]:
-                                #println(f"agtIdx{pos[agtIdx][i -ts]}, {pos[occupiedIdx][j + ts]}")
-                                if j - ts < 0  or i + ts >= len(path):
-                                    #This is TODO and occurs when a agent is initialized on the path of another agent
-                                    pass
-                                
-                                ts += 1
-                            println(f"{i-ts},{ts}")
-                            println(indicies)
-                            for k in range(ts):
-                                pos[occupiedIdx].insert(j - ts - 1, pos[occupiedIdx][j - ts - 2])
-                                #println(paths[agtIdx][j-ts:j-ts+3])
-                                #paths[agtIdx].insert(i - ts, "NoOp")
-                            # indicies[agtIdx] -= ts
-                            #pos[agtIdx].insert(i, pos[agtIdx][i - 1])
-                            #println(pos)
-                    
-                    # newPathLength = 0
-                    # for occupiedIdx in range(len(paths)):
-                    #     if (paths[occupiedIdx]
-                        
-                    indicies[agtIdx] += 1
-                    changeHappend = True
-            
-                
-        #println([action[-4:-3]])
-        println(pos)
+    def choose_priority_path(self):
+        sorted_agents = sorted(
+            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
+        )
+        
+        initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
+        paths = [self.status[agent] for agent in sorted_agents]
         println(paths)
-        #for k in range(13):
-            #pos[agtIdx].insert(i - ts, pos[agtIdx][i - ts - 1])
-            #println(paths[agtIdx][j-ts:j-ts+3])
-            #paths[0].insert(0, "NoOp")
-            #paths[1].append("NoOp")
-        # Doesn't exist?
-        
-        #  1
-        println(self.tasks['a'][0].map)
-        #  1
-        
-        pathLength = 0
-        for agt in pos:
-            if len(agt) > pathLength:
-                pathLength = len(agt)
-        pathLength -= 1
+        pos = self.convert2pos(initpos, paths)
+        findAndResolveColission(pos, paths)
+        println(pos)
+        # println(self.tasks['a'][0].map)
+
+
 
         for agt in range(len(pos)):
             for i in range(len(pos[agt]) - 1):
                 if pos[agt][i] == pos[agt][i + 1]:
                     paths[agt].insert(i, "NoOp")
-            while len(paths[agt]) <= len(pos[agt]):
+            while len(paths[agt]) < len(pos[agt])-1:
                 paths[agt].append("NoOp")
 
-        println(paths)
+        #println(paths)
 
         return paths
+
 
     def solve_world(self):
         """Solve the top problem."""
@@ -247,8 +191,6 @@ class Manager:
         )
         paths = [self.status[agent] for agent in sorted_agents]
         println(paths)
-        new_paths = self.choose_priority_path(paths)
-        println(new_paths)
         return [";".join(actions) for actions in zip(*paths)]
 
 
@@ -288,3 +230,80 @@ def search(strategy: BestFirstSearch) -> List:
             return strategy.walk_best_path(), strategy
 
         iterations += 1
+
+def resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j):
+    # tracesback
+    tb = 0
+
+    
+    while isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb) or isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb+1) :
+        if j+tb+2 >= len(pos[agt2Idx]):
+            break
+        tb +=1
+        # make chekc if out of bounce, and if it is explore the state!
+        #print(i-tb,j+tb)
+        #print(pos[agt1Idx][i-tb],pos[agt2Idx][j+tb])
+
+    for k in range(tb+1):
+        pos[agt1Idx].insert(i-tb,pos[agt1Idx][i-tb-1])
+
+
+def fixLength(poss):
+    longest = 0
+    for pos in poss:
+        if len(pos) > longest:
+            longest = len(pos)
+
+    for pos in poss:
+        for i in range(longest - len(pos)):
+            pos.append(pos[-1])
+            pass
+
+def findAndResolveColission(pos, paths):
+    indicies = [0] * len(paths)
+    indexChanged = True 
+    
+    while indexChanged:
+        indexChanged = False
+        for agt1Idx in range(len(paths)):
+            i = indicies[agt1Idx] + 1
+            # print("agent",agt1Idx, "iteration", i, "position:", pos[agt1Idx][i])
+            path = paths[agt1Idx]
+            if i >= len(path):
+                continue
+            else: 
+                indexChanged = True
+                for agt2Idx in range(agt1Idx, len(paths)):
+                    if agt2Idx == agt1Idx:
+                        continue
+                    j = indicies[agt2Idx]
+                    cond1 = [pos,agt1Idx,i,agt2Idx, j]
+                    cond2 = [pos,agt1Idx,i,agt2Idx, j+1]
+                    if isCollision(*cond1) or isCollision(*cond2):  #occupiedList[agt2Idx]:
+                        # TODO take boxes into account, this is probably why you get tuple integer problems
+                        println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
+                        resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j)
+                        
+                indicies[agt1Idx] += 1
+    
+    fixLength(pos)
+
+    return pos
+
+def isCollision(pos, agt1Idx, i, agt2Idx, j):
+
+    if type(pos[agt1Idx][i]) == list:
+        pos1 = pos[agt1Idx][i]
+    else:
+        pos1 = [pos[agt1Idx][i], pos[agt1Idx][i]]
+    if type(pos[agt2Idx][j]) == list:
+        pos2 = pos[agt2Idx][j] 
+    else:
+        pos2 = [pos[agt2Idx][j],pos[agt2Idx][j]]
+
+    if pos1[0] == pos2[0] or pos1[0] == pos2[1] or  pos1[1] == pos2[0] or  pos1[1] == pos2[1]:
+        println([pos1, pos2, True])
+        return True
+    else :
+        println([pos1, pos2, False])
+        return False
