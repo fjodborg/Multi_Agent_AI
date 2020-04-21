@@ -357,7 +357,7 @@ class StateInit(Literals):
                     )
                     cmd = f"Move({parm1})"
                 elif cmd == "NoOp":
-                    cmd = "NoOp()"
+                    cmd = "NoOp"
 
                 path.append(cmd)
                 state = state.prevState
