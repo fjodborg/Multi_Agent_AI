@@ -127,9 +127,11 @@ class Manager:
             list(self.status.keys()), key=lambda a: self.agent_to_status[a]
         )
         
-        initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
+        
+        # initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
         paths = [self.status[agent] for agent in sorted_agents]
-        println(paths)
+        
+        initpos =[[self.top_problem.agents[self.agent_to_status[agent]][0][0]] for agent in sorted_agents]
         pos = self.convert2pos(initpos, paths)
         findAndResolveColission(pos, paths)
         println(pos)
@@ -140,9 +142,12 @@ class Manager:
         for agt in range(len(pos)):
             for i in range(len(pos[agt]) - 1):
                 if pos[agt][i] == pos[agt][i + 1]:
-                    paths[agt].insert(i, "NoOp")
-            while len(paths[agt]) < len(pos[agt])-1:
-                paths[agt].append("NoOp")
+                    if len(paths[agt]) > 0:
+                        paths[agt].insert(i, "NoOp")
+                    else:
+                        paths[agt].append("NoOp")
+            #while len(paths[agt]) < len(pos[agt])-1:
+                #paths[agt].append("NoOp")
 
         #println(paths)
 
