@@ -21,6 +21,7 @@ class Manager:
         self.status = {}
         self.freed_agents = {}
         self.agent_to_status = {}
+        self.nodes_explored = 0
 
     def run(self) -> List:
         """Perform the task sharing."""
@@ -78,6 +79,7 @@ class Manager:
             f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
         )
         path, strategy = search(searcher)
+        self.nodes_explored += strategy.count
         return path, strategy.leaf
 
     def solve_world(self):
@@ -155,7 +157,10 @@ def search(strategy: BestFirstSearch) -> List:
         """
 
         if strategy.leaf.isGoalState():
-            println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
+            println(
+                    f"(Subproblem) Solution found with "
+                    f"{len(strategy.leaf.explored)} nodes explored"
+            )
             return strategy.walk_best_path(), strategy
 
         iterations += 1
