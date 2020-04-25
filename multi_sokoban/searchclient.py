@@ -9,9 +9,9 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.emergency_aStar import BestFirstSearch, aStarSearch, greedySearch
+from multi_sokoban.emergency_aStar import (BestFirstSearch, aStarSearch,
+                                           greedySearch)
 from multi_sokoban.manager import Manager
-
 from multi_sokoban.utils import println
 
 
@@ -83,7 +83,7 @@ class SearchClient:
                         col_count += 1
                         color = color_matched[1]
                         self.colors[color_matched[2]] = color
-                        for obj in line[len(color) + 5:].split(", "):
+                        for obj in line[len(color) + 5 :].split(", "):
                             self.colors[obj] = color
             line = server_messages.readline()[:-1]  # chop last
 

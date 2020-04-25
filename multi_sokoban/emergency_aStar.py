@@ -1,11 +1,9 @@
 """Astar search."""
 from abc import ABC, abstractmethod
 from queue import PriorityQueue
-from typing import Callable, List
+from typing import Callable
 
 from multi_sokoban import actions
-
-from .utils import println
 
 count = 0
 
@@ -35,7 +33,7 @@ class BestFirstSearch(ABC):
         """Depend on the heuristic method."""
         raise NotImplementedError
 
-    '''
+    """
         #try and use maps instead of for loops!!
 
         def stateMethod(state, goalKey):
@@ -47,8 +45,7 @@ class BestFirstSearch(ABC):
         def posMethod2(a):
 
         def agentMethod1(state, agentKey, boxPos, goalPos):
-    '''
-
+    """
 
     def walk_best_path(self):
         """Return the solution."""
@@ -111,7 +108,7 @@ def aStarSearch_func(strategy):
         for state in exploredStates:
             count += 1
             frontier.put((state.f, count, state))
-            
+
         leaf = frontier.get()[2]
 
     return leaf.bestPath(), strategy
@@ -158,10 +155,8 @@ def calcHuristicsFor(states):
                 agtBoxCost += sum(agtBoxCosts)
                 # Min doesn't work with SAFirefly
                 # agtBoxCost += min(agtBoxCosts)
-                #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
+                # print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
 
-
-
-        #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
+        # print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
         state.h = boxGoalCost + agtBoxCost
-        state.f = state.h + state.g
+        state.f = state.h * 5 + state.g
