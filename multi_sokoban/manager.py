@@ -3,8 +3,7 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
-                              calcHuristicsFor)
+from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
 
@@ -49,9 +48,18 @@ class Manager:
             self.status[goal] = None
             self.agent_to_status[goal] = agent
 
-    def bidding(self, task: StateInit, agents):
+    def bidding(self, task: StateInit, agents) -> str:
         """Request a heuristic from the agents to solve a particular task."""
         raise NotImplementedError
+        min_marginal_cost = float("inf")
+        for agent in agents:
+            # WARNING: could be implemented now but let's wait for BDI
+            marginal_cost = marginal_task_cost(agent.tasks, task)
+            # greater or equal to guarantee a selected agent
+            if min_marginal_cost >= marginal_cost:
+                min_marginal_cost = marginal_cost
+                selected_agent = agent
+        return selected_agent
 
     def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
@@ -126,6 +134,7 @@ class Manager:
         return [";".join(actions) for actions in zip(*paths)]
 
 
+# Members of Manager
 def search(strategy: BestFirstSearch) -> List:
     """Search function.
 
@@ -158,9 +167,26 @@ def search(strategy: BestFirstSearch) -> List:
 
         if strategy.leaf.isGoalState():
             println(
-                    f"(Subproblem) Solution found with "
-                    f"{len(strategy.leaf.explored)} nodes explored"
+                f"(Subproblem) Solution found with "
+                f"{len(strategy.leaf.explored)} nodes explored"
             )
             return strategy.walk_best_path(), strategy
 
         iterations += 1
+
+
+def marginal_task_cost(ongoing_tasks: List, broadcasted_task: StateInit) -> float:
+    """Compute cost of adding task `broadcasted_task` to current `ongoing_tasks`.
+
+    Should consider t.
+    """
+    c_ts = calcHuristicsFor(broadcasted_task)
+    # the broadcasted task is guaranteed to have only one goal
+    pos, color = list(broadcasted_task.goals.values())[0][0]
+    c_union = float("inf")
+    # of the ongoing tasks, always pick the one with the least joint heurisitic
+    for task in ongoing_tasks:
+        joint_task = deepcopy(task)
+        joint_task.addGoal(list(broadcasted_task.keys())[0], pos, color)
+        c_union = min(c_union, calcHuristicsFor(joint_task))
+    return c_union - c_ts
