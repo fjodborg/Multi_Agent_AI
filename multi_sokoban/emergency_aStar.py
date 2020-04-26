@@ -30,10 +30,9 @@ class BestFirstSearch(ABC):
         self.count = 0
         calcHuristicsFor(self.leaf)
 
-    @abstractmethod
     def get_and_remove_leaf(self):
         """Depend on the heuristic method."""
-        raise NotImplementedError
+        self.leaf = self.frontier.get()[2]
 
     '''
         #try and use maps instead of for loops!!
@@ -49,6 +48,10 @@ class BestFirstSearch(ABC):
         def agentMethod1(state, agentKey, boxPos, goalPos):
     '''
 
+    @abstractmethod
+    def explore_and_add(self):
+        """Explore leaf, calc heursitic and add to frontier."""
+        raise NotImplementedError
 
     def walk_best_path(self):
         """Return the solution."""
@@ -62,7 +65,7 @@ class BestFirstSearch(ABC):
 class greedySearch(BestFirstSearch):
     """BFS with greedy."""
 
-    def get_and_remove_leaf(self):
+    def explore_and_add(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         calcHuristicsFor(explored_states)
@@ -70,7 +73,6 @@ class greedySearch(BestFirstSearch):
         for state in explored_states:
             self.count += 1
             self.frontier.put((state.h, self.count, state))
-        self.leaf = self.frontier.get()[2]
 
     def __str__(self):
         """Printable descriptuion."""
@@ -80,7 +82,7 @@ class greedySearch(BestFirstSearch):
 class aStarSearch(BestFirstSearch):
     """BFS with A*."""
 
-    def get_and_remove_leaf(self):
+    def explore_and_add(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         calcHuristicsFor(explored_states)
@@ -88,7 +90,6 @@ class aStarSearch(BestFirstSearch):
         for state in explored_states:
             self.count += 1
             self.frontier.put((state.f, self.count, state))
-        self.leaf = self.frontier.get()[2]
 
     def __str__(self):
         """Printable descriptuion."""
@@ -111,7 +112,7 @@ def aStarSearch_func(strategy):
         for state in exploredStates:
             count += 1
             frontier.put((state.f, count, state))
-            
+
         leaf = frontier.get()[2]
 
     return leaf.bestPath(), strategy

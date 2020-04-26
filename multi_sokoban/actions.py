@@ -79,6 +79,10 @@ class Literals:
         else:
             self.boxes[key].append([pos, color])
 
+    def forget_exploration(self):
+        """Remove explored nodes."""
+        self.explored = set()
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
@@ -308,8 +312,6 @@ class StateInit(Literals):
         if not self.isExplored():
             self.explored.add(self.minimalRep())
             children.append(self)
-        else:
-            del self
 
     def isGoalState(self):
         # checks if the state is a goal state
@@ -411,5 +413,5 @@ class StateInit(Literals):
             child = StateInit(self)
             child.actionPerformed = ["NoOp", None]
             child.__addToExplored(children)
-        
+
         return children

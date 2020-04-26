@@ -25,7 +25,7 @@ class Manager:
         """Perform the task sharing."""
         self.divide_problem()
         self.solve_world()
-    
+
         new_paths = self.choose_priority_path()
         #println(new_paths)
 
@@ -67,6 +67,13 @@ class Manager:
             selected_agent = ok_agents[0]
         return selected_agent
 
+    def sort_agents(self):
+        """Return sorted agents by name of agent (0-10)."""
+        # WARNING: ths fails if there are more than 10 agents
+        return sorted(
+            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
+        )
+
     def solve_task(self, task) -> List:
         """Search for task.
 
@@ -79,14 +86,18 @@ class Manager:
         println(f"goals -> {task.goals}\n"
                 f"agents -> {task.agents}\nboxes -> {task.boxes}\n")
         path, strategy = search(searcher)
+        if path is None:
+            task.forget_exploration()
         return path, strategy.leaf
 
     def convert2pos(self, initPos, paths):
         pos = initPos
 
-        i = 0 
+        i = 0
         #println(f"pos: {pos}")
         for agt in paths:
+            if agt is None:
+                continue
             for action in agt:
                 prefix = action[0]
                 #println(f"pos: {pos[i][-1]}")
@@ -117,20 +128,17 @@ class Manager:
                         [row1, col1] = (row + drow1, col + dcol1)
                         [row2, col2] = (row, col)
                         pos[i].append([(row1, col1), (row2, col2)])
-                
+
             i += 1
 
         return pos
 
     def choose_priority_path(self):
-        sorted_agents = sorted(
-            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
-        )
-        
-        
+        sorted_agents = self.sort_agents()
+
         # initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
-        paths = [self.status[agent] for agent in sorted_agents]
-        
+        paths = [self.status[agent] for agent in sorted_agents if self.status[agent]]
+
         initpos =[[self.top_problem.agents[self.agent_to_status[agent]][0][0]] for agent in sorted_agents]
         pos = self.convert2pos(initpos, paths)
         findAndResolveColission(pos, paths)
@@ -165,7 +173,7 @@ class Manager:
                 pos, color = list(task.goals.values())[0][0]
                 prev_task.addGoal(goal, pos, color)
                 task = prev_task
-                task.explored = set()
+                task.forget_exploration()
                 to_del.append(goal)
             path, last_state = self.solve_task(task)
             if path is not None:
@@ -190,10 +198,8 @@ class Manager:
         list of actions to the best solution
 
         """
-        # WARNING: ths fails if there are more than 10 agents
-        sorted_agents = sorted(
-            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
-        )
+        sorted_agents = self.sort_agents()
+
         paths = [self.status[agent] for agent in sorted_agents]
         println(paths)
         return [";".join(actions) for actions in zip(*paths)]
@@ -208,11 +214,6 @@ def search(strategy: BestFirstSearch) -> List:
 
     """
 
-    #  Legacy function, but it takes a strategy rather than a leaf as argument
-    # return aStarSearch_func(strategy)
-
-
-    # This version gives an errors in some scenareos
     iterations = 0
     while not strategy.leaf.isGoalState():
         if iterations == 1000:
@@ -223,24 +224,26 @@ def search(strategy: BestFirstSearch) -> List:
             raise ResourceLimit("Maximum memory usage exceeded.")
             return None, strategy
 
-        strategy.get_and_remove_leaf()
+        strategy.explore_and_add()
 
-        '''
         if strategy.frontier_empty():
             println("Frontier empty!")
             return None, strategy
-        '''
+
+        strategy.get_and_remove_leaf()
 
         if strategy.leaf.isGoalState():
             println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
             return strategy.walk_best_path(), strategy
+
+        println(f"frontier: {[state[2].agents for state in strategy.frontier.queue]}")
         iterations += 1
 
 def resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j):
     # tracesback
     tb = 0
 
-    
+
     while isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb) or isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb+1) :
         if j+tb+2 >= len(pos[agt2Idx]):
             break
@@ -266,7 +269,7 @@ def fixLength(poss):
 
 def findAndResolveColission(pos, paths):
     indicies = [0] * len(paths)
-    indexChanged = True 
+    indexChanged = True
     # TODO remove tb from indicies or find another way to.
     # TODO hash with position as key, and the time this position is occupied
     # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
@@ -278,7 +281,7 @@ def findAndResolveColission(pos, paths):
             path = paths[agt1Idx]
             if i >= len(path):
                 continue
-            else: 
+            else:
                 indexChanged = True
                 for agt2Idx in range(agt1Idx, len(paths)):
                     if agt2Idx == agt1Idx:
@@ -290,9 +293,9 @@ def findAndResolveColission(pos, paths):
                         # TODO take boxes into account, this is probably why you get tuple integer problems
                         # println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
                         resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j)
-                        
+
                 indicies[agt1Idx] += 1
-    
+
     fixLength(pos)
 
     return pos
@@ -304,7 +307,7 @@ def isCollision(pos, agt1Idx, i, agt2Idx, j):
     else:
         pos1 = [pos[agt1Idx][i], pos[agt1Idx][i]]
     if type(pos[agt2Idx][j]) == list:
-        pos2 = pos[agt2Idx][j] 
+        pos2 = pos[agt2Idx][j]
     else:
         pos2 = [pos[agt2Idx][j],pos[agt2Idx][j]]
 
