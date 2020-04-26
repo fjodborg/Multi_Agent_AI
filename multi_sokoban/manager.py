@@ -267,7 +267,9 @@ def fixLength(poss):
 def findAndResolveColission(pos, paths):
     indicies = [0] * len(paths)
     indexChanged = True 
-    
+    # TODO remove tb from indicies or find another way to.
+    # TODO hash with position as key, and the time this position is occupied
+    # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
     while indexChanged:
         indexChanged = False
         for agt1Idx in range(len(paths)):
