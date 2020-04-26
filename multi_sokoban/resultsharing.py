@@ -39,7 +39,7 @@ def fixLength(poss):
             pass
 
 
-def findAndResolveCollision2(pos, paths):
+def findAndResolveCollisionOld(pos, paths):
     indicies = [0] * len(paths)
     indexChanged = True
     # TODO remove tb from indicies or find another way to.
@@ -75,62 +75,101 @@ def findAndResolveCollision2(pos, paths):
     return pos
 
 
-def addToHash(timeTable, pos, time, agt):
-    if (pos, time) in timeTable:
-        timeTable[pos, time].append(agt)
-    else:
-        timeTable[pos, time] = [agt]
 
+
+
+def fixCollision(collisionType, pos, timeTable, iPos, time, agtIdx):
+    tb = 0 # traceback
+    agtPos = iPos
+    if collisionType == "col":
+        agents1 = timeTable[iPos, time]
+        pos1 = pos[agtIdx][time]
+        
+        # TODO Fix collision for agt 1
+
+    elif collisionType == "fcol":
+        agents2 = timeTable[iPos, time + 1]
+        pos2 = pos[agtIdx][time + 1]
+        
+        # TODO Fix future collision for agt 1 by moving agt2
+
+    elif collisionType == "swap":
+        agents1 = timeTable[agtPos, time + tb]
+        pos1 = pos[agtIdx][time + tb]
+        agents2 = timeTable[agtPos, time + 1 + tb]
+        pos2 = pos[agtIdx][time + 1 + tb]
+
+        while checkCollision(pos, timeTable, agtPos, time, agtIdx) is not None:
+            tb += 1
+            agtPos = pos[agtIdx][time + tb]
+            #println(f"{agtPos}")
+        
+            if type(agtPos) == list:
+                pass
+            else:
+                if (agtPos, time + tb) in timeTable and (agtPos, time + tb + 1) in timeTable:
+                    agents1 = timeTable[agtPos, time + tb]
+                    pos1 = pos[agtIdx][time + tb]
+                    agents2 = timeTable[agtPos, time + 1 + tb]
+                    pos2 = pos[agtIdx][time + 1 + tb]
+                else:
+                    pos1 = pos[agtIdx][time + tb]
+                    pos2 = pos[agtIdx][time + 1 + tb]
+                    break
+            
+        # println(f"{(pos1,pos2,time+tb)}")
+            
+        # TODO fix swap between 2 agents
 
 def checkCollision(pos, timeTable, iPos, time, agtIdx):
-    agt1 = timeTable[iPos, time]
-    pos1 = pos[agtIdx][time]
-    #println(f"{timeTableAgts},{len(timeTableAgts)}")
-    if len(timeTable[iPos, time]) > 1:
-        println(f"collision! at {pos1} with   time {time} and agent {agt1}")
-    elif (iPos, time + 1) in timeTable:
-        pos2 = pos[agtIdx][time + 1]
-        agt2 = timeTable[iPos, time + 1]
-        if len(agt2) > 1:
-            # TODO handle if next position (time+1) has a collision
-            println(f"collision! at {pos2} with   time {time+1} and agent {agt2}")
-        elif agt2 != agt1:
-            println(f"swap! between {pos1} & {pos2} with time {time} & {time+1} and agent {agt1} & {agt2}")
-    
 
-def findAndResolveCollision(pos, paths):
-    timeTable = {}
-    for agtIdx in range(len(paths)):
-        for time in range(len(pos[agtIdx])):
-            posAtTime = pos[agtIdx][time]
-            if type(posAtTime) == list:
-                addToHash(timeTable, posAtTime[0], time, agtIdx)
-                addToHash(timeTable, posAtTime[1], time, agtIdx)
-            else:
-                addToHash(timeTable, posAtTime, time, agtIdx)
-    println(pos)      
+    if (iPos, time) in timeTable:
+        agents1 = timeTable[iPos, time]
+        pos1 = pos[agtIdx][time]
+
+        if len(agents1) > 1:
+            println(f"collision! at {pos1} with   time {time} and agent {agents1}")
+            return "col"  # collision
+        elif (iPos, time + 1) in timeTable:
+            agents2 = timeTable[iPos, time + 1]
+            pos2 = pos[agtIdx][time + 1]
+            if len(agents2) > 1:
+                println(f"collision! at {pos2} with   time {time+1} and agent {agents2}")
+                return "fcol"  # future collision
+            elif agents2 != agents1:
+                println(f"swap! between {pos1} & {pos2} with time {time} & {time+1} and agent {agents1} & {agents2}")
+                return "swap"  # swap between agents
+
+    return None
+
+
+def findAndResolveCollision(pos, paths, timeTable):
+    println(pos)
     println(timeTable)
     
-    indexChanged = True
+    deadlock = False
     # TODO remove tb from indicies or find another way to.
     # TODO hash with position as key, and the time this position is occupied
     # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
-    while indexChanged:
-        indexChanged = False
+    while not deadlock:
+        deadlock = True
         for agtIdx in range(len(paths)):
             for time in range(len(pos[agtIdx]) - 1):
                 agtPos = pos[agtIdx][time]
                 if type(agtPos) == list:
                     for iPos in agtPos:
-                        checkCollision(pos, timeTable, iPos, time, agtIdx)
+                        # TODO fix list collision (Moving boxes)
+                        collisionType = checkCollision(pos, timeTable, iPos, time, agtIdx)
                         #println(f"agt {timeTable[iPos, time]} occupies {iPos} at   time {time}")
                         pass 
                 else:
                     iPos = agtPos
                     # println(f"agt {timeTable[iPos, time]} occupies {iPos} at   time {time}")
-                    checkCollision(pos, timeTable, iPos, time, agtIdx)
-
-                # if len(timeTable[agtPos,time]) > 1:
+                    collisionType = checkCollision(pos, timeTable, iPos, time, agtIdx)
+                    # if collisionType is not None:
+                    #     fixCollision(collisionType, pos, timeTable, iPos, time, agtIdx)
+                    #     pass
+               # if len(timeTable[agtPos,time]) > 1:
                 #     println(f"collision! at {pos[agtIdx][time]} with time {time} and agent {agtIdx}")
                 #     #println(f"collision! at {pos[agtIdx][time]}")
                 # elif len(pos[agtIdx][time + 1]) > 1:

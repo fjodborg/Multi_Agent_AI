@@ -7,7 +7,7 @@ from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
                               calcHuristicsFor)
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
-from .resultsharing import (findAndResolveCollision)
+from .resultsharing import (findAndResolveCollision, findAndResolveCollisionOld)
 
 
 class Manager:
@@ -135,6 +135,29 @@ class Manager:
 
         return pos
 
+
+    def addToHash(self, timeTable, pos, time, identity):
+        if (pos, time) in timeTable:
+            timeTable[pos, time].append(identity)
+        else:
+            timeTable[pos, time] = [identity]
+
+    def generateHash(self, pos, paths):
+        timeTable = {}
+
+        agtColor = self.sort_agents()
+        for agtIdx in range(len(paths)):
+            for time in range(len(pos[agtIdx])):
+                posAtTime = pos[agtIdx][time]
+                if type(posAtTime) == list:
+                    self.addToHash(timeTable, posAtTime[0], time, agtIdx)
+                    # TODO find a solution to figure out how to identify the box
+                    self.addToHash(timeTable, posAtTime[1], time, agtIdx)#agtColor[agtIdx])
+                else:
+                    self.addToHash(timeTable, posAtTime, time, agtIdx)
+        return timeTable
+
+
     def choose_priority_path(self):
         sorted_agents = self.sort_agents()
 
@@ -146,7 +169,9 @@ class Manager:
             for agent in sorted_agents
         ]
         pos = self.convert2pos(initpos, paths)
-        findAndResolveCollision(pos, paths) # This function can be found in resultsharing.py
+        timeTable = self.generateHash(pos, paths)
+        findAndResolveCollisionOld(pos, paths) # This function can be found in resultsharing.py
+        #findAndResolveCollision(pos, paths, timeTable) # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
 
