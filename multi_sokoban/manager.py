@@ -224,6 +224,7 @@ def search(strategy: BestFirstSearch) -> List:
             return None, strategy
 
         strategy.get_and_remove_leaf()
+
         '''
         if strategy.frontier_empty():
             println("Frontier empty!")
@@ -233,7 +234,6 @@ def search(strategy: BestFirstSearch) -> List:
         if strategy.leaf.isGoalState():
             println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
             return strategy.walk_best_path(), strategy
-
         iterations += 1
 
 def resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j):
@@ -288,7 +288,7 @@ def findAndResolveColission(pos, paths):
                     cond2 = [pos,agt1Idx,i,agt2Idx, j+1]
                     if isCollision(*cond1) or isCollision(*cond2):  #occupiedList[agt2Idx]:
                         # TODO take boxes into account, this is probably why you get tuple integer problems
-                        println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
+                        # println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
                         resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j)
                         
                 indicies[agt1Idx] += 1
@@ -309,8 +309,8 @@ def isCollision(pos, agt1Idx, i, agt2Idx, j):
         pos2 = [pos[agt2Idx][j],pos[agt2Idx][j]]
 
     if pos1[0] == pos2[0] or pos1[0] == pos2[1] or  pos1[1] == pos2[0] or  pos1[1] == pos2[1]:
-        println([pos1, pos2, True])
+        #println([pos1, pos2, True])
         return True
     else :
-        println([pos1, pos2, False])
+        #println([pos1, pos2, False])
         return False
