@@ -34,7 +34,7 @@ class BestFirstSearch(ABC):
         """Depend on the heuristic method."""
         self.leaf = self.frontier.get()[2]
 
-    '''
+    """
         #try and use maps instead of for loops!!
 
         def stateMethod(state, goalKey):
@@ -46,7 +46,7 @@ class BestFirstSearch(ABC):
         def posMethod2(a):
 
         def agentMethod1(state, agentKey, boxPos, goalPos):
-    '''
+    """
 
     @abstractmethod
     def explore_and_add(self):
@@ -159,10 +159,8 @@ def calcHuristicsFor(states):
                 agtBoxCost += sum(agtBoxCosts)
                 # Min doesn't work with SAFirefly
                 # agtBoxCost += min(agtBoxCosts)
-                #print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
+                # print(boxGoalCost, sum(boxGoalCosts), file=sys.stderr, flush=True)
 
-
-
-        #print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
+        # print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
         state.h = boxGoalCost + agtBoxCost
         state.f = state.h + state.g

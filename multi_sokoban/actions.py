@@ -157,14 +157,14 @@ class StateInit(Literals):
         # returns all the keys
         return list(self.agents.keys())
 
-    '''def updateParentCost(self, total_cost):
+    """def updateParentCost(self, total_cost):
         state = self.prevState
         i = 0
         while state is not None:
             i += 1
             state.h = total_cost + i
             state.f = state.g + state.h
-            state = state.prevState'''
+            state = state.prevState"""
 
     def __addPos(self, agtfrom, agtdir):
         # simply adds two positions together

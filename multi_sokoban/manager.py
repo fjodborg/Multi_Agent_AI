@@ -3,7 +3,8 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import BestFirstSearch, aStarSearch_func, calcHuristicsFor
+from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
+                              calcHuristicsFor)
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
 
@@ -27,7 +28,7 @@ class Manager:
         self.solve_world()
 
         new_paths = self.choose_priority_path()
-        #println(new_paths)
+        # println(new_paths)
 
         return self.join_tasks()
 
@@ -70,9 +71,7 @@ class Manager:
     def sort_agents(self):
         """Return sorted agents by name of agent (0-10)."""
         # WARNING: ths fails if there are more than 10 agents
-        return sorted(
-            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
-        )
+        return sorted(list(self.status.keys()), key=lambda a: self.agent_to_status[a])
 
     def solve_task(self, task) -> List:
         """Search for task.
@@ -83,8 +82,10 @@ class Manager:
 
         """
         searcher = self.strategy(task)
-        println(f"goals -> {task.goals}\n"
-                f"agents -> {task.agents}\nboxes -> {task.boxes}\n")
+        println(
+            f"goals -> {task.goals}\n"
+            f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
+        )
         path, strategy = search(searcher)
         if path is None:
             task.forget_exploration()
@@ -94,18 +95,18 @@ class Manager:
         pos = initPos
 
         i = 0
-        #println(f"pos: {pos}")
+        # println(f"pos: {pos}")
         for agt in paths:
             if agt is None:
                 continue
             for action in agt:
                 prefix = action[0]
-                #println(f"pos: {pos[i][-1]}")
+                # println(f"pos: {pos[i][-1]}")
                 if type(pos[i][-1]) == list:
                     [row, col] = pos[i][-1][0]
                 else:
                     [row, col] = pos[i][-1]
-                #println(f"row:{row},col:{col}")
+                # println(f"row:{row},col:{col}")
                 if prefix == "N":
                     pos[i].append((row, col))
                 elif prefix == "M":
@@ -115,7 +116,7 @@ class Manager:
                     if action[0:4] == "Push":
                         [drow1, dcol1] = self.top_problem.dir[action[-4:-3]]
                         [drow2, dcol2] = self.top_problem.dir[action[-2:-1]]
-                        #println(f"{row},{drow1}")
+                        # println(f"{row},{drow1}")
 
                         [row1, col1] = (row + drow1, col + dcol1)
                         [row2, col2] = (row1 + drow2, col1 + dcol2)
@@ -123,7 +124,7 @@ class Manager:
                     else:
                         [drow1, dcol1] = self.top_problem.dir[action[-4:-3]]
                         [drow2, dcol2] = self.top_problem.dir[action[-2:-1]]
-                        #println(f"{row},{drow1}")
+                        # println(f"{row},{drow1}")
 
                         [row1, col1] = (row + drow1, col + dcol1)
                         [row2, col2] = (row, col)
@@ -139,13 +140,14 @@ class Manager:
         # initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
         paths = [self.status[agent] for agent in sorted_agents if self.status[agent]]
 
-        initpos =[[self.top_problem.agents[self.agent_to_status[agent]][0][0]] for agent in sorted_agents]
+        initpos = [
+            [self.top_problem.agents[self.agent_to_status[agent]][0][0]]
+            for agent in sorted_agents
+        ]
         pos = self.convert2pos(initpos, paths)
         findAndResolveColission(pos, paths)
-        println(pos)
+        # println(pos)
         # println(self.tasks['a'][0].map)
-
-
 
         for agt in range(len(pos)):
             for i in range(len(pos[agt]) - 1):
@@ -154,13 +156,12 @@ class Manager:
                         paths[agt].insert(i, "NoOp")
                     else:
                         paths[agt].append("NoOp")
-            #while len(paths[agt]) < len(pos[agt])-1:
-                #paths[agt].append("NoOp")
+            # while len(paths[agt]) < len(pos[agt])-1:
+            # paths[agt].append("NoOp")
 
-        #println(paths)
+        # println(paths)
 
         return paths
-
 
     def solve_world(self):
         """Solve the top problem."""
@@ -213,7 +214,6 @@ def search(strategy: BestFirstSearch) -> List:
     Path to the solutions (in actions) or none.
 
     """
-
     iterations = 0
     while not strategy.leaf.isGoalState():
         if iterations == 1000:
@@ -227,7 +227,7 @@ def search(strategy: BestFirstSearch) -> List:
         strategy.explore_and_add()
 
         if strategy.frontier_empty():
-            println("Frontier empty!")
+            println(f"Frontier empty! ({strategy.count} nodes explored)")
             return None, strategy
 
         strategy.get_and_remove_leaf()
@@ -236,24 +236,25 @@ def search(strategy: BestFirstSearch) -> List:
             println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
             return strategy.walk_best_path(), strategy
 
-        println(f"frontier: {[state[2].agents for state in strategy.frontier.queue]}")
         iterations += 1
+
 
 def resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j):
     # tracesback
     tb = 0
 
-
-    while isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb) or isCollision(pos,agt1Idx,i-tb,agt2Idx, j+tb+1) :
-        if j+tb+2 >= len(pos[agt2Idx]):
+    while isCollision(pos, agt1Idx, i - tb, agt2Idx, j + tb) or isCollision(
+        pos, agt1Idx, i - tb, agt2Idx, j + tb + 1
+    ):
+        if j + tb + 2 >= len(pos[agt2Idx]):
             break
-        tb +=1
+        tb += 1
         # make chekc if out of bounce, and if it is explore the state!
-        #print(i-tb,j+tb)
-        #print(pos[agt1Idx][i-tb],pos[agt2Idx][j+tb])
+        # print(i-tb,j+tb)
+        # print(pos[agt1Idx][i-tb],pos[agt2Idx][j+tb])
 
-    for k in range(tb+1):
-        pos[agt1Idx].insert(i-tb,pos[agt1Idx][i-tb-1])
+    for k in range(tb + 1):
+        pos[agt1Idx].insert(i - tb, pos[agt1Idx][i - tb - 1])
 
 
 def fixLength(poss):
@@ -266,6 +267,7 @@ def fixLength(poss):
         for i in range(longest - len(pos)):
             pos.append(pos[-1])
             pass
+
 
 def findAndResolveColission(pos, paths):
     indicies = [0] * len(paths)
@@ -287,9 +289,11 @@ def findAndResolveColission(pos, paths):
                     if agt2Idx == agt1Idx:
                         continue
                     j = indicies[agt2Idx]
-                    cond1 = [pos,agt1Idx,i,agt2Idx, j]
-                    cond2 = [pos,agt1Idx,i,agt2Idx, j+1]
-                    if isCollision(*cond1) or isCollision(*cond2):  #occupiedList[agt2Idx]:
+                    cond1 = [pos, agt1Idx, i, agt2Idx, j]
+                    cond2 = [pos, agt1Idx, i, agt2Idx, j + 1]
+                    if isCollision(*cond1) or isCollision(
+                        *cond2
+                    ):  # occupiedList[agt2Idx]:
                         # TODO take boxes into account, this is probably why you get tuple integer problems
                         # println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
                         resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j)
@@ -300,6 +304,7 @@ def findAndResolveColission(pos, paths):
 
     return pos
 
+
 def isCollision(pos, agt1Idx, i, agt2Idx, j):
 
     if type(pos[agt1Idx][i]) == list:
@@ -309,11 +314,16 @@ def isCollision(pos, agt1Idx, i, agt2Idx, j):
     if type(pos[agt2Idx][j]) == list:
         pos2 = pos[agt2Idx][j]
     else:
-        pos2 = [pos[agt2Idx][j],pos[agt2Idx][j]]
+        pos2 = [pos[agt2Idx][j], pos[agt2Idx][j]]
 
-    if pos1[0] == pos2[0] or pos1[0] == pos2[1] or  pos1[1] == pos2[0] or  pos1[1] == pos2[1]:
-        #println([pos1, pos2, True])
+    if (
+        pos1[0] == pos2[0]
+        or pos1[0] == pos2[1]
+        or pos1[1] == pos2[0]
+        or pos1[1] == pos2[1]
+    ):
+        # println([pos1, pos2, True])
         return True
-    else :
-        #println([pos1, pos2, False])
+    else:
+        # println([pos1, pos2, False])
         return False
