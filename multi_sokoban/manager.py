@@ -7,6 +7,7 @@ from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
                               calcHuristicsFor)
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
+from .resultsharing import (findAndResolveCollision)
 
 
 class Manager:
@@ -145,7 +146,7 @@ class Manager:
             for agent in sorted_agents
         ]
         pos = self.convert2pos(initpos, paths)
-        findAndResolveColission(pos, paths)
+        findAndResolveCollision(pos, paths) # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
 
@@ -238,92 +239,3 @@ def search(strategy: BestFirstSearch) -> List:
 
         iterations += 1
 
-
-def resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j):
-    # tracesback
-    tb = 0
-
-    while isCollision(pos, agt1Idx, i - tb, agt2Idx, j + tb) or isCollision(
-        pos, agt1Idx, i - tb, agt2Idx, j + tb + 1
-    ):
-        if j + tb + 2 >= len(pos[agt2Idx]):
-            break
-        tb += 1
-        # make chekc if out of bounce, and if it is explore the state!
-        # print(i-tb,j+tb)
-        # print(pos[agt1Idx][i-tb],pos[agt2Idx][j+tb])
-
-    for k in range(tb + 1):
-        pos[agt1Idx].insert(i - tb, pos[agt1Idx][i - tb - 1])
-
-
-def fixLength(poss):
-    longest = 0
-    for pos in poss:
-        if len(pos) > longest:
-            longest = len(pos)
-
-    for pos in poss:
-        for i in range(longest - len(pos)):
-            pos.append(pos[-1])
-            pass
-
-
-def findAndResolveColission(pos, paths):
-    indicies = [0] * len(paths)
-    indexChanged = True
-    # TODO remove tb from indicies or find another way to.
-    # TODO hash with position as key, and the time this position is occupied
-    # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
-    while indexChanged:
-        indexChanged = False
-        for agt1Idx in range(len(paths)):
-            i = indicies[agt1Idx] + 1
-            # print("agent",agt1Idx, "iteration", i, "position:", pos[agt1Idx][i])
-            path = paths[agt1Idx]
-            if i >= len(path):
-                continue
-            else:
-                indexChanged = True
-                for agt2Idx in range(agt1Idx, len(paths)):
-                    if agt2Idx == agt1Idx:
-                        continue
-                    j = indicies[agt2Idx]
-                    cond1 = [pos, agt1Idx, i, agt2Idx, j]
-                    cond2 = [pos, agt1Idx, i, agt2Idx, j + 1]
-                    if isCollision(*cond1) or isCollision(
-                        *cond2
-                    ):  # occupiedList[agt2Idx]:
-                        # TODO take boxes into account, this is probably why you get tuple integer problems
-                        # println(f"Collision between agents! at: {pos[agt1Idx][i]}{pos[agt2Idx][j]}")
-                        resolveCollision(pos, paths, indicies, agt1Idx, agt2Idx, i, j)
-
-                indicies[agt1Idx] += 1
-
-    fixLength(pos)
-
-    return pos
-
-
-def isCollision(pos, agt1Idx, i, agt2Idx, j):
-
-    if type(pos[agt1Idx][i]) == list:
-        pos1 = pos[agt1Idx][i]
-    else:
-        pos1 = [pos[agt1Idx][i], pos[agt1Idx][i]]
-    if type(pos[agt2Idx][j]) == list:
-        pos2 = pos[agt2Idx][j]
-    else:
-        pos2 = [pos[agt2Idx][j], pos[agt2Idx][j]]
-
-    if (
-        pos1[0] == pos2[0]
-        or pos1[0] == pos2[1]
-        or pos1[1] == pos2[0]
-        or pos1[1] == pos2[1]
-    ):
-        # println([pos1, pos2, True])
-        return True
-    else:
-        # println([pos1, pos2, False])
-        return False
