@@ -72,6 +72,8 @@ def findAndResolveCollisionOld(pos, paths):
 
     fixLength(pos)
 
+    # return None if no solution was found
+
     return pos
 
 
@@ -142,10 +144,31 @@ def checkCollision(pos, timeTable, iPos, time, agtIdx):
 
     return None
 
+# def placeHolderAStar():
 
-def findAndResolveCollision(pos, paths, timeTable):
+
+def findAndResolveCollision(pos, paths, timeTable, self):
+    # TODO TODO TODO, reimplement the way it's done, if a collision is found 
+    # every agent moves away from the other agents path and gets + points for 
+    # moving away from the object and for not standing in the path. Probably use astar for this!
+    # +100 for being on the path and -1 for being outside the path
+    
+    # TODO Also look at future collision 
     println(pos)
     println(timeTable)
+    
+    # TODO TODO TODO if there is a collision the non priorities agent warps back in time, 
+    # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
+
+    # sorted goals according to first agent
+    goals = self.sort_agents() # for now assume len(goals) = len(agents)
+    println(self.tasks[goals[0]][0])
+    
+
+    for goal in self.agent_to_status.keys():
+        if self.agent_to_status[goal] == agt:
+            pass
+            # do things with goal
     
     deadlock = False
     # TODO remove tb from indicies or find another way to.
@@ -154,21 +177,26 @@ def findAndResolveCollision(pos, paths, timeTable):
     while not deadlock:
         deadlock = True
         for agtIdx in range(len(paths)):
+            #timeTable = self.generateHash(pos, [paths])
             for time in range(len(pos[agtIdx]) - 1):
                 agtPos = pos[agtIdx][time]
+                collisionType = None
                 if type(agtPos) == list:
                     for iPos in agtPos:
                         # TODO fix list collision (Moving boxes)
                         collisionType = checkCollision(pos, timeTable, iPos, time, agtIdx)
+                        if collisionType is not None:
+                            fixCollision(collisionType, pos, timeTable, iPos, time, agtIdx)
                         #println(f"agt {timeTable[iPos, time]} occupies {iPos} at   time {time}")
                         pass 
                 else:
                     iPos = agtPos
                     # println(f"agt {timeTable[iPos, time]} occupies {iPos} at   time {time}")
                     collisionType = checkCollision(pos, timeTable, iPos, time, agtIdx)
-                    # if collisionType is not None:
-                    #     fixCollision(collisionType, pos, timeTable, iPos, time, agtIdx)
-                    #     pass
+                    if collisionType is not None:
+                        fixCollision(collisionType, pos, timeTable, iPos, time, agtIdx)
+                    
+               #     pass
                # if len(timeTable[agtPos,time]) > 1:
                 #     println(f"collision! at {pos[agtIdx][time]} with time {time} and agent {agtIdx}")
                 #     #println(f"collision! at {pos[agtIdx][time]}")
@@ -219,3 +247,4 @@ def isCollision(pos, agt1Idx, i, agt2Idx, j):
     else:
         # println([pos1, pos2, False])
         return False
+

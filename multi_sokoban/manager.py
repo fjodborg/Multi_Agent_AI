@@ -28,7 +28,7 @@ class Manager:
         self.divide_problem()
         self.solve_world()
 
-        new_paths = self.choose_priority_path()
+        self.solveCollision()
         # println(new_paths)
 
         return self.join_tasks()
@@ -42,12 +42,13 @@ class Manager:
             for external_goal in ext_goals:
                 if external_goal != goal:
                     del task.goals[external_goal]
+                    
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
             ext_agents = list(task.agents.keys())
             for external_agent in ext_agents:
                 if external_agent != agent:
-                    del task.agents[external_agent]
+                    task.deleteAgent(external_agent)
 
             self.tasks[goal] = (task, agent)
             self.status[goal] = None
@@ -138,9 +139,11 @@ class Manager:
 
     def addToHash(self, timeTable, pos, time, identity):
         if (pos, time) in timeTable:
-            timeTable[pos, time].append(identity)
+            timeTable[pos, identity].append(time)
+            #timeTable[pos, time].append(identity)
         else:
-            timeTable[pos, time] = [identity]
+            timeTable[pos, identity] = [time]
+            #timeTable[pos, time] = [identity]
 
     def generateHash(self, pos, paths):
         timeTable = {}
@@ -158,7 +161,7 @@ class Manager:
         return timeTable
 
 
-    def choose_priority_path(self):
+    def solveCollision(self):
         sorted_agents = self.sort_agents()
 
         # initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
@@ -171,7 +174,8 @@ class Manager:
         pos = self.convert2pos(initpos, paths)
         timeTable = self.generateHash(pos, paths)
         findAndResolveCollisionOld(pos, paths) # This function can be found in resultsharing.py
-        #findAndResolveCollision(pos, paths, timeTable) # This function can be found in resultsharing.py
+        
+        #findAndResolveCollision(pos, paths, timeTable, self) # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
 
