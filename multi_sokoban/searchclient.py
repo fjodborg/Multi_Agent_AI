@@ -130,7 +130,8 @@ class SearchClient:
 
         boss = Manager(self.initial_state, self.strategy)
         paths = boss.run()
-        return paths
+        nodes_explored = boss.nodes_explored
+        return paths, nodes_explored
 
 
 def parse_arguments() -> argparse.ArgumentParser:
@@ -178,12 +179,13 @@ def run_loop(strategy: str, memory: float):
     MAX_USAGE = memory
     server_messages = sys.stdin
     client = SearchClient(server_messages, strategy)
-    solution = client.search()
+    solution, nodes_explored = client.search()
     if solution is None:
         println("Unable to solve level.")
         sys.exit(1)
     else:
         println("\nSummary for {}.".format(strategy))
+        println(f"Total nodes explored: {nodes_explored}")
         println("Found solution of length {}.".format(len(solution)))
         println(f"Solution -> {solution}")
         for state in solution:

@@ -28,9 +28,9 @@ The smaller subproblems will be solved independently and combined.
 
 ## 3. Roadmap IMPLEMENTATION
 
-1. Color.
-2. Initial Problem recognition (subdivide goal state) top manager.
-3. Blind path solving.
-4. Bidding.
-5. Broadcast new tasks (agent-manager) in the way.
-6. Task costs.
+- [x] Color.
+- [x] Initial Problem recognition (subdivide goal state) top manager.
+- [ ] Blind path solving.
+- [ ] Bidding.
+- [ ] Broadcast new tasks (agent-manager) in the way.
+- [ ] Task costs.

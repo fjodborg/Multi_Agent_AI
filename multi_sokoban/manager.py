@@ -21,6 +21,7 @@ class Manager:
         self.status = {}
         self.freed_agents = {}
         self.agent_to_status = {}
+        self.nodes_explored = 0
 
     def run(self) -> List:
         """Perform the task sharing."""
@@ -157,6 +158,7 @@ def search(strategy: BestFirstSearch) -> List:
     Path to the solutions (in actions) or none.
 
     """
+
     iterations = 0
     while not strategy.leaf.isGoalState():
         if iterations == 1000:
@@ -173,10 +175,15 @@ def search(strategy: BestFirstSearch) -> List:
             println(f"Frontier empty! ({strategy.count} nodes explored)")
             return None, strategy
 
+
         strategy.get_and_remove_leaf()
 
+
         if strategy.leaf.isGoalState():
-            println(f"Solution found with {len(strategy.leaf.explored)} nodes explored")
+            println(
+                    f"(Subproblem) Solution found with "
+                    f"{len(strategy.leaf.explored)} nodes explored"
+            )
             return strategy.walk_best_path(), strategy
 
         iterations += 1

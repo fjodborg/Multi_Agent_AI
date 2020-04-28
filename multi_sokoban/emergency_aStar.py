@@ -1,11 +1,9 @@
 """Astar search."""
 from abc import ABC, abstractmethod
 from queue import PriorityQueue
-from typing import Callable, List
+from typing import Callable
 
 from multi_sokoban import actions
-
-from .utils import println
 
 count = 0
 
@@ -127,4 +125,4 @@ def calcHuristicsFor(states):
 
         # print(agtBoxCost, boxGoalCost, file=sys.stderr, flush=True)
         state.h = boxGoalCost + agtBoxCost
-        state.f = state.h + state.g
+        state.f = state.h * 5 + state.g
