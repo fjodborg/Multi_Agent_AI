@@ -3,10 +3,10 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
-                              calcHuristicsFor)
+from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
+from .resultsharing import Resultsharing, convert2pos
 
 
 class Manager:
@@ -27,6 +27,10 @@ class Manager:
         """Perform the task sharing."""
         self.divide_problem()
         self.solve_world()
+
+        self.solveCollision()
+        # println(new_paths)
+
         return self.join_tasks()
 
     def divide_problem(self):
@@ -37,13 +41,15 @@ class Manager:
             ext_goals = list(task.goals.keys())
             for external_goal in ext_goals:
                 if external_goal != goal:
-                    del task.goals[external_goal]
+                    task.deleteGoal(external_goal)
+
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
             ext_agents = list(task.agents.keys())
             for external_agent in ext_agents:
                 if external_agent != agent:
-                    del task.agents[external_agent]
+                    # del task.agents[external_agent]
+                    task.deleteAgent(external_agent)
 
             self.tasks[goal] = (task, agent)
             self.status[goal] = None
@@ -65,6 +71,11 @@ class Manager:
             selected_agent = ok_agents[0]
         return selected_agent
 
+    def sort_agents(self):
+        """Return sorted agents by name of agent (0-10)."""
+        # WARNING: ths fails if there are more than 10 agents
+        return sorted(list(self.status.keys()), key=lambda a: self.agent_to_status[a])
+
     def solve_task(self, task) -> List:
         """Search for task.
 
@@ -79,8 +90,22 @@ class Manager:
             f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
         )
         path, strategy = search(searcher)
-        self.nodes_explored += strategy.count
+        # println(f"{path}\n\n")
+        if path is None:
+            task.forget_exploration()
         return path, strategy.leaf
+
+    def solveCollision(self):
+        # findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
+
+        # TODO check for empty frontiers
+        # check for traceback possiblities
+        #
+
+        rs = Resultsharing(self)
+        rs.findAndResolveCollision()  # This function can be found in resultsharing.py
+        # println(pos)
+        # println(self.tasks['a'][0].map)
 
     def solve_world(self):
         """Solve the top problem."""
@@ -93,7 +118,7 @@ class Manager:
                 pos, color = list(task.goals.values())[0][0]
                 prev_task.addGoal(goal, pos, color)
                 task = prev_task
-                task.explored = set()
+                task.forget_exploration()
                 to_del.append(goal)
             path, last_state = self.solve_task(task)
             if path is not None:
@@ -105,6 +130,7 @@ class Manager:
                 # make sure that we are not removing the correct one
                 if prev_goal in to_del:
                     to_del.remove(prev_goal)
+
         for goal in to_del:
             del self.status[goal]
             del self.tasks[goal]
@@ -117,10 +143,8 @@ class Manager:
         list of actions to the best solution
 
         """
-        # WARNING: ths fails if there are more than 10 agents
-        sorted_agents = sorted(
-            list(self.status.keys()), key=lambda a: self.agent_to_status[a]
-        )
+        sorted_agents = self.sort_agents()
+
         paths = [self.status[agent] for agent in sorted_agents]
         println(paths)
         return [";".join(actions) for actions in zip(*paths)]
@@ -135,10 +159,6 @@ def search(strategy: BestFirstSearch) -> List:
 
     """
 
-    #  Legacy function, but it takes a strategy rather than a leaf as argument
-    # return aStarSearch_func(strategy)
-
-    # This version gives an errors in some scenareos
     iterations = 0
     while not strategy.leaf.isGoalState():
         if iterations == 1000:
@@ -149,12 +169,15 @@ def search(strategy: BestFirstSearch) -> List:
             raise ResourceLimit("Maximum memory usage exceeded.")
             return None, strategy
 
-        strategy.get_and_remove_leaf()
-        """
+        strategy.explore_and_add()
+
         if strategy.frontier_empty():
-            println("Frontier empty!")
+            println(f"Frontier empty! ({strategy.count} nodes explored)")
             return None, strategy
-        """
+
+
+        strategy.get_and_remove_leaf()
+
 
         if strategy.leaf.isGoalState():
             println(

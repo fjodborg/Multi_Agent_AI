@@ -28,24 +28,14 @@ class BestFirstSearch(ABC):
         self.count = 0
         calcHuristicsFor(self.leaf)
 
-    @abstractmethod
     def get_and_remove_leaf(self):
         """Depend on the heuristic method."""
+        self.leaf = self.frontier.get()[2]
+
+    @abstractmethod
+    def explore_and_add(self):
+        """Explore leaf, calc heursitic and add to frontier."""
         raise NotImplementedError
-
-    """
-        #try and use maps instead of for loops!!
-
-        def stateMethod(state, goalKey):
-
-        def keyMethod(key):
-
-        def posMethod1(a):
-
-        def posMethod2(a):
-
-        def agentMethod1(state, agentKey, boxPos, goalPos):
-    """
 
     def walk_best_path(self):
         """Return the solution."""
@@ -59,7 +49,7 @@ class BestFirstSearch(ABC):
 class greedySearch(BestFirstSearch):
     """BFS with greedy."""
 
-    def get_and_remove_leaf(self):
+    def explore_and_add(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         calcHuristicsFor(explored_states)
@@ -67,7 +57,6 @@ class greedySearch(BestFirstSearch):
         for state in explored_states:
             self.count += 1
             self.frontier.put((state.h, self.count, state))
-        self.leaf = self.frontier.get()[2]
 
     def __str__(self):
         """Printable descriptuion."""
@@ -77,7 +66,7 @@ class greedySearch(BestFirstSearch):
 class aStarSearch(BestFirstSearch):
     """BFS with A*."""
 
-    def get_and_remove_leaf(self):
+    def explore_and_add(self):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         calcHuristicsFor(explored_states)
@@ -85,33 +74,10 @@ class aStarSearch(BestFirstSearch):
         for state in explored_states:
             self.count += 1
             self.frontier.put((state.f, self.count, state))
-        self.leaf = self.frontier.get()[2]
 
     def __str__(self):
         """Printable descriptuion."""
         return "A* Best First Search"
-
-
-def aStarSearch_func(strategy):
-    """Functional legacy approach."""
-    global count
-    # count = 0 should be static and only initialized in the start,
-    # it's needed for unique hashes
-
-    frontier = PriorityQueue()
-    leaf = strategy.leaf
-    calcHuristicsFor(leaf)
-    while not leaf.isGoalState():
-        exploredStates = leaf.explore()
-        calcHuristicsFor(exploredStates)
-
-        for state in exploredStates:
-            count += 1
-            frontier.put((state.f, count, state))
-
-        leaf = frontier.get()[2]
-
-    return leaf.bestPath(), strategy
 
 
 def calcHuristicsFor(states):

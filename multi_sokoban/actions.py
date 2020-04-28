@@ -3,7 +3,7 @@ import copy
 import operator
 
 import numpy as np
-
+from .utils import println
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -79,6 +79,23 @@ class Literals:
         else:
             self.boxes[key].append([pos, color])
 
+    def forget_exploration(self):
+        """Remove explored nodes."""
+        self.explored = set()
+
+    def deleteAgent(self, external_key):
+        pos = self.getPos(self.agents, external_key)
+        del self.agents[external_key]
+        self.map[pos] = ' '
+
+    def deleteBox(self, external_key):
+        pos = self.getPos(self.boxes, external_key)
+        del self.boxes[external_key]
+        self.map[pos] = ' '
+
+    def deleteGoal(self, external_key):
+        del self.goals[external_key]
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
@@ -86,6 +103,7 @@ class Literals:
             return objtype[obj][i][0]
         else:
             return None
+
 
     def setPos(self, objtype, obj, pos, i=0):
         # sets the position of an object
@@ -308,8 +326,6 @@ class StateInit(Literals):
         if not self.isExplored():
             self.explored.add(self.minimalRep())
             children.append(self)
-        else:
-            del self
 
     def isGoalState(self):
         # checks if the state is a goal state
@@ -357,7 +373,7 @@ class StateInit(Literals):
                     )
                     cmd = f"Move({parm1})"
                 elif cmd == "NoOp":
-                    cmd = "NoOp()"
+                    cmd = "NoOp"
 
                 path.append(cmd)
                 state = state.prevState
