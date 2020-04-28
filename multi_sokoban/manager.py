@@ -3,11 +3,11 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
+from .emergency_aStar import (BestFirstSearch,
                               calcHuristicsFor)
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
-from .resultsharing import (Resultsharing, findAndResolveCollisionOld, convert2pos)
+from .resultsharing import (Resultsharing, convert2pos)
 
 
 class Manager:
@@ -99,6 +99,10 @@ class Manager:
     def solveCollision(self):
         #findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
         
+        # TODO check for empty frontiers
+        # check for traceback possiblities
+        # 
+
         rs = Resultsharing(self)
         rs.findAndResolveCollision() # This function can be found in resultsharing.py
         # println(pos)

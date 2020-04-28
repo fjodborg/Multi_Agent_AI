@@ -34,20 +34,6 @@ class BestFirstSearch(ABC):
         """Depend on the heuristic method."""
         self.leaf = self.frontier.get()[2]
 
-    """
-        #try and use maps instead of for loops!!
-
-        def stateMethod(state, goalKey):
-
-        def keyMethod(key):
-
-        def posMethod1(a):
-
-        def posMethod2(a):
-
-        def agentMethod1(state, agentKey, boxPos, goalPos):
-    """
-
     @abstractmethod
     def explore_and_add(self):
         """Explore leaf, calc heursitic and add to frontier."""
@@ -94,28 +80,6 @@ class aStarSearch(BestFirstSearch):
     def __str__(self):
         """Printable descriptuion."""
         return "A* Best First Search"
-
-
-def aStarSearch_func(strategy):
-    """Functional legacy approach."""
-    global count
-    # count = 0 should be static and only initialized in the start,
-    # it's needed for unique hashes
-
-    frontier = PriorityQueue()
-    leaf = strategy.leaf
-    calcHuristicsFor(leaf)
-    while not leaf.isGoalState():
-        exploredStates = leaf.explore()
-        calcHuristicsFor(exploredStates)
-
-        for state in exploredStates:
-            count += 1
-            frontier.put((state.f, count, state))
-
-        leaf = frontier.get()[2]
-
-    return leaf.bestPath(), strategy
 
 
 def calcHuristicsFor(states):
