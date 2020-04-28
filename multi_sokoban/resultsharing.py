@@ -59,40 +59,80 @@ class Resultsharing:
         if (objPosAtTime1, time) in self.timeTable:
 
             agentsAtTime1 = self.timeTable[objPosAtTime1, time]
+            #println(f"{time} {agentsAtTime1}")
             if len(agentsAtTime1) > 1:
                 agts = [[agt] for agt in agentsAtTime1]
-                println(
-                    f"collision! at {objPosAtTime1} with   time {time} and agent {agts}"
-                )
+                #println([type(obj) != int for obj in agentsAtTime1])
                 self.collidedAgents = agts
                 return True
             return False
         return None
+        # if (objPosAtTime1, time) in self.timeTable:
+
+        #     agentsAtTime1 = self.timeTable[objPosAtTime1, time]
+        #     #println(f"{time} {agentsAtTime1}")
+        #     if len(agentsAtTime1) > 1:
+        #         agts = [[agt] for agt in agentsAtTime1]
+        #         #println([type(obj) != int for obj in agentsAtTime1])
+        #         self.collidedAgents = agts
+        #         return True
+        #     return False
+        # return None
 
     def checkSwap(self, obj1Pos, obj2Pos, time, agtIdx):
 
         agentsAtTime1Pos1 = self.timeTable[obj1Pos, time]
         agentsAtTime1Pos2 = self.timeTable[obj2Pos, time]
-        agentsAtTime2Pos1 = None
-        agentsAtTime2Pos2 = None
-        # println(f"swap1! between {obj1Pos} & {obj2Pos} with time {time} & {time} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}")
-        if (obj1Pos, time + 1) in self.timeTable:
-            # println(f"No {obj1Pos, time+1} in timeTable")
-            agentsAtTime2Pos1 = self.timeTable[obj1Pos, time + 1]
-        if (obj2Pos, time + 1) in self.timeTable:
-            # {obj2Pos, time+1} in timeTable")
-            agentsAtTime2Pos2 = self.timeTable[obj2Pos, time + 1]
 
-        if (
-            agentsAtTime2Pos2 == agentsAtTime1Pos1
-            and agentsAtTime2Pos1 == agentsAtTime1Pos2
-        ):
-            println(
-                f"swap! between {obj1Pos} & {obj2Pos} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
-            )
-            self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
-            return True
+        pos1AtTime1 = self.pos[agentsAtTime1Pos1[0]][time]
+        pos2AtTime1 = self.pos[agentsAtTime1Pos2[0]][time]
+        pos1AtTime2 = self.pos[agentsAtTime1Pos1[0]][time + 1]
+        pos2AtTime2 = self.pos[agentsAtTime1Pos2[0]][time + 1]
+        for pos12 in pos2AtTime1:
+            for pos21 in pos1AtTime2:
+                if pos12 == pos21:
+                    swap1 = True
+                    break
+            else: 
+                continue 
+            break 
+
+        for pos11 in pos1AtTime1:
+            for pos22 in pos2AtTime2:
+                if pos11 == pos22 and swap1 is True:
+                    self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
+                    print(
+                        f"swap! between {pos11} & {pos12} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
+                    )
+                    return True
+
+        ''' # doesn't seem to work, but can't figure out why
+            
+            println(f"{pos11,pos12,pos21,pos22}")
+            println(f"{self.pos[agentsAtTime1Pos1[0]][time], self.pos[agentsAtTime1Pos2[0]][time]}")
+            println(f"{self.pos[agentsAtTime1Pos1[0]][time+1], self.pos[agentsAtTime1Pos2[0]][time-1]}")
+
+            # println(f"swap1! between {obj1Pos} & {obj2Pos} with time {time} & {time} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}")
+            if (obj1Pos, time + 1) in self.timeTable:
+                #println(f"{obj1Pos, time+1} in timeTable")
+                agentsAtTime2Pos1 = self.timeTable[obj1Pos, time + 1]
+            if (obj2Pos, time + 1) in self.timeTable:
+                #println(f"{obj2Pos, time+1} in timeTable")
+                agentsAtTime2Pos2 = self.timeTable[obj2Pos, time + 1]
+
+            if (
+                agentsAtTime2Pos2 == agentsAtTime1Pos1
+                and agentsAtTime2Pos1 == agentsAtTime1Pos2
+            ):
+                println(
+                    f"swap! between {obj1Pos} & {obj2Pos} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
+                )
+                self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
+                return True '''
         return None
+
+    def fixBoxCollision(self):
+        pass
 
     def isCollision(self, obj1Pos, time, agtIdx):
         # TODO box and agent collision
@@ -101,17 +141,21 @@ class Resultsharing:
         if collision is not None:
             if collision is True:
                 return "now"
-
             # check if the next position has a collision at the same time
             obj2Pos = self.pos[agtIdx][time + 1]
+            
             for pos in obj2Pos:
-                collision = self.checkPureCollision(pos, time, agtIdx)
-                if collision is not None:
-                    if collision is True:
+                collision2 = self.checkPureCollision(pos, time, agtIdx)
+                if collision2 is not None:
+                    #println(f"{collision, collision2}")
+                    if collision2 is True:
                         return "next"
                     swap = self.checkSwap(obj1Pos, pos, time, agtIdx)
+                    #println(swap)
                     if swap is True:
                         return "swap"
+                # TODO handle box collision
+                self.fixBoxCollision()
         return None
 
     def checkValidity(self, time, agtIdx):
@@ -145,14 +189,14 @@ class Resultsharing:
                     if pos1 == pos2:
                         collision = True
                         println(
-                            f"traceback collision at {pos1} & {pos2} at time {time1} & {time2}"
+                            f"traceback collision at {pos1} & {pos2} at time {time1} & {time2} with agent {agt1} {agt2}"
                         )
                         continue
                 for pos3 in obj3Pos:
                     if pos1 == pos3:
                         collision = True
                         println(
-                            f"traceback swap at {pos1} & {pos2} at time {time1} & {time2}"
+                            f"traceback swap at {pos1} & {pos2} at time {time1} & {time2} with agent {agt1} {agt2}"
                         )
                         continue
             if collision is False:
@@ -244,6 +288,7 @@ class Resultsharing:
                     self.collisionType = self.checkValidity(time, agt1Idx)
                     if self.collisionType is not None:
                         # #TODO break out to deadlock loop, fix actions and rehash
+                        ####
                         self.fixCollision(time)  # TODO change second
                         break
                 else:  # continues if the inner loop wasn't broken
