@@ -7,7 +7,7 @@ from .emergency_aStar import (BestFirstSearch, aStarSearch_func,
                               calcHuristicsFor)
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
-from .resultsharing import (findAndResolveCollision, findAndResolveCollisionOld)
+from .resultsharing import (Resultsharing, findAndResolveCollisionOld, convert2pos)
 
 
 class Manager:
@@ -41,13 +41,14 @@ class Manager:
             ext_goals = list(task.goals.keys())
             for external_goal in ext_goals:
                 if external_goal != goal:
-                    del task.goals[external_goal]
+                    task.deleteGoal(external_goal)
                     
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
             ext_agents = list(task.agents.keys())
             for external_agent in ext_agents:
                 if external_agent != agent:
+                    #del task.agents[external_agent]
                     task.deleteAgent(external_agent)
 
             self.tasks[goal] = (task, agent)
@@ -89,109 +90,20 @@ class Manager:
             f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
         )
         path, strategy = search(searcher)
+        #println(f"{path}\n\n")
         if path is None:
             task.forget_exploration()
         return path, strategy.leaf
 
-    def convert2pos(self, initPos, paths):
-        pos = initPos
-
-        i = 0
-        # println(f"pos: {pos}")
-        for agt in paths:
-            if agt is None:
-                continue
-            for action in agt:
-                prefix = action[0]
-                # println(f"pos: {pos[i][-1]}")
-                if type(pos[i][-1]) == list:
-                    [row, col] = pos[i][-1][0]
-                else:
-                    [row, col] = pos[i][-1]
-                # println(f"row:{row},col:{col}")
-                if prefix == "N":
-                    pos[i].append((row, col))
-                elif prefix == "M":
-                    [drow, dcol] = self.top_problem.dir[action[-2:-1]]
-                    pos[i].append((row + drow, col + dcol))
-                elif prefix == "P":
-                    if action[0:4] == "Push":
-                        [drow1, dcol1] = self.top_problem.dir[action[-4:-3]]
-                        [drow2, dcol2] = self.top_problem.dir[action[-2:-1]]
-                        # println(f"{row},{drow1}")
-
-                        [row1, col1] = (row + drow1, col + dcol1)
-                        [row2, col2] = (row1 + drow2, col1 + dcol2)
-                        pos[i].append([(row1, col1), (row2, col2)])
-                    else:
-                        [drow1, dcol1] = self.top_problem.dir[action[-4:-3]]
-                        [drow2, dcol2] = self.top_problem.dir[action[-2:-1]]
-                        # println(f"{row},{drow1}")
-
-                        [row1, col1] = (row + drow1, col + dcol1)
-                        [row2, col2] = (row, col)
-                        pos[i].append([(row1, col1), (row2, col2)])
-
-            i += 1
-
-        return pos
-
-
-    def addToHash(self, timeTable, pos, time, identity):
-        if (pos, time) in timeTable:
-            timeTable[pos, identity].append(time)
-            #timeTable[pos, time].append(identity)
-        else:
-            timeTable[pos, identity] = [time]
-            #timeTable[pos, time] = [identity]
-
-    def generateHash(self, pos, paths):
-        timeTable = {}
-
-        agtColor = self.sort_agents()
-        for agtIdx in range(len(paths)):
-            for time in range(len(pos[agtIdx])):
-                posAtTime = pos[agtIdx][time]
-                if type(posAtTime) == list:
-                    self.addToHash(timeTable, posAtTime[0], time, agtIdx)
-                    # TODO find a solution to figure out how to identify the box
-                    self.addToHash(timeTable, posAtTime[1], time, agtIdx)#agtColor[agtIdx])
-                else:
-                    self.addToHash(timeTable, posAtTime, time, agtIdx)
-        return timeTable
-
 
     def solveCollision(self):
-        sorted_agents = self.sort_agents()
-
-        # initpos = [[agent[0][0]] for agent in self.top_problem.agents.values()]
-        paths = [self.status[agent] for agent in sorted_agents if self.status[agent]]
-
-        initpos = [
-            [self.top_problem.agents[self.agent_to_status[agent]][0][0]]
-            for agent in sorted_agents
-        ]
-        pos = self.convert2pos(initpos, paths)
-        timeTable = self.generateHash(pos, paths)
-        findAndResolveCollisionOld(pos, paths) # This function can be found in resultsharing.py
+        #findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
         
-        #findAndResolveCollision(pos, paths, timeTable, self) # This function can be found in resultsharing.py
+        rs = Resultsharing(self)
+        rs.findAndResolveCollision() # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
 
-        for agt in range(len(pos)):
-            for i in range(len(pos[agt]) - 1):
-                if pos[agt][i] == pos[agt][i + 1]:
-                    if len(paths[agt]) > 0:
-                        paths[agt].insert(i, "NoOp")
-                    else:
-                        paths[agt].append("NoOp")
-            # while len(paths[agt]) < len(pos[agt])-1:
-            # paths[agt].append("NoOp")
-
-        # println(paths)
-
-        return paths
 
     def solve_world(self):
         """Solve the top problem."""
