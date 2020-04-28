@@ -3,11 +3,10 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import (BestFirstSearch,
-                              calcHuristicsFor)
+from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import ResourceLimit, println
-from .resultsharing import (Resultsharing, convert2pos)
+from .resultsharing import Resultsharing, convert2pos
 
 
 class Manager:
@@ -42,13 +41,13 @@ class Manager:
             for external_goal in ext_goals:
                 if external_goal != goal:
                     task.deleteGoal(external_goal)
-                    
+
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
             ext_agents = list(task.agents.keys())
             for external_agent in ext_agents:
                 if external_agent != agent:
-                    #del task.agents[external_agent]
+                    # del task.agents[external_agent]
                     task.deleteAgent(external_agent)
 
             self.tasks[goal] = (task, agent)
@@ -90,24 +89,22 @@ class Manager:
             f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
         )
         path, strategy = search(searcher)
-        #println(f"{path}\n\n")
+        # println(f"{path}\n\n")
         if path is None:
             task.forget_exploration()
         return path, strategy.leaf
 
-
     def solveCollision(self):
-        #findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
-        
+        # findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
+
         # TODO check for empty frontiers
         # check for traceback possiblities
-        # 
+        #
 
         rs = Resultsharing(self)
-        rs.findAndResolveCollision() # This function can be found in resultsharing.py
+        rs.findAndResolveCollision()  # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
-
 
     def solve_world(self):
         """Solve the top problem."""
@@ -183,4 +180,3 @@ def search(strategy: BestFirstSearch) -> List:
             return strategy.walk_best_path(), strategy
 
         iterations += 1
-
