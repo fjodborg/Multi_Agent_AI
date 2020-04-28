@@ -10,13 +10,14 @@ from .utils import ResourceLimit, println
 class Resultsharing:
     def __init__(self, manager):
         """Initialize with the whole problem definition `top_problem`."""
-        self.collisionType = None
         self.pos = []
         self.paths = []
         self.manager = manager
-        self.timeTable = {}
+        # self.timeTable = {}
         self.traceback = 0
+        self.collisionType = None
         self.collidedAgents = None
+        self.collisionTime = None
 
     def addToHash(self, pos, time, identity):
         key = (pos, time)
@@ -55,17 +56,27 @@ class Resultsharing:
                     self.addToHash(posAtTime[1], time, agtColor[agtIdx])  #
                 self.addToHash(posAtTime[0], time, agtIdx)
 
-    def checkPureCollision(self, objPosAtTime1, time, agtIdx):
-        if (objPosAtTime1, time) in self.timeTable:
+    def checkPureCollision(self, time, agt1):
+        agt1Pos = self.pos[agt1][time]
+        for agt2 in range(len(self.pos)):
+            if agt1 == agt2:
+                continue
+            for pos1 in obj1Pos:
+                println(agt2)
+                for obj2Pos in self.pos[agt2][time]:
+                    for pos2 in obj2Pos:
+                        println((pos1, pos2, agt1, agt2))
 
-            agentsAtTime1 = self.timeTable[objPosAtTime1, time]
-            #println(f"{time} {agentsAtTime1}")
-            if len(agentsAtTime1) > 1:
-                agts = [[agt] for agt in agentsAtTime1]
-                #println([type(obj) != int for obj in agentsAtTime1])
-                self.collidedAgents = agts
-                return True
-            return False
+        # if (objPosAtTime1, time) in self.timeTable:
+
+        #     agentsAtTime1 = self.timeTable[objPosAtTime1, time]
+        #     #println(f"{time} {agentsAtTime1}")
+        #     if len(agentsAtTime1) > 1:
+        #         agts = [[agt] for agt in agentsAtTime1]
+        #         #println([type(obj) != int for obj in agentsAtTime1])
+        #         self.collidedAgents = agts
+        #         return True
+        #     return False
         return None
         # if (objPosAtTime1, time) in self.timeTable:
 
@@ -83,7 +94,7 @@ class Resultsharing:
 
         agentsAtTime1Pos1 = self.timeTable[obj1Pos, time]
         agentsAtTime1Pos2 = self.timeTable[obj2Pos, time]
-
+        println(f"{agentsAtTime1Pos2,agentsAtTime1Pos1}")
         pos1AtTime1 = self.pos[agentsAtTime1Pos1[0]][time]
         pos2AtTime1 = self.pos[agentsAtTime1Pos2[0]][time]
         pos1AtTime2 = self.pos[agentsAtTime1Pos1[0]][time + 1]
@@ -134,48 +145,93 @@ class Resultsharing:
     def fixBoxCollision(self):
         pass
 
-    def isCollision(self, obj1Pos, time, agtIdx):
-        # TODO box and agent collision
-        # TODO box and agent collision is only a problem if the box is infront
-        collision = self.checkPureCollision(obj1Pos, time, agtIdx)
-        if collision is not None:
-            if collision is True:
-                return "now"
-            # check if the next position has a collision at the same time
-            obj2Pos = self.pos[agtIdx][time + 1]
-            
-            for pos in obj2Pos:
-                collision2 = self.checkPureCollision(pos, time, agtIdx)
-                if collision2 is not None:
-                    #println(f"{collision, collision2}")
-                    if collision2 is True:
-                        return "next"
-                    swap = self.checkSwap(obj1Pos, pos, time, agtIdx)
-                    #println(swap)
-                    if swap is True:
-                        return "swap"
-                # TODO handle box collision
-                self.fixBoxCollision()
+    def checkSwapNew(self, agt1, agt2, agt1PosPrev, agt2PosPrev, time):
+        swap = False
+        agt1Pos = self.pos[agt1][time + 1]
+        agt2Pos = self.pos[agt2][time + 1]
+        for pos11 in agt1Pos:
+            for pos22 in agt2PosPrev:
+                if pos22 == pos11:
+                    swap = True
+                    break
+            else:
+                continue
+            break
+
+        for pos12 in agt1PosPrev:
+            for pos21 in agt2Pos:
+                if pos12 == pos21 and swap is True:
+                    self.collidedAgents = [agt1, agt2]
+                    println(
+                        f"swap! between {pos11} & {pos12} with time {time} & {time+1} and agent {agt1} & {agt2}"
+                    )
+                    return True
+        return False
+
+    def isCollisionNew(self, agt1, agt2, pos1, agt2Pos, time):
+        for pos2 in agt2Pos:
+            if pos1 == pos2:
+                self.collidedAgents = [agt1, agt2]
+                println(
+                    f"collision! between {pos1} & {pos1} with time {time} and agent {agt1} & {agt2}"
+                )
+                return True
+        return False
+
+    def findCollidingAgt(self, agt1, time):
+        agt1Pos = self.pos[agt1][time]
+        for pos1 in agt1Pos:
+            for agt2 in range(len(self.pos)):
+                if agt1 == agt2:
+                    continue
+                agt2Pos = self.pos[agt2][time]
+                if self.isCollisionNew(agt1, agt2, pos1, agt2Pos, time) is True:
+                    self.collisionType = "col"
+                    return agt2
+                if self.checkSwapNew(agt1, agt2, agt1Pos, agt2Pos, time) is True:
+                    self.collisionType = "swap"
+                    return agt2
+
+
         return None
 
-    def checkValidity(self, time, agtIdx):
-        # to = time offset
-        objPos = self.pos[agtIdx][time]
-        # println(objPos)
-        for pos in objPos:
-            collisionType = self.isCollision(pos, time, agtIdx)
-            if collisionType is not None:
-                return collisionType
+    def isCollision(self, time, agt1):
+        # TODO box and agent collision
+        # TODO box and agent collision is only a problem if the box is infront
+        
+        
+        return self.findCollidingAgt(agt1, time)
+        #println((agt1,agt2))
+
+        
+        # collision = self.checkPureCollision(time, agt1)
+        # if collision is not None:
+        #     if collision is True:
+        #         return "now"
+        #     # check if the next position has a collision at the same time
+        #     obj2Pos = self.pos[agt1][time + 1]
+            
+        #     for pos in obj2Pos:
+        #         collision2 = self.checkPureCollision(pos, time, agt1)
+        #         if collision2 is not None:
+        #             #println(f"{collision, collision2}")
+        #             if collision2 is True:
+        #                 return "next"
+        #             swap = self.checkSwap(obj1Pos, pos, time, agt1)
+        #             #println(swap)
+        #             if swap is True:
+        #                 return "swap"
+        #         # TODO handle box collision
+        #         self.fixBoxCollision()
         return None
 
     # def placeHolderAStar():
 
     def tracebackCollision(self, collisionTime):
         # TODO take into account if there is multiple agents
-        idx1 = 0
-        idx2 = 0
-        agt1 = self.collidedAgents[1][idx1]
-        agt2 = self.collidedAgents[0][idx2]
+        println(self.collidedAgents)
+        agt1 = self.collidedAgents[1]
+        agt2 = self.collidedAgents[0]
         time2 = collisionTime
         for time1 in range(collisionTime + 1, len(self.pos[agt1])):
             time2 -= 1
@@ -202,7 +258,7 @@ class Resultsharing:
             if collision is False:
                 break
             # TODO fix collision time, it should differ when using swap and collision
-        return time1, time2, idx2  # the last one was not a a collision
+        return time1, time2, agt2  # the last one was not a a collision
 
     def fixLength(self):
         longest = 0
@@ -257,10 +313,10 @@ class Resultsharing:
         self.pos = convert2pos(self.manager, initpos, self.paths)
         println(self.pos)
 
-        self.generateHash()
+        # self.generateHash()
 
         # TODO Also look at future collision
-        println(self.timeTable)
+        # println(self.timeTable)
 
         # TODO TODO TODO if there is a collision the non priorities agent warps back in time,
         # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
@@ -281,12 +337,13 @@ class Resultsharing:
         while not deadlock:
 
             deadlock = True
-            for agt1Idx in range(len(self.paths)):
+            for agt1 in range(len(self.paths)):
                 # timeTable = self.manager.generateHash(self.pos, [paths])
-                for time in range(len(self.pos[agt1Idx]) - 1):
+                for time in range(len(self.pos[agt1]) - 2):
                     self.traceback = 0
-                    self.collisionType = self.checkValidity(time, agt1Idx)
-                    if self.collisionType is not None:
+                    collisionType = self.isCollision(time, agt1)
+                    #println(collisionType)
+                    if collisionType is not None:
                         # #TODO break out to deadlock loop, fix actions and rehash
                         ####
                         self.fixCollision(time)  # TODO change second
