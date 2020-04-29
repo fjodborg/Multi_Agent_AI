@@ -42,8 +42,8 @@ class Resultsharing:
             self.addToHash(boxPos, 0, boxColor)
 
         agtColor = []
-        for goal, val in self.manager.tasks.items():
-            agtColor.append(list(val[0].agents.values())[0][0][1])
+        for agent in self.manager.agents.values():
+            agtColor.append(agent.color)
         println(agtColor)
 
         for agtIdx in range(len(self.paths)):
@@ -104,9 +104,9 @@ class Resultsharing:
                 if pos12 == pos21:
                     swap1 = True
                     break
-            else: 
-                continue 
-            break 
+            else:
+                continue
+            break
 
         for pos11 in pos1AtTime1:
             for pos22 in pos2AtTime2:
@@ -118,7 +118,7 @@ class Resultsharing:
                     return True
 
         ''' # doesn't seem to work, but can't figure out why
-            
+
             println(f"{pos11,pos12,pos21,pos22}")
             println(f"{self.pos[agentsAtTime1Pos1[0]][time], self.pos[agentsAtTime1Pos2[0]][time]}")
             println(f"{self.pos[agentsAtTime1Pos1[0]][time+1], self.pos[agentsAtTime1Pos2[0]][time-1]}")
@@ -198,19 +198,19 @@ class Resultsharing:
     def isCollision(self, time, agt1):
         # TODO box and agent collision
         # TODO box and agent collision is only a problem if the box is infront
-        
-        
+
+
         return self.findCollidingAgt(agt1, time)
         #println((agt1,agt2))
 
-        
+
         # collision = self.checkPureCollision(time, agt1)
         # if collision is not None:
         #     if collision is True:
         #         return "now"
         #     # check if the next position has a collision at the same time
         #     obj2Pos = self.pos[agt1][time + 1]
-            
+
         #     for pos in obj2Pos:
         #         collision2 = self.checkPureCollision(pos, time, agt1)
         #         if collision2 is not None:
@@ -294,17 +294,13 @@ class Resultsharing:
         # moving away from the object and for not standing in the path. Probably use astar for this!
         # +100 for being on the path and -1 for being outside the path
         sorted_agents = self.manager.sort_agents()
-        self.paths = [
-            self.manager.status[agent]
-            for agent in sorted_agents
-            if self.manager.status[agent]
-        ]
+        self.paths = self.manager.solutions
 
         initpos = [
             [
                 [
                     self.manager.top_problem.agents[
-                        self.manager.agent_to_status[agent]
+                        agent
                     ][0][0]
                 ]
             ]
@@ -323,7 +319,7 @@ class Resultsharing:
 
         # sorted goals according to first agent
         goals = self.manager.sort_agents()  # for now assume len(goals) = len(agents)
-        println(self.manager.tasks[goals[0]][0])
+        # println(self.manager.tasks[goals[0]][0])
 
         # for goal in self.manager.agent_to_status.keys():
         #     if self.manager.agent_to_status[goal] == agt:
