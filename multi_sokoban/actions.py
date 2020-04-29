@@ -3,7 +3,9 @@ import copy
 import operator
 
 import numpy as np
+
 from .utils import println
+
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -86,12 +88,12 @@ class Literals:
     def deleteAgent(self, external_key):
         pos = self.getPos(self.agents, external_key)
         del self.agents[external_key]
-        self.map[pos] = ' '
+        self.map[pos] = " "
 
     def deleteBox(self, external_key):
         pos = self.getPos(self.boxes, external_key)
         del self.boxes[external_key]
-        self.map[pos] = ' '
+        self.map[pos] = " "
 
     def deleteGoal(self, external_key):
         del self.goals[external_key]
@@ -103,7 +105,6 @@ class Literals:
             return objtype[obj][i][0]
         else:
             return None
-
 
     def setPos(self, objtype, obj, pos, i=0):
         # sets the position of an object

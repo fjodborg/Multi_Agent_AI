@@ -5,7 +5,7 @@ from typing import Callable, List
 from .actions import StateInit
 from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
-from .utils import STATUS, println, ResourceLimit, IncorrectTask
+from .utils import STATUS, IncorrectTask, ResourceLimit, println
 
 
 class Agent:

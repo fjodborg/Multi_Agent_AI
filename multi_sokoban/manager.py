@@ -5,8 +5,8 @@ from typing import List
 from .actions import StateInit
 from .bdi import Agent
 from .emergency_aStar import BestFirstSearch
-from .utils import println, STATUS
 from .resultsharing import Resultsharing
+from .utils import STATUS, println
 
 
 class Manager:
