@@ -1,6 +1,6 @@
 """Components of the BDI loop."""
 from copy import deepcopy
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from .actions import StateInit
 from .emergency_aStar import BestFirstSearch, calcHuristicsFor
@@ -8,8 +8,65 @@ from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
 
 
+class Message:
+    """Simple class to encode a message."""
+
+    def __init__(
+        self, box: str, color: str, requester: str, status: STATUS, time: int = None
+    ):
+        """Fill message fields.
+
+        Parameters
+        ----------
+        box: str
+            name of the box concerning the problem
+        color: str
+            color of the box concerning the problem
+        requester: str:
+            name of agent that sends the sos message
+        status: STATUS
+            * STATUS.ok if agent solved the problem for another agent (response)
+            * STATUS.fail if agent needs help (query)
+        time: int
+            time when the agent solves the problem at
+
+        """
+        self.box = box
+        self.color = color
+        self.requester = requester
+        self.status = status
+        self.time = time
+        if status == STATUS.ok and time is None:
+            raise IncorrectTask("Solutions to SOS messages require a time!")
+
+
 class Agent:
-    """Implement the belief and backtrack cost."""
+    """Implement the belief and backtrack cost.
+
+    Attributes
+    ----------
+    task: StateInit
+        subproblem assigned by the manager
+    strategy: BestFirstSearch
+        child strategy of BestFirstSearch
+    heuristic: Callable
+        function to generate the heuristic. Default: calcHuristicsFor
+    color: str
+    name: str
+    init_pos: tuple[x,y]
+        initial position of the agent in the original subproblem
+    status: STATUS
+        * STATUS.ok if agent solved the problem
+        * STATUS.fail if Frontier empty
+        * STATUS.init if agent hasn't invoked self.solve()
+    helping: Message
+        Message if the agent has been assigned a request from other agent,
+        `False` otherwise
+    saved_solution: List
+        solution as a path of actions. Used to avoid recomputing solutions when
+        not required. `None` if the solution has not been found.
+
+    """
 
     def __init__(
         self,
@@ -26,22 +83,48 @@ class Agent:
         self.init_pos = list(task.agents.values())[0][0][0]
         # status can be ok, fail or init
         self.status = STATUS.init
+        self.helping = False
+        self.saved_solution = None
 
-    def solve(self) -> List:
-        """Solve the tasks by search."""
+    def solve(self, inbox) -> Tuple[List, Message]:
+        """Solve the tasks by search and communicate.
+
+        Returns
+        -------
+        path: List
+            path to goal
+        message: Message
+            Message of current state
+
+        """
+        # update beliefs
+        if self.status == STATUS.ok and not self.helping:
+            # avoid recomputing solutions when not needed
+            return self.saved_solution, self.broadcast()
+        if inbox and self.status == STATUS.fail:
+            to_del = False
+            for i, message in enumerate(inbox):
+                if message.requester == self.name:
+                    self.task.deleteBox(message.box)
+                    to_del = i
+                    break
+            if to_del:
+                del inbox[message]
+        # execute intention
         searcher = self.strategy(self.task)
         println(
             f"goals -> {self.task.goals}\n"
-            f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n"
+            f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
         path = self.search(searcher)
+        # communicate
         if path is None:
             self.task.forget_exploration()
             self.status = STATUS.fail
-            return self.broadcast()
         else:
             self.status = STATUS.ok
-            return path
+            self.saved_solution = path
+        return path, self.broadcast()
 
     def add_task(self, task):
         """Merge task with previous task."""
@@ -66,9 +149,63 @@ class Agent:
             c_union = min(c_union, calcHuristicsFor(joint_task))
         return c_union - c_ts
 
-    def broadcast(self) -> StateInit:
+    def consume_message(self, message: Message) -> StateInit:
+        """Take a message."""
+        self.helping = message
+        # TODO: logic of weighting the goal here!
+
+    def broadcast(self) -> Message:
+        """Send a `Message` of stuff the agent wants to communicate."""
+        message = False
+        if self.status == STATUS.fail:
+            message = self._sos()
+        if self.helping:
+            message = self._send_success()
+        return message
+
+    def _sos(self) -> StateInit:
         """Identify problem and formulate solution."""
-        pass
+        box, color = self._identify_problem()
+        return Message(
+            box=box, color=color, requester=self.name, status=self.status, time=None
+        )
+
+    def _send_success(self) -> StateInit:
+        """Return a message indicating that the problem was solved."""
+        message = Message(
+            self.helping.box,
+            self.helping.color,
+            self.helping.requester,
+            self.status,
+            # TODO: need to calculate the time
+            self.helping.time,
+        )
+        self.helping = False
+        return message
+
+    def _identify_problem(self) -> str:
+        """Identify why frontier is empty.
+
+        Returns
+        -------
+        blocking: List[str]
+            goal and color as strings of the block which is blocking the agent
+
+        """
+        boxes = {
+            box: pos_color
+            for box, pos_color in self.task.boxes.items()
+            if pos_color[0] != self.color
+        }
+        # store the boxes of other colors adjacent to positions
+        # that the agent explored (backtracking)
+        state = self.task
+        while state.actionPerformed is not None:
+            agent_pos = self.getPos(state.agents, self.name)
+            for box, pos_color in boxes.items():
+                if self.task.Neighbour(pos_color[0], agent_pos):
+                    return box, pos_color[1]
+            state = state.prevState
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.

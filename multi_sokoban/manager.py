@@ -10,7 +10,28 @@ from .utils import STATUS, println
 
 
 class Manager:
-    """Top manager that performs problem subdivision and task broadcasting."""
+    """Top manager that performs problem subdivision and task broadcasting.
+
+    Attributes
+    ----------
+    top_problem: StateInit
+        whole problem definition
+    strategy: BestFirstSearch
+        child strategy of BestFirstSearch
+    agents: dict
+        agent names as keys and Agent objects as values. Agents are generated
+        on demand; i.e., there can be idle agents in the map that won't have an
+        associated Agent object (see multi_sokoban/bdi.py)
+    solutions: List[List]
+        the solutions of the different agents to their particular subproblems.
+        `None` until there is a solution
+    nodes_explored: int
+        sum of the number of explored nodes by the agents
+    inbox: List[Message]
+        List of OK `Message`s (see multi_sokoban/bdi.py) that the agents
+        generate when they solve a request of another agent.
+
+    """
 
     def __init__(self, top_problem: StateInit, strategy: BestFirstSearch):
         """Initialize with the whole problem definition `top_problem`."""
@@ -19,6 +40,7 @@ class Manager:
         self.agents = {}
         self.solutions = None
         self.nodes_explored = 0
+        self.inbox = []
 
     def run(self) -> List:
         """Perform the task sharing."""
@@ -99,13 +121,13 @@ class Manager:
         paths = {}
         while len(paths) != len(self.agents):
             for name, agent in self.agents.items():
-                solution = agent.solve()
+                path, message = agent.solve(self.inbox)
                 if agent.status == STATUS.fail:
-                    ok_agent = self.broadcast_task(solution)
-                    println(f"Agent {name} broadcasted task for {solution.goals}")
-                    self.agents[ok_agent].add_task(solution)
+                    ok_agent = self.broadcast_message(message)
+                    println(f"Agent {name} broadcasted task for {path.goals}")
+                    self.agents[ok_agent].consume_message(message)
                 else:
-                    paths[name] = solution
+                    paths[name] = path
         self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
 
     def join_tasks(self) -> List:
