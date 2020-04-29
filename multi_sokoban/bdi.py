@@ -23,6 +23,7 @@ class Agent:
         self.heuristic = heuristic
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
+        self.init_pos = list(task.agents.values())[0][0][0]
         # status can be ok, fail or init
         self.status = STATUS.init
 

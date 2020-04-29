@@ -117,7 +117,7 @@ class Resultsharing:
                     )
                     return True
 
-        ''' # doesn't seem to work, but can't figure out why
+        """ # doesn't seem to work, but can't figure out why
 
             println(f"{pos11,pos12,pos21,pos22}")
             println(f"{self.pos[agentsAtTime1Pos1[0]][time], self.pos[agentsAtTime1Pos2[0]][time]}")
@@ -139,7 +139,7 @@ class Resultsharing:
                     f"swap! between {obj1Pos} & {obj2Pos} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
                 )
                 self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
-                return True '''
+                return True """
         return None
 
     def fixBoxCollision(self):
@@ -192,17 +192,14 @@ class Resultsharing:
                     self.collisionType = "swap"
                     return agt2
 
-
         return None
 
     def isCollision(self, time, agt1):
         # TODO box and agent collision
         # TODO box and agent collision is only a problem if the box is infront
 
-
         return self.findCollidingAgt(agt1, time)
-        #println((agt1,agt2))
-
+        # println((agt1,agt2))
 
         # collision = self.checkPureCollision(time, agt1)
         # if collision is not None:
@@ -293,20 +290,12 @@ class Resultsharing:
         # every agent moves away from the other agents path and gets + points for
         # moving away from the object and for not standing in the path. Probably use astar for this!
         # +100 for being on the path and -1 for being outside the path
-        sorted_agents = self.manager.sort_agents()
         self.paths = self.manager.solutions
 
-        initpos = [
-            [
-                [
-                    self.manager.top_problem.agents[
-                        agent
-                    ][0][0]
-                ]
-            ]
-            for agent in sorted_agents
+        init_pos = [
+            self.manager.agents[agent].init_pos for agent in self.manager.sort_agents()
         ]
-        self.pos = convert2pos(self.manager, initpos, self.paths)
+        self.pos = convert2pos(self.manager, init_pos, self.paths)
         println(self.pos)
 
         # self.generateHash()
@@ -338,7 +327,7 @@ class Resultsharing:
                 for time in range(len(self.pos[agt1]) - 2):
                     self.traceback = 0
                     collisionType = self.isCollision(time, agt1)
-                    #println(collisionType)
+                    # println(collisionType)
                     if collisionType is not None:
                         # #TODO break out to deadlock loop, fix actions and rehash
                         ####
