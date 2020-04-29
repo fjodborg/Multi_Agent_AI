@@ -3,8 +3,8 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .bdi import Agent
-from .emergency_aStar import BestFirstSearch
+from .bdi import Agent, Message
+from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .resultsharing import Resultsharing
 from .utils import STATUS, println
 
@@ -52,40 +52,37 @@ class Manager:
 
         return self.join_tasks()
 
-    def bidding(self, task: StateInit, agents) -> str:
-        """Request heuristic from the agents to solve a particular task."""
-        raise NotImplementedError
-        min_marginal_cost = float("inf")
-        for agent in agents:
-            # WARNING: could be implemented now but let's wait for BDI
-            marginal_cost = agent.marginal_cost(task)
-            # greater or equal to guarantee a selected agent
-            if min_marginal_cost >= marginal_cost:
-                min_marginal_cost = marginal_cost
-                selected_agent = agent
-        return selected_agent
-
     def divide_problem(self):
         """Subdivide the problem in terms of box colors."""
         for goal in self.top_problem.goals:
             # create subproblem and remove other goals
             task = deepcopy(self.top_problem)
-            ext_goals = list(task.goals.keys())
-            for external_goal in ext_goals:
-                if external_goal != goal:
-                    task.deleteGoal(external_goal)
-
+            task.keepJustGoal(goal)
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
-            ext_agents = list(task.agents.keys())
-            for external_agent in ext_agents:
-                if external_agent != agent:
-                    # del task.agents[external_agent]
-                    task.deleteAgent(external_agent)
+            task.keepJustAgent(agent)
             if agent in self.agents:
                 self.agents[agent].add_task(task)
             else:
                 self.agents[agent] = Agent(task, self.strategy)
+
+    def bidding(self, task: StateInit, agents: List[str]) -> str:
+        """Request heuristic from the `agents` to solve a particular `task`."""
+        min_marginal_cost = float("inf")
+        for agent in agents:
+            if agents in self.agents:
+                # agent got already tasks assigned so you have to use the joint
+                marginal_cost = agent.marginal_cost(task)
+            else:
+                # here marginal cost is the total heuristic estimate
+                tmp_task = deepcopy(task)
+                tmp_task.keepJustAgent(agent)
+                marginal_cost = calcHuristicsFor(tmp_task)
+            # greater or equal to guarantee a selected agent
+            if min_marginal_cost >= marginal_cost:
+                min_marginal_cost = marginal_cost
+                selected_agent = agent
+        return selected_agent
 
     def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
@@ -96,8 +93,15 @@ class Manager:
         if len(ok_agents) > 1:
             selected_agent = self.bidding(task, ok_agents)
         else:
+            # direct contract, the usual case
             selected_agent = ok_agents[0]
         return selected_agent
+
+    def broadcast_message(self, message: Message) -> str:
+        """Request help in the form of a message."""
+        color_of = message.Color
+        ok_agents = [k for k, v in self.agents if color_of == v.color][0]
+        return ok_agents
 
     def sort_agents(self):
         """Return sorted agents by name of agent (0-10)."""

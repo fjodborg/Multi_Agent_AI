@@ -98,6 +98,19 @@ class Literals:
     def deleteGoal(self, external_key):
         del self.goals[external_key]
 
+    def keepJustAgent(self, external_key):
+        ext_agents = list(self.agents.keys())
+        for external_agent in ext_agents:
+            if external_agent != external_key:
+                # del task.agents[external_agent]
+                self.deleteAgent(external_agent)
+
+    def keepJustGoal(self, external_key):
+        ext_goals = list(self.goals.keys())
+        for external_goal in ext_goals:
+            if external_goal != external_key:
+                self.deleteGoal(external_goal)
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable

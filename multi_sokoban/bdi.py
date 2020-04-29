@@ -126,7 +126,7 @@ class Agent:
             self.saved_solution = path
         return path, self.broadcast()
 
-    def add_task(self, task):
+    def add_task(self, task: StateInit):
         """Merge task with previous task."""
         color = list(task.goals.values())[0][0][1]
         if color != self.color:
@@ -134,23 +134,29 @@ class Agent:
         self.task.goals = {**self.task.goals, **task.goals}
 
     def marginal_task_cost(self, broadcasted_task: StateInit) -> float:
-        """Compute cost of adding task `broadcasted_task`."""
-        color = list(broadcasted_task.goals.values())[0][0][1]
-        if color != self.color:
-            return float("Inf")
-        c_ts = calcHuristicsFor(broadcasted_task)
+        """Compute cost of adding task `broadcasted_task`.
+
+        Used in the top-down assignment by the manager when there is more than
+        one agent with the same color. This should force the agents to be used
+        even if one of the agents is very close to all the boxes.
+
+        Without using times it may not be so good at distributing...
+        """
         # the broadcasted task is guaranteed to have only one goal
         pos, color = list(broadcasted_task.goals.values())[0][0]
+        goal_key = list(broadcasted_task.goals.keys())[0][0]
         c_union = float("inf")
-        # TODO: Should consider t!!!!
-        for task in self.tasks:
-            joint_task = deepcopy(task)
-            joint_task.addGoal(list(broadcasted_task.keys())[0], pos, color)
-            c_union = min(c_union, calcHuristicsFor(joint_task))
+        if color != self.color:
+            return c_union
+        c_ts = calcHuristicsFor(broadcasted_task)
+        joint_task = deepcopy(self.task)
+        joint_task.addGoal(goal_key, pos, color)
+        c_union = min(c_union, calcHuristicsFor(joint_task))
         return c_union - c_ts
 
     def consume_message(self, message: Message) -> StateInit:
         """Take a message."""
+        # update desires
         self.helping = message
         # TODO: logic of weighting the goal here!
 
