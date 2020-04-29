@@ -126,6 +126,7 @@ class Manager:
         while len(paths) != len(self.agents):
             for name, agent in self.agents.items():
                 path, message = agent.solve(self.inbox)
+                self.nodes_explored += len(agent.task.explored)
                 if agent.status == STATUS.fail:
                     ok_agent = self.broadcast_message(message)
                     println(f"Agent {name} broadcasted task for {path.goals}")
