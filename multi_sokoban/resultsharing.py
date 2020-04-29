@@ -290,11 +290,10 @@ class Resultsharing:
         # every agent moves away from the other agents path and gets + points for
         # moving away from the object and for not standing in the path. Probably use astar for this!
         # +100 for being on the path and -1 for being outside the path
+        sorted_agents = self.manager.sort_agents()
         self.paths = self.manager.solutions
 
-        init_pos = [
-            self.manager.agents[agent].init_pos for agent in self.manager.sort_agents()
-        ]
+        init_pos = [[[self.manager.agents[agent].init_pos]] for agent in sorted_agents]
         self.pos = convert2pos(self.manager, init_pos, self.paths)
         println(self.pos)
 
@@ -307,9 +306,6 @@ class Resultsharing:
         # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
 
         # sorted goals according to first agent
-        goals = self.manager.sort_agents()  # for now assume len(goals) = len(agents)
-        # println(self.manager.tasks[goals[0]][0])
-
         # for goal in self.manager.agent_to_status.keys():
         #     if self.manager.agent_to_status[goal] == agt:
         #         pass
