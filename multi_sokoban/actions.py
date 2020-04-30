@@ -4,8 +4,6 @@ import operator
 
 import numpy as np
 
-from .utils import println
-
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -86,9 +84,14 @@ class Literals:
         self.explored = set()
 
     def deleteAgent(self, external_key):
+        """Delete from `agents`, the `map` and `agent_color`."""
         pos = self.getPos(self.agents, external_key)
         del self.agents[external_key]
         self.map[pos] = " "
+        for color in self.agentColor:
+            if external_key in self.agentColor[color]:
+                to_del = self.agentColor[color].index(external_key)
+                del self.agentColor[color][to_del]
 
     def deleteBox(self, external_key):
         pos = self.getPos(self.boxes, external_key)
@@ -102,7 +105,6 @@ class Literals:
         ext_agents = list(self.agents.keys())
         for external_agent in ext_agents:
             if external_agent != external_key:
-                # del task.agents[external_agent]
                 self.deleteAgent(external_agent)
 
     def keepJustGoal(self, external_key):
@@ -146,6 +148,9 @@ class Literals:
         else:
             return False
 
+    def __str__(self):
+        # Debugging purposes
+        return "\n".join(["".join(line) for line in self.map])
 
 class StateInit(Literals):
     def __init__(self, parent: "Literals" = None):

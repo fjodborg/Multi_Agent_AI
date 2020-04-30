@@ -148,10 +148,14 @@ class Agent:
         c_union = float("inf")
         if color != self.color:
             return c_union
-        c_ts = calcHuristicsFor(broadcasted_task)
+        calcHuristicsFor(broadcasted_task)
+        c_ts = broadcasted_task.f
         joint_task = deepcopy(self.task)
         joint_task.addGoal(goal_key, pos, color)
-        c_union = min(c_union, calcHuristicsFor(joint_task))
+        cost = calcHuristicsFor(joint_task)
+        if cost is None:
+            cost = c_union
+        c_union = min(c_union, cost)
         return c_union - c_ts
 
     def consume_message(self, message: Message) -> StateInit:

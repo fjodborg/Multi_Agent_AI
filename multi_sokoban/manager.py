@@ -70,14 +70,15 @@ class Manager:
         """Request heuristic from the `agents` to solve a particular `task`."""
         min_marginal_cost = float("inf")
         for agent in agents:
-            if agents in self.agents:
+            if agent in self.agents:
                 # agent got already tasks assigned so you have to use the joint
-                marginal_cost = agent.marginal_cost(task)
+                marginal_cost = self.agents[agent].marginal_task_cost(task)
             else:
                 # here marginal cost is the total heuristic estimate
                 tmp_task = deepcopy(task)
                 tmp_task.keepJustAgent(agent)
-                marginal_cost = calcHuristicsFor(tmp_task)
+                calcHuristicsFor(tmp_task)
+                marginal_cost = tmp_task.f
             # greater or equal to guarantee a selected agent
             if min_marginal_cost >= marginal_cost:
                 min_marginal_cost = marginal_cost
