@@ -77,7 +77,7 @@ class Resultsharing:
             time2 = time + 1
         
         if self.isOutOfBound(time1, agt1) is True:
-            return None
+            return "bound"
         agt1Pos = self.pos[agt1][time1]
         for pos11 in agt1Pos:
             if pos22 == pos11:
@@ -88,19 +88,19 @@ class Resultsharing:
                 return agt1
         
         if self.isOutOfBound(time2, agt2) is True:
-            return None
+            return "bound"
 
         agt2Pos = self.pos[agt2][time2]
         for pos21 in agt2Pos:
             if pos12 == pos21:
-                self.collidedAgents = [agt1, agt2]
+                self.collidedAgents = [agt2, agt1]
                 println(
                     f"tail! between {pos21} & {pos22} with time {[time1,time2-1]} and agent {agt1} & {agt2}"
                 )
                 return agt2
         return None
 
-    def checkSwapNew(self, agt1, agt2, pos12, pos22, time):
+    def checkSwap(self, agt1, agt2, pos12, pos22, time):
         if type(time) == list:
             time1 = time[0] + 1
             time2 = time[1] + 1
@@ -111,7 +111,7 @@ class Resultsharing:
         swap = False
         #println(time)
         if self.isOutOfBound(time1, agt1) is True:
-            return None
+            return "bound"
         agt1Pos = self.pos[agt1][time1]
         for pos11 in agt1Pos:
             if pos22 == pos11:
@@ -119,7 +119,7 @@ class Resultsharing:
                 break
 
         if self.isOutOfBound(time2, agt2) is True:
-            return None
+            return "bound"
         agt2Pos = self.pos[agt2][time2]
         for pos21 in agt2Pos:
             if pos12 == pos21 and swap is True:
@@ -130,7 +130,7 @@ class Resultsharing:
                 return True
         return None
 
-    def isCollisionNew(self, agt1, agt2, pos1, pos2, time):
+    def isCollision(self, agt1, agt2, pos1, pos2, time):
         
         if pos1 == pos2:
             self.collidedAgents = [agt1, agt2]
@@ -148,20 +148,31 @@ class Resultsharing:
                 if agt1 == agt2:
                     continue
                 if self.isOutOfBound(time, agt2) is True:
-                    continue
+                    break
                 agt2Pos = self.pos[agt2][time]
                 for pos2 in agt2Pos:
-                    if self.isCollisionNew(agt1, agt2, pos1, pos2, time) is True:
+                    agentsCollided = self.isCollision(agt1, agt2, pos1, pos2, time)
+                    if agentsCollided is not None:
                         self.collisionType = "col"
                         return agt2
-                    if self.checkSwapNew(agt1, agt2, pos1, pos2, time) is not None:
+                        # if i set it to "is not None" then it doesn't work
+                    agentsSwaped = self.checkSwap(agt1, agt2, pos1, pos2, time)
+                    if agentsSwaped is not None:
+                        if agentsSwaped == "bound":
+                            break
                         self.collisionType = "swap"
                         return agt2
+                    # if i set it to "is not None" then it doesn't work
                     tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, time)
                     if tailingAgt is not None:
+                        if tailingAgt == "bound":
+                            break
+                        println(tailingAgt)
                         self.collisionType = "tail"
                         return tailingAgt
-
+            else:
+                continue
+            break
         return None
 
    
@@ -172,29 +183,38 @@ class Resultsharing:
         agt1 = self.collidedAgents[1]
         agt2 = self.collidedAgents[0]
         time2 = collisionTime + 1
-        println("Traceback colission from now on:")
+        self.traceback = 0
+        println("Traceback collision from now on:")
         for time1 in range(collisionTime, len(self.pos[agt1])):
             time2 -= 1
+            self.traceback += 1
+
             obj1Pos = self.pos[agt1][time1]
             obj2Pos = self.pos[agt2][time2]
             collision = False
 
             for pos1 in obj1Pos:
                 for pos2 in obj2Pos:
-                    if self.isCollisionNew(agt1, agt2, pos1, pos2, [time1, time2]) is True:
-                        continue
+                    if self.isCollision(agt1, agt2, pos1, pos2, [time1, time2]):
                         collision = True
-                    if self.checkSwapNew(agt1, agt2, pos1, pos2, [time1, time2]):
+                        break
+                    # if i set it to "is not None" then it doesn't work
+                    if self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2]):
                         collision = True
-                        continue
+                        break
+                    # if i set it to "is not None" then it doesn't work
                     if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
                         collision = True
-                        continue
+                        break
+                else:
+                    continue
+                break
+            
             if collision is False:
                 break
             # TODO fix collision time, it should differ when using swap and collision
         println("Traceback found")
-        return time1, time2, agt2  # the last one was not a a collision
+        return time2, agt2  # the last one was not a a collision
 
     def fixLength(self):
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
@@ -224,12 +244,12 @@ class Resultsharing:
                         self.paths[agt].append("NoOp")
 
     def fixCollision(self, collisionTime):
-        forwardTime, backwardTime, agt = self.tracebackCollision(collisionTime)
+        backwardTime, agt = self.tracebackCollision(collisionTime)
         if backwardTime is None:
             self.traceback = 0
             return None
-
-        for i in range(forwardTime - backwardTime + 2): # i don't know why i need a 2 here :(
+        println(self.traceback)
+        for i in range(self.traceback*2): # i don't know why i need a 2 here :(
             # Maybe remove this line, i don't think we need it
             self.pos[agt].insert(backwardTime, self.pos[agt][backwardTime])
         
