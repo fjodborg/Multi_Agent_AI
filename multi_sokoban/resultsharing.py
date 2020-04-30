@@ -60,9 +60,9 @@ class Resultsharing:
 
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
-            self.unsolvableReason = [agt2, time, "out of bounds/no traceback"]
+            self.unsolvableReason = [self.collidedAgents[1], self.traceback, "out of bounds/no traceback"]
             #println(self.unsolvableReason)
-            println(f"Out of bounds for agent {agt2} at time {time+1}/{len(self.pos[agt2])-1}")
+            println(f"Out of bounds for agent {agt2} at time {time}/{len(self.pos[agt2])-1}")
             return True
         return False
 
@@ -145,7 +145,7 @@ class Resultsharing:
                 if agt1 == agt2:
                     continue
                 if self.isOutOfBound(time, agt2) is True:
-                    break
+                    return None
                 agt2Pos = self.pos[agt2][time]
                 for pos2 in agt2Pos:
                     agentsCollided = self.isCollision(agt1, agt2, pos1, pos2, time)
@@ -156,14 +156,14 @@ class Resultsharing:
                     agentsSwaped = self.checkSwap(agt1, agt2, pos1, pos2, time)
                     if agentsSwaped is not None:
                         if agentsSwaped == "bound":
-                            break
+                            return None
                         self.collisionType = "swap"
                         return agt2
                     # if i set it to "is not None" then it doesn't work
                     tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, time)
                     if tailingAgt is not None:
                         if tailingAgt == "bound":
-                            break
+                            return None
                         #println(tailingAgt)
                         self.collisionType = "tail"
                         return tailingAgt
@@ -302,11 +302,9 @@ class Resultsharing:
         # TODO remove tb from indicies or find another way to.
         # TODO hash with position as key, and the time this position is occupied
         # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
-        while not deadlock and self.unsolvableReason is None:
+        while not deadlock:
 
             deadlock = True
-            #self.unsolvable = True
-            # for agt1 in range(len(self.paths) - 1, 0, -1):
             for agt1 in range(len(self.paths)):
                 # timeTable = self.manager.generateHash(self.pos, [paths])
                 for time in range(len(self.pos[agt1]) - 1):
@@ -314,19 +312,23 @@ class Resultsharing:
                     collisionType = self.findCollidingAgt(agt1, time)
                     #println(collisionType)
                     if collisionType is not None:
-                        # #TODO break out to deadlock loop, fix actions and rehash
-                        ####
                         if self.fixCollision(time) is not None:
-                            deadlock = False
+                            if self.unsolvableReason is not None:
+                                deadlock = False
                             break
+                    if collisionType is None and self.unsolvableReason is not None:
+                        break
                     self.collisionType = None
                     self.collidedAgents = None
                     self.collisionTime = None
                     
                 else:
                     continue
+
             self.fixLength()
-        println(f"unsolveable due to agt {self.unsolvableReason[0]} at time {self.unsolvableReason[1]}, reason {self.unsolvableReason[2]}")
+
+        if self.unsolvableReason is not None:
+            println(f"unsolveable due to agt {self.unsolvableReason[0]} at time {self.unsolvableReason[1]}, reason {self.unsolvableReason[2]}")
         return None
 
 
