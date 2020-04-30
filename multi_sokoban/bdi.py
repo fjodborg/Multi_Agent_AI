@@ -79,7 +79,6 @@ class Agent:
         self.strategy = strategy
         self.heuristic = heuristic
         self.color = list(task.goals.values())[0][0][1]
-        println(self.color)
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
         # status can be ok, fail or init
@@ -99,7 +98,7 @@ class Agent:
 
         """
         # update beliefs and desires
-        if self.status == STATUS.ok and not self.helping:
+        if self.status == STATUS.ok:  # and not self.helping:
             # avoid recomputing solutions when not needed
             return self.saved_solution, self.broadcast()
         if inbox and self.status == STATUS.fail:
@@ -194,8 +193,10 @@ class Agent:
         self.helping = False
         return message
 
-    def track_back(self):
+    def track_back(self, looking_for: str = ""):
         """Trace the case self."""
+        if not looking_for:
+            looking_for = self.name
         explored = self.task.explored
         # set -> list -> dict (key -> list -> (pos, color))
         trace = []
@@ -206,7 +207,6 @@ class Agent:
                 if key == self.name:
                     trace.append(object_dict[key][0][0])
         return trace
-
 
     def _identify_problem(self) -> str:
         """Identify why frontier is empty.
@@ -222,21 +222,7 @@ class Agent:
             for box, pos_color in self.task.boxes.items()
             if pos_color[0][1] != self.color
         }
-        agent_trace = self.track_back()
-        # formulate problem
-        # state = deepcopy(self.task)
-        # state.forget_exploration()
-        # state.isGoalState = state.isBlockedState_single
-        # println(state)
-        # # search for a blocking state
-        # searcher = self.strategy(state)
-        # state.setPos(state.agents, self.name, self.init_pos)
-        # println(f"Agent {self.name}: searching for blocked state")
-        # path = self.search(searcher)
-        # if path is None:
-        #     println(f"Agent {self.name}: Blocking seach failed :(")
-        #     return None
-        # agent_pos = list(state.agents.values())[0][0][0]
+        agent_trace = self.track_back(self.name)
         for box, pos_color in boxes.items():
             for agent_pos in agent_trace:
                 if self.task.Neighbour(pos_color[0], agent_pos):
