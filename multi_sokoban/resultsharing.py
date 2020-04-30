@@ -182,7 +182,7 @@ class Resultsharing:
         agt1Pos = self.pos[agt1][time]
         for pos1 in agt1Pos:
             for agt2 in range(len(self.pos)):
-                if agt1 == agt2:
+                if agt1 == agt2 or (time + 1) >= len(self.pos[agt2]):
                     continue
                 agt2Pos = self.pos[agt2][time]
                 if self.isCollisionNew(agt1, agt2, pos1, agt2Pos, time) is True:

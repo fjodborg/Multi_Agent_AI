@@ -20,7 +20,7 @@ class BestFirstSearch(ABC):
     """Abstract class for BFS."""
 
     def __init__(
-        self, init_state: actions.StateInit, heuristic: Callable = default_heuristic,
+        self, init_state: actions.StateInit, heuristic: Callable = default_heuristic
     ):
         """Initialize strategy."""
         self.frontier = PriorityQueue()

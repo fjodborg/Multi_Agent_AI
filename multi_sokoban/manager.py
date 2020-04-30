@@ -100,8 +100,8 @@ class Manager:
 
     def broadcast_message(self, message: Message) -> str:
         """Request help in the form of a message."""
-        color_of = message.Color
-        ok_agents = [k for k, v in self.agents if color_of == v.color][0]
+        color_of = message.color
+        ok_agents = [k for k, v in self.agents.items() if color_of == v.color][0]
         return ok_agents
 
     def sort_agents(self):
@@ -130,8 +130,13 @@ class Manager:
                 self.nodes_explored += len(agent.task.explored)
                 if agent.status == STATUS.fail:
                     ok_agent = self.broadcast_message(message)
-                    println(f"Agent {name} broadcasted task for {path.goals}")
-                    self.agents[ok_agent].consume_message(message)
+                    println(self.agents)
+                    if ok_agent:
+                        println(f"Agent {name} broadcasted task!")
+                        self.agents[ok_agent[0]].consume_message(message)
+                    else:
+                        println(f"SOS of Agent {name} stored at inbox.")
+                        self.inbox.append(message)
                 else:
                     paths[name] = path
         self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]

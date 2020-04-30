@@ -79,6 +79,7 @@ class Agent:
         self.strategy = strategy
         self.heuristic = heuristic
         self.color = list(task.goals.values())[0][0][1]
+        println(self.color)
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
         # status can be ok, fail or init
@@ -86,7 +87,7 @@ class Agent:
         self.helping = False
         self.saved_solution = None
 
-    def solve(self, inbox) -> Tuple[List, Message]:
+    def solve(self, inbox: List[Message]) -> Tuple[List, Message]:
         """Solve the tasks by search and communicate.
 
         Returns
@@ -97,7 +98,7 @@ class Agent:
             Message of current state
 
         """
-        # update beliefs
+        # update beliefs and desires
         if self.status == STATUS.ok and not self.helping:
             # avoid recomputing solutions when not needed
             return self.saved_solution, self.broadcast()
@@ -105,7 +106,7 @@ class Agent:
             to_del = False
             for i, message in enumerate(inbox):
                 if message.requester == self.name:
-                    self.task.deleteBox(message.box)
+                    self.consume_message(message)
                     to_del = i
                     break
             if to_del:
@@ -118,12 +119,8 @@ class Agent:
         )
         path = self.search(searcher)
         # communicate
-        if path is None:
-            self.task.forget_exploration()
-            self.status = STATUS.fail
-        else:
-            self.status = STATUS.ok
-            self.saved_solution = path
+        self.status = STATUS.ok if path else STATUS.fail
+        self.saved_solution = path
         return path, self.broadcast()
 
     def add_task(self, task: StateInit):
@@ -160,8 +157,11 @@ class Agent:
 
     def consume_message(self, message: Message) -> StateInit:
         """Take a message."""
-        # update desires
-        self.helping = message
+        if self.status == STATUS.fail:
+            self.task.deleteBox(message.box)
+        else:
+            println(f"Agent {self.name} received message!")
+            self.helping = message
         # TODO: logic of weighting the goal here!
 
     def broadcast(self) -> Message:
@@ -169,6 +169,7 @@ class Agent:
         message = False
         if self.status == STATUS.fail:
             message = self._sos()
+            self.task.forget_exploration()
         if self.helping:
             message = self._send_success()
         return message
@@ -193,6 +194,20 @@ class Agent:
         self.helping = False
         return message
 
+    def track_back(self):
+        """Trace the case self."""
+        explored = self.task.explored
+        # set -> list -> dict (key -> list -> (pos, color))
+        trace = []
+        for minrep in explored:
+            exp = eval(minrep)
+            for object_dict in exp:
+                key = list(object_dict)[0]
+                if key == self.name:
+                    trace.append(object_dict[key][0][0])
+        return trace
+
+
     def _identify_problem(self) -> str:
         """Identify why frontier is empty.
 
@@ -203,19 +218,29 @@ class Agent:
 
         """
         boxes = {
-            box: pos_color
+            box: pos_color[0]
             for box, pos_color in self.task.boxes.items()
-            if pos_color[0] != self.color
+            if pos_color[0][1] != self.color
         }
-        # store the boxes of other colors adjacent to positions
-        # that the agent explored (backtracking)
-        state = self.task
-        while state.actionPerformed is not None:
-            agent_pos = self.getPos(state.agents, self.name)
-            for box, pos_color in boxes.items():
+        agent_trace = self.track_back()
+        # formulate problem
+        # state = deepcopy(self.task)
+        # state.forget_exploration()
+        # state.isGoalState = state.isBlockedState_single
+        # println(state)
+        # # search for a blocking state
+        # searcher = self.strategy(state)
+        # state.setPos(state.agents, self.name, self.init_pos)
+        # println(f"Agent {self.name}: searching for blocked state")
+        # path = self.search(searcher)
+        # if path is None:
+        #     println(f"Agent {self.name}: Blocking seach failed :(")
+        #     return None
+        # agent_pos = list(state.agents.values())[0][0][0]
+        for box, pos_color in boxes.items():
+            for agent_pos in agent_trace:
                 if self.task.Neighbour(pos_color[0], agent_pos):
                     return box, pos_color[1]
-            state = state.prevState
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.
