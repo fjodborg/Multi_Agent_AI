@@ -32,8 +32,6 @@ class Resultsharing:
             self.timeTable[key] = [value]
 
     def generateHash(self):
-        # agtColor = self.manager.sort_agents()
-        # println(agtColor)
 
         # Add initial positions for boxes
         for key in self.manager.top_problem.boxes:
@@ -56,91 +54,10 @@ class Resultsharing:
                     self.addToHash(posAtTime[1], time, agtColor[agtIdx])  #
                 self.addToHash(posAtTime[0], time, agtIdx)
 
-    def checkPureCollision(self, time, agt1):
-        agt1Pos = self.pos[agt1][time]
-        for agt2 in range(len(self.pos)):
-            if agt1 == agt2:
-                continue
-            for pos1 in obj1Pos:
-                println(agt2)
-                for obj2Pos in self.pos[agt2][time]:
-                    for pos2 in obj2Pos:
-                        println((pos1, pos2, agt1, agt2))
-
-        # if (objPosAtTime1, time) in self.timeTable:
-
-        #     agentsAtTime1 = self.timeTable[objPosAtTime1, time]
-        #     #println(f"{time} {agentsAtTime1}")
-        #     if len(agentsAtTime1) > 1:
-        #         agts = [[agt] for agt in agentsAtTime1]
-        #         #println([type(obj) != int for obj in agentsAtTime1])
-        #         self.collidedAgents = agts
-        #         return True
-        #     return False
         return None
-        # if (objPosAtTime1, time) in self.timeTable:
 
-        #     agentsAtTime1 = self.timeTable[objPosAtTime1, time]
-        #     #println(f"{time} {agentsAtTime1}")
-        #     if len(agentsAtTime1) > 1:
-        #         agts = [[agt] for agt in agentsAtTime1]
-        #         #println([type(obj) != int for obj in agentsAtTime1])
-        #         self.collidedAgents = agts
-        #         return True
-        #     return False
-        # return None
 
-    def checkSwap(self, obj1Pos, obj2Pos, time, agtIdx):
 
-        agentsAtTime1Pos1 = self.timeTable[obj1Pos, time]
-        agentsAtTime1Pos2 = self.timeTable[obj2Pos, time]
-        println(f"{agentsAtTime1Pos2,agentsAtTime1Pos1}")
-        pos1AtTime1 = self.pos[agentsAtTime1Pos1[0]][time]
-        pos2AtTime1 = self.pos[agentsAtTime1Pos2[0]][time]
-        pos1AtTime2 = self.pos[agentsAtTime1Pos1[0]][time + 1]
-        pos2AtTime2 = self.pos[agentsAtTime1Pos2[0]][time + 1]
-        for pos12 in pos2AtTime1:
-            for pos21 in pos1AtTime2:
-                if pos12 == pos21:
-                    swap1 = True
-                    break
-            else: 
-                continue 
-            break 
-
-        for pos11 in pos1AtTime1:
-            for pos22 in pos2AtTime2:
-                if pos11 == pos22 and swap1 is True:
-                    self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
-                    print(
-                        f"swap! between {pos11} & {pos12} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
-                    )
-                    return True
-
-        ''' # doesn't seem to work, but can't figure out why
-            
-            println(f"{pos11,pos12,pos21,pos22}")
-            println(f"{self.pos[agentsAtTime1Pos1[0]][time], self.pos[agentsAtTime1Pos2[0]][time]}")
-            println(f"{self.pos[agentsAtTime1Pos1[0]][time+1], self.pos[agentsAtTime1Pos2[0]][time-1]}")
-
-            # println(f"swap1! between {obj1Pos} & {obj2Pos} with time {time} & {time} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}")
-            if (obj1Pos, time + 1) in self.timeTable:
-                #println(f"{obj1Pos, time+1} in timeTable")
-                agentsAtTime2Pos1 = self.timeTable[obj1Pos, time + 1]
-            if (obj2Pos, time + 1) in self.timeTable:
-                #println(f"{obj2Pos, time+1} in timeTable")
-                agentsAtTime2Pos2 = self.timeTable[obj2Pos, time + 1]
-
-            if (
-                agentsAtTime2Pos2 == agentsAtTime1Pos1
-                and agentsAtTime2Pos1 == agentsAtTime1Pos2
-            ):
-                println(
-                    f"swap! between {obj1Pos} & {obj2Pos} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
-                )
-                self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
-                return True '''
-        return None
 
     def fixBoxCollision(self):
         pass
@@ -248,8 +165,6 @@ class Resultsharing:
         return None
 
    
-    # def placeHolderAStar():
-
     def tracebackCollision(self, collisionTime):
         # TODO take into account if there is multiple agents
         # TODO if out of bounds or no solution found return a new value
@@ -308,19 +223,6 @@ class Resultsharing:
                     else:
                         self.paths[agt].append("NoOp")
 
-    def fixCollision(self, collisionTime):
-        forwardTime, bakcwardTime, agt = self.tracebackCollision(collisionTime)
-        if bakcwardTime is None:
-            self.traceback = 0
-            return None
-        for i in range(forwardTime - bakcwardTime):
-            # Maybe remove this line, i don't think we need it
-            self.pos[agt].insert(bakcwardTime+1, self.pos[agt][bakcwardTime+1])
-        
-        self.traceback = 0
-        return True
-        # println(self.pos)
-        # println(self.paths)
 
     def findAndResolveCollision(self):
         # TODO TODO TODO, reimplement the way it's done, if a collision is found
