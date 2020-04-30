@@ -223,6 +223,19 @@ class Resultsharing:
                     else:
                         self.paths[agt].append("NoOp")
 
+    def fixCollision(self, collisionTime):
+        forwardTime, bakcwardTime, agt = self.tracebackCollision(collisionTime)
+        if bakcwardTime is None:
+            self.traceback = 0
+            return None
+        for i in range(forwardTime - bakcwardTime):
+            # Maybe remove this line, i don't think we need it
+            self.pos[agt].insert(bakcwardTime+1, self.pos[agt][bakcwardTime+1])
+        
+        self.traceback = 0
+        return True
+        # println(self.pos)
+        # println(self.paths)
 
     def findAndResolveCollision(self):
         # TODO TODO TODO, reimplement the way it's done, if a collision is found
