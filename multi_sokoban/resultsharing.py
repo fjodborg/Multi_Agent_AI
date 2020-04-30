@@ -262,16 +262,8 @@ class Resultsharing:
             time2 -= 1
             obj1Pos = self.pos[agt1][time1]
             obj2Pos = self.pos[agt2][time2]
-            obj3Pos = self.pos[agt2][time2 + 1]
             collision = False
-            if self.isOutOfBound(time1, agt1) is True:
-                println("Traceback not found")
-                return None, None, None
-            if self.isOutOfBound(time2, agt1) is True:
-                println("Traceback not found")
-                return None, None, None
 
-            # println(f"{obj1Pos,obj2Pos,obj3Pos}, {time1,time2,time2+1}")
             for pos1 in obj1Pos:
                 for pos2 in obj2Pos:
                     if self.isCollisionNew(agt1, agt2, pos1, pos2, [time1, time2]) is True:
@@ -283,13 +275,6 @@ class Resultsharing:
                     if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
                         collision = True
                         continue
-                # for pos3 in obj3Pos:
-                #     if pos1 == pos3:
-                #         collision = True
-                #         println(
-                #             f"traceback swap at {pos1} & {pos2} at time {[time1, time2]} with agent {agt1} {agt2}"
-                #         )
-                #         continue
             if collision is False:
                 break
             # TODO fix collision time, it should differ when using swap and collision
