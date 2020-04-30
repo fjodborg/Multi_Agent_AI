@@ -195,40 +195,12 @@ class Resultsharing:
 
         return None
 
-    def isCollision(self, time, agt1):
-        # TODO box and agent collision
-        # TODO box and agent collision is only a problem if the box is infront
-        
-        
-        return self.findCollidingAgt(agt1, time)
-        #println((agt1,agt2))
-
-        
-        # collision = self.checkPureCollision(time, agt1)
-        # if collision is not None:
-        #     if collision is True:
-        #         return "now"
-        #     # check if the next position has a collision at the same time
-        #     obj2Pos = self.pos[agt1][time + 1]
-            
-        #     for pos in obj2Pos:
-        #         collision2 = self.checkPureCollision(pos, time, agt1)
-        #         if collision2 is not None:
-        #             #println(f"{collision, collision2}")
-        #             if collision2 is True:
-        #                 return "next"
-        #             swap = self.checkSwap(obj1Pos, pos, time, agt1)
-        #             #println(swap)
-        #             if swap is True:
-        #                 return "swap"
-        #         # TODO handle box collision
-        #         self.fixBoxCollision()
-        return None
-
+   
     # def placeHolderAStar():
 
     def tracebackCollision(self, collisionTime):
         # TODO take into account if there is multiple agents
+        # TODO if out of bounds or no solution found return a new value
         println(self.collidedAgents)
         agt1 = self.collidedAgents[1]
         agt2 = self.collidedAgents[0]
@@ -239,6 +211,9 @@ class Resultsharing:
             obj2Pos = self.pos[agt2][time2]
             obj3Pos = self.pos[agt2][time2 + 1]
             collision = False
+            if (time2 < 0 or time1 >= len(self.pos[agt1])):
+                return "out of bounds", None, None
+
             # println(f"{obj1Pos,obj2Pos,obj3Pos}, {time1,time2,time2+1}")
             for pos1 in obj1Pos:
                 for pos2 in obj2Pos:
@@ -261,10 +236,16 @@ class Resultsharing:
         return time1, time2, agt2  # the last one was not a a collision
 
     def fixLength(self):
-        longest = 0
-        for pos in self.pos:
-            if len(pos) > longest:
-                longest = len(pos)
+        lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
+        longest = max(lengths)
+        shortest = min(lengths)
+        dif = False
+        if longest > shortest:
+            dif = True
+
+        if dif is False:
+            return None
+            pass
 
         for pos in self.pos:
             for i in range(longest - len(pos)):
@@ -281,10 +262,15 @@ class Resultsharing:
 
     def fixCollision(self, collisionTime):
         forwardTime, bakcwardTime, agt = self.tracebackCollision(collisionTime)
+        if bakcwardTime is None:
+            self.traceback = 0
+            return None
         for i in range(forwardTime - bakcwardTime):
             # Maybe remove this line, i don't think we need it
-            self.pos[agt].insert(bakcwardTime, self.pos[agt][bakcwardTime])
-
+            self.pos[agt].insert(bakcwardTime+1, self.pos[agt][bakcwardTime+1])
+        
+        self.traceback = 0
+        return True
         # println(self.pos)
         # println(self.paths)
 
@@ -337,23 +323,27 @@ class Resultsharing:
         while not deadlock:
 
             deadlock = True
+            # for agt1 in range(len(self.paths) - 1, 0, -1):
             for agt1 in range(len(self.paths)):
                 # timeTable = self.manager.generateHash(self.pos, [paths])
                 for time in range(len(self.pos[agt1]) - 2):
                     self.traceback = 0
-                    collisionType = self.isCollision(time, agt1)
+                    collisionType = self.findCollidingAgt(agt1, time)
                     #println(collisionType)
                     if collisionType is not None:
                         # #TODO break out to deadlock loop, fix actions and rehash
                         ####
-                        self.fixCollision(time)  # TODO change second
+                        if self.fixCollision(time) is not None:
+                            # deadlock = False
+                            pass
                         break
-                else:  # continues if the inner loop wasn't broken
+                    self.collisionType = None
+                    self.collidedAgents = None
+                    self.collisionTime = None
+                    
+                else:
                     continue
-                break
-
             self.fixLength()
-
         return None
 
 
