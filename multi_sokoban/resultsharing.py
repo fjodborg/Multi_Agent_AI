@@ -145,53 +145,105 @@ class Resultsharing:
     def fixBoxCollision(self):
         pass
 
-    def checkSwapNew(self, agt1, agt2, agt1PosPrev, agt2PosPrev, time):
-        swap = False
-        agt1Pos = self.pos[agt1][time + 1]
-        agt2Pos = self.pos[agt2][time + 1]
-        for pos11 in agt1Pos:
-            for pos22 in agt2PosPrev:
-                if pos22 == pos11:
-                    swap = True
-                    break
-            else:
-                continue
-            break
-
-        for pos12 in agt1PosPrev:
-            for pos21 in agt2Pos:
-                if pos12 == pos21 and swap is True:
-                    self.collidedAgents = [agt1, agt2]
-                    println(
-                        f"swap! between {pos11} & {pos12} with time {time} & {time+1} and agent {agt1} & {agt2}"
-                    )
-                    return True
+    def isOutOfBound(self, time, agt2):
+        if time >= len(self.pos[agt2]) or time < 0:
+            println(f"Out of bounds for agent {agt2} at time {time+1}/{len(self.pos[agt2])-1}")
+            return True
         return False
 
-    def isCollisionNew(self, agt1, agt2, pos1, agt2Pos, time):
-        for pos2 in agt2Pos:
-            if pos1 == pos2:
+    def checkTailing(self, agt1, agt2, pos12, pos22, time):
+        if type(time) == list:
+            time1 = time[0] + 1
+            time2 = time[1] + 1
+        else:
+            time1 = time + 1
+            time2 = time + 1
+        
+        if self.isOutOfBound(time1, agt1) is True:
+            return None
+        agt1Pos = self.pos[agt1][time1]
+        for pos11 in agt1Pos:
+            if pos22 == pos11:
                 self.collidedAgents = [agt1, agt2]
                 println(
-                    f"collision! between {pos1} & {pos1} with time {time} and agent {agt1} & {agt2}"
+                    f"tail! between {pos11} & {pos12} with time {[time1-1,time2]} and agent {agt1} & {agt2}"
+                )
+                return agt1
+        
+        if self.isOutOfBound(time2, agt2) is True:
+            return None
+
+        agt2Pos = self.pos[agt2][time2]
+        for pos21 in agt2Pos:
+            if pos12 == pos21:
+                self.collidedAgents = [agt1, agt2]
+                println(
+                    f"tail! between {pos21} & {pos22} with time {[time1,time2-1]} and agent {agt1} & {agt2}"
+                )
+                return agt2
+        return None
+
+    def checkSwapNew(self, agt1, agt2, pos12, pos22, time):
+        if type(time) == list:
+            time1 = time[0] + 1
+            time2 = time[1] + 1
+        else:
+            time1 = time + 1
+            time2 = time + 1
+
+        swap = False
+        #println(time)
+        if self.isOutOfBound(time1, agt1) is True:
+            return None
+        agt1Pos = self.pos[agt1][time1]
+        for pos11 in agt1Pos:
+            if pos22 == pos11:
+                swap = True
+                break
+
+        if self.isOutOfBound(time2, agt2) is True:
+            return None
+        agt2Pos = self.pos[agt2][time2]
+        for pos21 in agt2Pos:
+            if pos12 == pos21 and swap is True:
+                self.collidedAgents = [agt1, agt2]
+                println(
+                    f"swap! between {pos21} & {pos22} with time {[time1,time2]} and agent {agt1} & {agt2}"
                 )
                 return True
-        return False
+        return None
+
+    def isCollisionNew(self, agt1, agt2, pos1, pos2, time):
+        
+        if pos1 == pos2:
+            self.collidedAgents = [agt1, agt2]
+            println(
+                f"collision! between {pos1} & {pos1} with time {time} and agent {agt1} & {agt2}"
+            )
+            return True
+        return None
 
     def findCollidingAgt(self, agt1, time):
+
         agt1Pos = self.pos[agt1][time]
         for pos1 in agt1Pos:
             for agt2 in range(len(self.pos)):
                 if agt1 == agt2:
                     continue
+                if self.isOutOfBound(time, agt2) is True:
+                    continue
                 agt2Pos = self.pos[agt2][time]
-                if self.isCollisionNew(agt1, agt2, pos1, agt2Pos, time) is True:
-                    self.collisionType = "col"
-                    return agt2
-                if self.checkSwapNew(agt1, agt2, agt1Pos, agt2Pos, time) is True:
-                    self.collisionType = "swap"
-                    return agt2
-
+                for pos2 in agt2Pos:
+                    if self.isCollisionNew(agt1, agt2, pos1, pos2, time) is True:
+                        self.collisionType = "col"
+                        return agt2
+                    if self.checkSwapNew(agt1, agt2, pos1, pos2, time) is not None:
+                        self.collisionType = "swap"
+                        return agt2
+                    tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, time)
+                    if tailingAgt is not None:
+                        self.collisionType = "tail"
+                        return tailingAgt
 
         return None
 
@@ -204,41 +256,52 @@ class Resultsharing:
         println(self.collidedAgents)
         agt1 = self.collidedAgents[1]
         agt2 = self.collidedAgents[0]
-        time2 = collisionTime
-        for time1 in range(collisionTime + 1, len(self.pos[agt1])):
+        time2 = collisionTime + 1
+        println("Traceback colission from now on:")
+        for time1 in range(collisionTime, len(self.pos[agt1])):
             time2 -= 1
             obj1Pos = self.pos[agt1][time1]
             obj2Pos = self.pos[agt2][time2]
             obj3Pos = self.pos[agt2][time2 + 1]
             collision = False
-            if (time2 < 0 or time1 >= len(self.pos[agt1])):
-                return "out of bounds", None, None
+            if self.isOutOfBound(time1, agt1) is True:
+                println("Traceback not found")
+                return None, None, None
+            if self.isOutOfBound(time2, agt1) is True:
+                println("Traceback not found")
+                return None, None, None
 
             # println(f"{obj1Pos,obj2Pos,obj3Pos}, {time1,time2,time2+1}")
             for pos1 in obj1Pos:
                 for pos2 in obj2Pos:
-                    if pos1 == pos2:
-                        collision = True
-                        println(
-                            f"traceback collision at {pos1} & {pos2} at time {time1} & {time2} with agent {agt1} {agt2}"
-                        )
+                    if self.isCollisionNew(agt1, agt2, pos1, pos2, [time1, time2]) is True:
                         continue
-                for pos3 in obj3Pos:
-                    if pos1 == pos3:
                         collision = True
-                        println(
-                            f"traceback swap at {pos1} & {pos2} at time {time1} & {time2} with agent {agt1} {agt2}"
-                        )
+                    if self.checkSwapNew(agt1, agt2, pos1, pos2, [time1, time2]):
+                        collision = True
                         continue
+                    if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
+                        collision = True
+                        continue
+                # for pos3 in obj3Pos:
+                #     if pos1 == pos3:
+                #         collision = True
+                #         println(
+                #             f"traceback swap at {pos1} & {pos2} at time {[time1, time2]} with agent {agt1} {agt2}"
+                #         )
+                #         continue
             if collision is False:
                 break
             # TODO fix collision time, it should differ when using swap and collision
+        println("Traceback found")
         return time1, time2, agt2  # the last one was not a a collision
 
     def fixLength(self):
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
         longest = max(lengths)
         shortest = min(lengths)
+        println(longest)
+        println(shortest)
         dif = False
         if longest > shortest:
             dif = True
@@ -326,7 +389,7 @@ class Resultsharing:
             # for agt1 in range(len(self.paths) - 1, 0, -1):
             for agt1 in range(len(self.paths)):
                 # timeTable = self.manager.generateHash(self.pos, [paths])
-                for time in range(len(self.pos[agt1]) - 2):
+                for time in range(len(self.pos[agt1]) - 1):
                     self.traceback = 0
                     collisionType = self.findCollidingAgt(agt1, time)
                     #println(collisionType)
@@ -335,8 +398,7 @@ class Resultsharing:
                         ####
                         if self.fixCollision(time) is not None:
                             # deadlock = False
-                            pass
-                        break
+                            break
                     self.collisionType = None
                     self.collidedAgents = None
                     self.collisionTime = None
