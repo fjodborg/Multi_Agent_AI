@@ -60,8 +60,6 @@ class Resultsharing:
 
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
-            self.unsolvableReason = [self.collidedAgents[1], self.traceback, "out of bounds/no traceback"]
-            #println(self.unsolvableReason)
             println(f"Out of bounds for agent {agt2} at time {time}/{len(self.pos[agt2])-1}")
             return True
         return False
