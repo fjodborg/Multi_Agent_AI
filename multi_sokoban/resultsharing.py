@@ -224,13 +224,14 @@ class Resultsharing:
                         self.paths[agt].append("NoOp")
 
     def fixCollision(self, collisionTime):
-        forwardTime, bakcwardTime, agt = self.tracebackCollision(collisionTime)
-        if bakcwardTime is None:
+        forwardTime, backwardTime, agt = self.tracebackCollision(collisionTime)
+        if backwardTime is None:
             self.traceback = 0
             return None
-        for i in range(forwardTime - bakcwardTime):
+
+        for i in range(forwardTime - backwardTime + 2): # i don't know why i need a 2 here :(
             # Maybe remove this line, i don't think we need it
-            self.pos[agt].insert(bakcwardTime+1, self.pos[agt][bakcwardTime+1])
+            self.pos[agt].insert(backwardTime, self.pos[agt][backwardTime])
         
         self.traceback = 0
         return True
