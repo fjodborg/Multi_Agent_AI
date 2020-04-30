@@ -18,6 +18,7 @@ class Resultsharing:
         self.collisionType = None
         self.collidedAgents = None
         self.collisionTime = None
+        self.unsolvableReason = None
 
     def addToHash(self, pos, time, identity):
         key = (pos, time)
@@ -42,7 +43,7 @@ class Resultsharing:
         agtColor = []
         for goal, val in self.manager.tasks.items():
             agtColor.append(list(val[0].agents.values())[0][0][1])
-        println(agtColor)
+        #println(agtColor)
 
         for agtIdx in range(len(self.paths)):
             for time in range(len(self.pos[agtIdx])):
@@ -57,13 +58,10 @@ class Resultsharing:
         return None
 
 
-
-
-    def fixBoxCollision(self):
-        pass
-
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
+            self.unsolvableReason = [agt2, time, "out of bounds/no traceback"]
+            #println(self.unsolvableReason)
             println(f"Out of bounds for agent {agt2} at time {time+1}/{len(self.pos[agt2])-1}")
             return True
         return False
@@ -141,7 +139,6 @@ class Resultsharing:
         return None
 
     def findCollidingAgt(self, agt1, time):
-
         agt1Pos = self.pos[agt1][time]
         for pos1 in agt1Pos:
             for agt2 in range(len(self.pos)):
@@ -167,7 +164,7 @@ class Resultsharing:
                     if tailingAgt is not None:
                         if tailingAgt == "bound":
                             break
-                        println(tailingAgt)
+                        #println(tailingAgt)
                         self.collisionType = "tail"
                         return tailingAgt
             else:
@@ -179,7 +176,7 @@ class Resultsharing:
     def tracebackCollision(self, collisionTime):
         # TODO take into account if there is multiple agents
         # TODO if out of bounds or no solution found return a new value
-        println(self.collidedAgents)
+        #println(self.collidedAgents)
         agt1 = self.collidedAgents[1]
         agt2 = self.collidedAgents[0]
         time2 = collisionTime + 1
@@ -220,8 +217,8 @@ class Resultsharing:
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
         longest = max(lengths)
         shortest = min(lengths)
-        println(longest)
-        println(shortest)
+        #println(longest)
+        #println(shortest)
         dif = False
         if longest > shortest:
             dif = True
@@ -248,7 +245,7 @@ class Resultsharing:
         if backwardTime is None:
             self.traceback = 0
             return None
-        println(self.traceback)
+        #println(self.traceback)
         for i in range(self.traceback*2): # i don't know why i need a 2 here :(
             # Maybe remove this line, i don't think we need it
             self.pos[agt].insert(backwardTime, self.pos[agt][backwardTime])
@@ -301,12 +298,14 @@ class Resultsharing:
         #         # do things with goal
 
         deadlock = False
+        self.unsolvableReason = None
         # TODO remove tb from indicies or find another way to.
         # TODO hash with position as key, and the time this position is occupied
         # TODO if no positions are available at the traceback (out of bounds) explore nearby tiles
-        while not deadlock:
+        while not deadlock and self.unsolvableReason is None:
 
             deadlock = True
+            #self.unsolvable = True
             # for agt1 in range(len(self.paths) - 1, 0, -1):
             for agt1 in range(len(self.paths)):
                 # timeTable = self.manager.generateHash(self.pos, [paths])
@@ -318,7 +317,7 @@ class Resultsharing:
                         # #TODO break out to deadlock loop, fix actions and rehash
                         ####
                         if self.fixCollision(time) is not None:
-                            # deadlock = False
+                            deadlock = False
                             break
                     self.collisionType = None
                     self.collidedAgents = None
@@ -327,6 +326,7 @@ class Resultsharing:
                 else:
                     continue
             self.fixLength()
+        println(f"unsolveable due to agt {self.unsolvableReason[0]} at time {self.unsolvableReason[1]}, reason {self.unsolvableReason[2]}")
         return None
 
 
