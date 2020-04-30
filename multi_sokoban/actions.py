@@ -4,6 +4,7 @@ import operator
 
 import numpy as np
 
+from utils import println
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -151,6 +152,7 @@ class Literals:
     def __str__(self):
         # Debugging purposes
         return "\n".join(["".join(line) for line in self.map])
+
 
 class StateInit(Literals):
     def __init__(self, parent: "Literals" = None):
