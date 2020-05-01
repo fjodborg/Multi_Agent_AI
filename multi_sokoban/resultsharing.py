@@ -8,7 +8,7 @@ from .utils import ResourceLimit, println
 
 
 class Resultsharing:
-    def __init__(self, manager):
+    def __init__(self, manager, inbox):
         """Initialize with the whole problem definition `top_problem`."""
         self.pos = []
         self.paths = []
@@ -17,10 +17,15 @@ class Resultsharing:
         self.traceback = 0
         #self.collisionType = None
         self.collidedAgents = None
-        self.unsolvableReason = None
+        self.unsolvableReason = [None]
         self.isBound = False
+        self.inbox = inbox
+        self.isTailing = 0
+        
+
 
     def addToHash(self, pos, time, identity):
+        ''' Not in use at the moment '''
         key = (pos, time)
         value = identity
         if key in self.timeTable:
@@ -33,26 +38,20 @@ class Resultsharing:
             self.timeTable[key] = [value]
 
     def generateHash(self):
-
-        # Add initial positions for boxes
+        ''' Not in use at the moment '''
         for key in self.manager.top_problem.boxes:
-            # println(self.manager.top_problem.boxes[key][0])
             boxPos, boxColor = self.manager.top_problem.boxes[key][0]
             self.addToHash(boxPos, 0, boxColor)
 
         agtColor = []
         for goal, val in self.manager.tasks.items():
             agtColor.append(list(val[0].agents.values())[0][0][1])
-        #println(agtColor)
 
         for agtIdx in range(len(self.paths)):
             for time in range(len(self.pos[agtIdx])):
                 posAtTime = self.pos[agtIdx][time]
-                # println(f"{posAtTime}")
                 if len(posAtTime) > 1:
-                    # println("the value above is the color")
-                    # TODO find a solution to figure out how to identify the box
-                    self.addToHash(posAtTime[1], time, agtColor[agtIdx])  #
+                    self.addToHash(posAtTime[1], time, agtColor[agtIdx]) 
                 self.addToHash(posAtTime[0], time, agtIdx)
 
         return None
@@ -60,11 +59,15 @@ class Resultsharing:
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
             # TODO find out why self.collidedAgents is None
+            self.isBound = True
+            # TODO the one below 
+            # self.inbox.append(Message( object_problem="0", bla bla bla))
             self.unsolvableReason = [self.collidedAgents, "out of bounds/no traceback"]
+
             println(f"Out of bounds for agent {agt2} at time {time}/{len(self.pos[agt2])-1}")
             return True
         else: 
-            self.unsolvableReason = None
+            self.unsolvableReason = [None]
         return False
 
     def checkTailingPart(self, agtA, agtB, posB, timeA):
@@ -76,6 +79,7 @@ class Resultsharing:
             for posA in agtAPosA:
                 if posB == posA:
                     self.collidedAgents = [agtA, agtB, timeA]
+                    self.isTailing += 1
                     println(
                         f"agt {agtA} is tailing agt {agtB} at {posA} at time {[timeA]} "
                     )
@@ -89,48 +93,29 @@ class Resultsharing:
         else:
             time1 = time + 1
             time2 = time + 1
-        
-        self.checkTailingPart(agt1, agt2, pos22, time1)
+        self.isTailing = 0
 
+        isAgt1TailingAgt2 = self.checkTailingPart(agt1, agt2, pos22, time1)
         if (self.isOutOfBound(time2, agt2) and self.isBound):
             return None
         else:
-            self.checkTailingPart(agt2, agt1, pos12, time2)
+            isAgt2TailingAgt1 = self.checkTailingPart(agt2, agt1, pos12, time2)
+
+            if isAgt1TailingAgt2 and isAgt2TailingAgt1:
+                self.collidedAgents = [agt2, agt1, time1, time2]
+                
+                println(
+                    f"swap! between {pos12} & {pos22} with time {[time1,time2]} and agent {agt1} & {agt2}"
+                )
+
             self.isBound = False
             return True
+        
+        #TODO fuse tailing and swap, since they basically the same variables
+        # both just need to be true instead of just one of them
+
         return None
 
-    def checkSwap(self, agt1, agt2, pos12, pos22, time):
-        if type(time) == list:
-            time1 = time[0] + 1
-            time2 = time[1] + 1
-        else:
-            time1 = time + 1
-            time2 = time + 1
-
-        swap = False
-        #println(time)
-        if self.isOutOfBound(time1, agt1):
-            self.isBound = True
-            return None
-        agt1Pos = self.pos[agt1][time1]
-        for pos11 in agt1Pos:
-            if pos22 == pos11:
-                swap = True
-                break
-
-        if self.isOutOfBound(time2, agt2):
-            self.isBound = True
-            return None
-        agt2Pos = self.pos[agt2][time2]
-        for pos21 in agt2Pos:
-            if pos12 == pos21 and swap:
-                self.collidedAgents = [agt1, agt2, time1, time2]
-                println(
-                    f"swap! between {pos21} & {pos22} with time {[time1,time2]} and agent {agt1} & {agt2}"
-                )
-                return True
-        return None
 
     def checkCollision(self, agt1, agt2, pos1, pos2, time):
         if pos1 == pos2:
@@ -140,6 +125,18 @@ class Resultsharing:
             )
             return True
         return None
+
+    def crash(self, agt1, agt2, pos1, pos2, time):
+        if self.checkCollision(agt1, agt2, pos1, pos2, time):
+            return True
+        elif self.checkSwap(agt1, agt2, pos1, pos2, time):
+            return True
+        elif self.checkTailing(agt1, agt2, pos1, pos2, time):
+            return True
+            
+        if self.collidedAgents:
+            return True
+        return False
 
     def findCollidingAgt(self, agt1, time):
         agt1Pos = self.pos[agt1][time]
@@ -152,9 +149,15 @@ class Resultsharing:
                     return None
                 agt2Pos = self.pos[agt2][time]
                 for pos2 in agt2Pos:
+                    # crash = self.crash(agt1, agt2, pos1, pos2, time)
+                    # if crash:
+                    #     return True
+                    # elif self.isBound:
+                    #     return None
                     self.checkCollision(agt1, agt2, pos1, pos2, time)
-                    self.checkSwap(agt1, agt2, pos1, pos2, time)
+                    #self.checkSwap(agt1, agt2, pos1, pos2, time)
                     self.checkTailing(agt1, agt2, pos1, pos2, time)
+                    #println(self.isTailing)
                     if self.collidedAgents:
                         return True
                     if self.isBound: # is assigned inside swap and tail
@@ -164,21 +167,14 @@ class Resultsharing:
             break
         return False
 
-   
     def fixLength(self):
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
         longest = max(lengths)
         shortest = min(lengths)
-        #println(longest)
-        #println(shortest)
-        dif = False
-        if longest > shortest:
-            dif = True
-
-        if dif is False:
+        if longest <= shortest:
             return None
-            pass
 
+        # TODO fix frontier empty problem
         for pos in self.pos:
             for i in range(longest - len(pos)):
                 pos.append(pos[-1])
@@ -207,26 +203,16 @@ class Resultsharing:
 
             obj1Pos = self.pos[agt1][time1]
             obj2Pos = self.pos[agt2][time2]
-            collision = False
 
             for pos1 in obj1Pos:
                 for pos2 in obj2Pos:
                     if self.checkCollision(agt1, agt2, pos1, pos2, [time1, time2]):
-                        collision = True
                         break
-                    agentsSwaped = self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2])
-                    if agentsSwaped:
-                        if not self.isBound:
-                            collision = True
-                            break
-                        println("swap was bounded, trying to look for tailing to be sure")
-                    tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2])
-                    if tailingAgt:
-                        if not self.isBound:
-                            collision = True
-                            break
-                        else:
-                            return None, None
+                    #self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2])
+                    if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
+                        break
+                    if self.isBound:  # is assigned inside swap and tail
+                        return [None, None]
                 else: 
                     continue
                 break  # if collision is True
@@ -246,7 +232,7 @@ class Resultsharing:
         elif backwardTime < 0:
             backwardTime = 0
         
-        for i in range(self.traceback*2):
+        for i in range(self.traceback * 2):
             # Maybe remove this line, i don't think we need it
             # println((i, agt, backwardTime, self.pos[agt][backwardTime], ))
             self.pos[agt].insert(backwardTime, self.pos[agt][backwardTime])
@@ -257,6 +243,7 @@ class Resultsharing:
         # println(self.paths)
 
     def findAndResolveCollision(self):
+        # TODO make every pos an object attribute
         # TODO TODO TODO, reimplement the way it's done, if a collision is found
         # every agent moves away from the other agents path and gets + points for
         # moving away from the object and for not standing in the path. Probably use astar for this!
@@ -280,11 +267,6 @@ class Resultsharing:
         ]
         self.pos = convert2pos(self.manager, initpos, self.paths)
         println(self.pos)
-
-        # self.generateHash()
-
-        # TODO Also look at future collision
-        # println(self.timeTable)
 
         # TODO TODO TODO if there is a collision the non priorities agent warps back in time,
         # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
@@ -316,15 +298,14 @@ class Resultsharing:
                     if self.collidedAgents is not None:
                         println((collisionType, self.collidedAgents))
                         if self.fixCollision(time) is not None:
-                            if self.unsolvableReason is not None:
+                            if self.isBound:
                                 deadlock = False
                             break
-                    elif self.unsolvableReason is not None:
+                    elif self.isBound:
                         break
             self.fixLength()
 
-        if self.unsolvableReason is not None:
-            println(f"unsolveable due to: {self.unsolvableReason}")
+        println(f"unsolveable due to: {self.unsolvableReason}")
         return None
 
 
