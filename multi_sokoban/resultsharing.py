@@ -18,7 +18,7 @@ class Resultsharing:
         #self.collisionType = None
         self.collidedAgents = None
         self.unsolvableReason = [None]
-        self.isBound = False
+        self.isNotBound = False
         self.inbox = inbox
         self.isTailing = 0
         
@@ -59,7 +59,7 @@ class Resultsharing:
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
             # TODO find out why self.collidedAgents is None
-            self.isBound = True
+            self.isNotBound = True
             # TODO the one below 
             # self.inbox.append(Message( object_problem="0", bla bla bla))
             self.unsolvableReason = [self.collidedAgents, "out of bounds/no traceback"]
@@ -72,7 +72,7 @@ class Resultsharing:
 
     def checkTailingPart(self, agtA, agtB, posB, timeA):
         if self.isOutOfBound(timeA, agtA):
-            self.isBound = True
+            self.isNotBound = True
             return None
         else:
             agtAPosA = self.pos[agtA][timeA]
@@ -96,7 +96,7 @@ class Resultsharing:
         self.isTailing = 0
 
         isAgt1TailingAgt2 = self.checkTailingPart(agt1, agt2, pos22, time1)
-        if (self.isOutOfBound(time2, agt2) and self.isBound):
+        if (self.isOutOfBound(time2, agt2) and self.isNotBound):
             return None
         else:
             isAgt2TailingAgt1 = self.checkTailingPart(agt2, agt1, pos12, time2)
@@ -108,7 +108,7 @@ class Resultsharing:
                     f"swap! between {pos12} & {pos22} with time {[time1,time2]} and agent {agt1} & {agt2}"
                 )
 
-            self.isBound = False
+            self.isNotBound = False
             return True
         
         #TODO fuse tailing and swap, since they basically the same variables
@@ -152,7 +152,7 @@ class Resultsharing:
                     # crash = self.crash(agt1, agt2, pos1, pos2, time)
                     # if crash:
                     #     return True
-                    # elif self.isBound:
+                    # elif self.isNotBound:
                     #     return None
                     self.checkCollision(agt1, agt2, pos1, pos2, time)
                     #self.checkSwap(agt1, agt2, pos1, pos2, time)
@@ -160,7 +160,7 @@ class Resultsharing:
                     #println(self.isTailing)
                     if self.collidedAgents:
                         return True
-                    if self.isBound: # is assigned inside swap and tail
+                    if self.isNotBound: # is assigned inside swap and tail
                         return None
             else:
                 continue
@@ -211,7 +211,7 @@ class Resultsharing:
                     #self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2])
                     if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
                         break
-                    if self.isBound:  # is assigned inside swap and tail
+                    if self.isNotBound:  # is assigned inside swap and tail
                         return [None, None]
                 else: 
                     continue
@@ -298,13 +298,16 @@ class Resultsharing:
                     if self.collidedAgents is not None:
                         println((collisionType, self.collidedAgents))
                         if self.fixCollision(time) is not None:
-                            if self.isBound:
+                            if self.isNotBound:
                                 deadlock = False
                             break
-                    elif self.isBound:
+                    elif self.isNotBound:
                         break
             self.fixLength()
 
+        #println(self.isNotBound)
+        if self.isNotBound:
+            self.unsolvableReason = [self.collidedAgents, "out of bounds/no traceback"]
         println(f"unsolveable due to: {self.unsolvableReason}")
         return None
 
