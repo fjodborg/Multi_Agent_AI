@@ -60,6 +60,7 @@ class Resultsharing:
 
     def isOutOfBound(self, time, agt2):
         if time >= len(self.pos[agt2]) or time < 0:
+            self.unsolvableReason = [agt2, time + 1, "out of bounds/no traceback"]
             println(f"Out of bounds for agent {agt2} at time {time}/{len(self.pos[agt2])-1}")
             return True
         return False
@@ -73,6 +74,7 @@ class Resultsharing:
             time2 = time + 1
         
         if self.isOutOfBound(time1, agt1) is True:
+            
             return "bound"
         agt1Pos = self.pos[agt1][time1]
         for pos11 in agt1Pos:
@@ -84,6 +86,7 @@ class Resultsharing:
                 return agt1
         
         if self.isOutOfBound(time2, agt2) is True:
+            
             return "bound"
 
         agt2Pos = self.pos[agt2][time2]
@@ -107,6 +110,7 @@ class Resultsharing:
         swap = False
         #println(time)
         if self.isOutOfBound(time1, agt1) is True:
+            
             return "bound"
         agt1Pos = self.pos[agt1][time1]
         for pos11 in agt1Pos:
@@ -115,6 +119,7 @@ class Resultsharing:
                 break
 
         if self.isOutOfBound(time2, agt2) is True:
+            
             return "bound"
         agt2Pos = self.pos[agt2][time2]
         for pos21 in agt2Pos:
@@ -193,12 +198,16 @@ class Resultsharing:
                     if self.isCollision(agt1, agt2, pos1, pos2, [time1, time2]):
                         collision = True
                         break
-                    # if i set it to "is not None" then it doesn't work
-                    if self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2]):
+                    agentsSwaped = self.checkSwap(agt1, agt2, pos1, pos2, [time1, time2])
+                    if agentsSwaped is not None:
+                        if agentsSwaped == "bound":
+                            return None, None
                         collision = True
                         break
-                    # if i set it to "is not None" then it doesn't work
-                    if self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2]):
+                    tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, [time1, time2])
+                    if tailingAgt is not None:
+                        if tailingAgt == "bound":
+                            return None, None
                         collision = True
                         break
                 else:
