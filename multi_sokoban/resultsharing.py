@@ -155,14 +155,10 @@ class Resultsharing:
                 for pos2 in agt2Pos:
                     
                     agentsCollided = self.isCollision(agt1, agt2, pos1, pos2, time)
-                    if agentsCollided:
-                        return agt2
                     agentsSwaped = self.checkSwap(agt1, agt2, pos1, pos2, time)
-                    if agentsSwaped:
-                        return agt2
                     tailingAgt = self.checkTailing(agt1, agt2, pos1, pos2, time)
-                    if tailingAgt:
-                        return tailingAgt
+                    if self.collidedAgents is not None:
+                        return True
                     if self.isBound:
                         return None
             else:
