@@ -406,13 +406,13 @@ class StateInit(Literals):
                                 child.actionPerformed = ["Pull", actionParams]
                                 child.__PullEffect(*actionParams)
                                 child.__addToExplored(children)
-                            # Checks a Push action if it is possible it is appended to the the children
                             actionParams = self.__PushPrec(agtkey, boxkey, direction, i)
                             if actionParams is not None:
                                 child = StateInit(self)
                                 child.actionPerformed = ["Push", actionParams]
                                 child.__PushEffect(*actionParams)
                                 child.__addToExplored(children)
+                            # Checks a Push action if it is possible it is appended to the the children
                 # Checks a Move action if it is possible it is appended to the the children
                 actionParams = self.__MovePrec(agtkey, direction)
                 if actionParams is not None:
