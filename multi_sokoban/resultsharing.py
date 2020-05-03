@@ -25,6 +25,7 @@ class Resultsharing:
         self.paths = []
         self.manager = manager
         self.timeTable = {}
+        self.offsetTable = {}
         self.traceback = 0
         #self.collisionType = None
         self.collidedAgents = None
@@ -333,42 +334,44 @@ class Resultsharing:
             agentOrder = self.prioritiedAgents()
             println(agentOrder)
             for agt in agentOrder:
-                for time, poses in enumerate(reversed(self.pos[agt])):
+                for time, poses in reversed(list(enumerate(self.pos[agt]))):
                     for pos1 in poses:
-                        println(f"pos {pos1} has the these values {self.timeTable[pos1]}")
+                        #println(f"pos {pos1}, time {time} has the these values {self.timeTable[pos1]}")
                         #println(any(occupiedTimes == 10))
                         current_position = pos1
                         current_agent = agt
                         current_time = time
                         position_hash = self.timeTable
-
+                        
                         extracted = self.extractFromHash(self.timeTable[pos1], agt)
                         if extracted:
                             agents, times = extracted
                         else: 
                             continue
-                        println(f"pos {pos1} has the these values {agents}, {times}, agt {agt} {time}")
+                        #println(f"pos {pos1} has the these unique agt: {(agents, agt)}, at times {(times, time)}")
 
                         
                         #times = [values[1] for values in position_hash[current_position]]
                         #agents = [self.color2agt(values[0]) for values in position_hash[current_position]]
                         #println((agents, agt)) # agents er kun 1 agent?!?!?
                         times_with_offset = times
-                        offset_hash = {}
-                        offset_hash[0] = [(0,0),(2,3)]
-                        offset_hash[1] = [(0,0),(6,7)]
+                        #offset_hash[0] = [(0,0),(2,3)]
+                        #offset_hash[1] = [(0,0),(6,7)]
                         #offset_hash.clear()
                         #println(len(times))
-                        for agent_index, agent in enumerate(agents):
-                            for offset_times, offset_values in offset_hash[agent]:
-                                if offset_times <= times[agent_index]:
-                                    times_with_offset[agent_index] += offset_values
+                        for agent_index, agt2 in enumerate(agents):
+                            if agt2 in self.offsetTable:
+                                for offset_times, offset_values in self.offsetTable[agt2]:
+                                    if offset_times <= times[agent_index]:
+                                        times_with_offset[agent_index] += offset_values
                         collisions = [
-                            abs(current_time - time) <= 1 for agent, time in enumerate(times_with_offset)
+                            # find proper time condition!
+                            abs(current_time - 1 for agt2, time in enumerate(times_with_offset)
                         ]
-                        println((collisions, pos1, agents, times))
+                        println((agt, collisions, pos1, agents, times))
                         if any(collisions):
-                            println("yes")
+                            pass
+                            #println("yes")
             # Add offset at time x to hashtable when looking at times 
 
             # TODO take boxes into account

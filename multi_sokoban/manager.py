@@ -100,7 +100,7 @@ class Manager:
 
         # TODO check for empty frontiers
         # check for traceback possiblities
-        #
+        # frontier empty len()
         rs = Resultsharing(self, [])
         rs.findAndResolveCollision()  # This function can be found in resultsharing.py
         # println(pos)
