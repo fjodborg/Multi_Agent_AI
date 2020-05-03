@@ -366,10 +366,15 @@ class Resultsharing:
                                         times_with_offset[agent_index] += offset_values
                         collisions = [
                             # find proper time condition!
-                            abs(current_time - 1 for agt2, time in enumerate(times_with_offset)
+                            abs(current_time - 1 - time2) <= 1 for agt2, time2 in enumerate(times_with_offset)
                         ]
-                        println((agt, collisions, pos1, agents, times))
+                        println((agt, collisions, pos1, agents, (times, time)))
                         if any(collisions):
+                            # TODO
+                            # make traceback here, it should traceback and if it collides with a agent.
+                            # the second agent should traceback until it can't or collides with a new one:
+                            # if 1 collides with 2, 2 is traced back, if it collides with 3, 3 is traced back
+                            # and if it doesn't collide 2 i traced back and at last 1.
                             pass
                             #println("yes")
             # Add offset at time x to hashtable when looking at times 
