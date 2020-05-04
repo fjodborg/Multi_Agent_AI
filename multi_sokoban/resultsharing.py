@@ -94,25 +94,6 @@ class Resultsharing:
                         self.paths[agt].append("NoOp")
 
 
-    def fixCollision(self):
-        backwardTime, agt = self.tracebackCollision()
-        if backwardTime is None:
-            self.traceback = 0
-            return None
-        elif backwardTime < 0:
-            backwardTime = 0
-        
-        for i in range(self.traceback * 2):
-            # Maybe remove this line, i don't think we need it
-            # println((i, agt, backwardTime, self.pos[agt][backwardTime], ))
-            self.pos[agt].insert(backwardTime, self.pos[agt][backwardTime])
-        
-        self.traceback = 0
-        return True
-        # println(self.pos)
-        # println(self.paths)
-
-
     def extractFromHash(self, hash, agt):
         params = hash
         #println(f"before {params}, {agt}")
@@ -132,7 +113,7 @@ class Resultsharing:
             agents, times = extracted
         else: 
             return None
-    
+
         times_with_offset = times
         for agent_index, agt2 in enumerate(agents):
             if agt2 in self.offsetTable:
@@ -144,10 +125,24 @@ class Resultsharing:
             println(f"time is list {time1, time2}")
             collisions = times
         else:
+            
+            time1_with_offset = time1
+
+            # Maybe delete this
+            if agt1 in self.offsetTable:
+                for offset_times, offset_values in self.offsetTable[agt1]:
+                    if offset_times <= time1:
+                        time1_with_offset += offset_values
+            # maybe delete this end
+
             collisions = [
                 # find proper time condition!
-                abs(time1 + 1 - time2) == 0 for agt2, time2 in enumerate(times_with_offset)
+                #            collision                     chase
+                #(abs(time1 - time2) == 0) or (abs(time1 + 1 - time2) == 0) for agt2, time2 in enumerate(times_with_offset)
+                (time2 == time1_with_offset) or (time2 == time1_with_offset + 1) for agt2, time2 in enumerate(times_with_offset)
             ]
+        println((collisions, self.offsetTable, agents, times, self.pos[agt2][times[0]], agt1, time1, self.pos[agt1][time1]))
+                        
         return [collisions, agents, times]
 
     def fixPos(self):
@@ -167,7 +162,7 @@ class Resultsharing:
         return
 
     def tracebackNew(self, agt1, agt2, time1, time2):
-        println(f"collision for agts: {(agt1, agt2)} at new time: {(time1, time2)}")
+        println(f"collision for agts: {(agt1, agt2)} at new time: {(time1, time2)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
         iterations = time1 + 1
         time2 = time2 + 1
         collided = False
@@ -270,17 +265,29 @@ class Resultsharing:
             agentOrder = self.prioritiedAgents()
             println(agentOrder)
             for agt in agentOrder:
+                println(f"\nNewagent {agt}\n")
                 for time, poses in reversed(list(enumerate(self.pos[agt]))):
+                    newTime = time
+                    # Find a way to implement so the next iteration of agents get's the correct time
+                    # could be to rehash or to simply add the time offset and fix bounds
+                    # if agt in self.offsetTable:
+                    #     for offsetTime, offsetValue in self.offsetTable[agt]:
+                    #         if time >= offsetTime:
+                    #             newTime += offsetValue
+
                     for pos in poses:
                         
-                        collisionData = self.findCollisions(agt, pos, time)
+                        collisionData = self.findCollisions(agt, pos, newTime)
+                        #println((collisionData, self.offsetTable, agt, time, self.pos[agt][time]))
                         
                         #println(f"collision: {collisionData[0]}, agts: {(agt, agt2)}, time: {(time, time2)}")
                         if collisionData and any(collisionData[0]):
                             for collision, agt2, time2 in list(zip(*collisionData)):
                                 if collision:
-                                    self.tracebackNew(agt, agt2, time, time2)
-                                    
+                                    self.tracebackNew(agt, agt2, newTime, time2)
+                                    println(self.offsetTable)
+                                    # fixPos shouldn't be called here
+                                    # self.fixPos()
                             # TODO
                             # make traceback here, it should traceback and if it collides with a agent.
                             # the second agent should traceback until it can't or collides with a new one:
