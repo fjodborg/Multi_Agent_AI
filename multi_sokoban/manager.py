@@ -4,7 +4,7 @@ from typing import List
 
 from .actions import StateInit
 from .bdi import Agent, Message
-from .emergency_aStar import BestFirstSearch
+from .strategy import BestFirstSearch
 from .resultsharing import Resultsharing
 from .utils import STATUS, println
 

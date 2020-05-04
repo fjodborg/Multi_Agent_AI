@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .emergency_aStar import BestFirstSearch
+from .strategy import BestFirstSearch
 from .heuristics import EasyRule, WeightedRule
 from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
