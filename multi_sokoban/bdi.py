@@ -2,7 +2,7 @@
 from copy import deepcopy
 from typing import Callable, List, Tuple
 
-from .actions import StateInit
+from .actions import StateInit, StateConcurrent
 from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
@@ -12,14 +12,14 @@ class Message:
     """Simple class to encode a message."""
 
     def __init__(
-        self, box: str, color: str, requester: str, status: STATUS, time: int = None
+        self, object_problem: str, color: str, requester: str, status: STATUS, time: int = None
     ):
         """Fill message fields.
 
         Parameters
         ----------
-        box: str
-            name of the box concerning the problem
+        object_problem: str
+            name of the object concerning the problem
         color: str
             color of the box concerning the problem
         requester: str:
@@ -27,11 +27,11 @@ class Message:
         status: STATUS
             * STATUS.ok if agent solved the problem for another agent (response)
             * STATUS.fail if agent needs help (query)
-        time: int
+        time: List[(int, (row, col))]
             time when the agent solves the problem at
 
         """
-        self.box = box
+        self.object_problem = object_problem
         self.color = color
         self.requester = requester
         self.status = status
@@ -157,7 +157,17 @@ class Agent:
     def consume_message(self, message: Message) -> StateInit:
         """Take a message."""
         if self.status == STATUS.fail:
-            self.task.deleteBox(message.box)
+            curr_pos = message.time[0][1]
+            concurrent = {}
+            for event in message.time:
+                pos = event[1]
+                if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
+                    curr_pos = pos
+                    concurrent[event[0]] = {message.object_problem: pos}
+            self.task = StateConcurrent(self.task, concurrent)
+            # println(self.task.__dict__)
+            # import sys; sys.exit(0)
+            self.task.t = 0
         else:
             println(f"Agent {self.name} received message!")
             self.helping = message
@@ -177,24 +187,26 @@ class Agent:
         """Identify problem and formulate solution."""
         box, color = self._identify_problem()
         return Message(
-            box=box, color=color, requester=self.name, status=self.status, time=None
+            object_problem=box, color=color, requester=self.name,
+            status=self.status, time=None
         )
 
     def _send_success(self) -> StateInit:
         """Return a message indicating that the problem was solved."""
+        # TODO: weight heuristics and recompute alternative solution
+        time_pos = self.task.bestPath(format=self.helping.object_problem)
         message = Message(
-            self.helping.box,
+            self.helping.object_problem,
             self.helping.color,
             self.helping.requester,
             self.status,
-            # TODO: need to calculate the time
-            self.helping.time,
+            time_pos,
         )
         self.helping = False
         return message
 
-    def track_back(self, looking_for: str = ""):
-        """Trace the case self."""
+    def track_back(self, looking_for: str = "") -> List:
+        """Trace the object `looking_for` position in every explored nodes."""
         if not looking_for:
             looking_for = self.name
         explored = self.task.explored
@@ -259,6 +271,7 @@ class Agent:
                     f"(Subproblem) Solution found with "
                     f"{len(strategy.leaf.explored)} nodes explored"
                 )
+                self.task = strategy.leaf
                 return strategy.walk_best_path()
 
             iterations += 1

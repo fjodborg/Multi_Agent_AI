@@ -2,9 +2,12 @@
 import copy
 import operator
 
+from typing import Dict
+
 import numpy as np
 
 from utils import println
+
 
 class Literals:
     def __init__(self, parent: "Literals" = None):
@@ -25,6 +28,7 @@ class Literals:
             self.prevState = None
             self.actionPerformed = None
             self.g = 0
+            self.t = 0
             self.h = None
             self.f = None
             self.explored = set()
@@ -42,6 +46,7 @@ class Literals:
             self.g = copy.deepcopy(parent.g) + 1
             self.h = None
             self.f = None
+            self.t = parent.t + 1
             self.explored = parent.explored
         super().__init__()
 
@@ -367,6 +372,14 @@ class StateInit(Literals):
             while state.actionPerformed is not None:
                 path.append(state.actionPerformed)
                 state = state.prevState
+        elif isinstance(format, str):
+            # trace back an object
+            looking_for = format
+            obj_group = "agents" if format.isnumeric() else "boxes"
+
+            while state.actionPerformed is not None:
+                path.append([state.t, state.getPos(getattr(state, obj_group), looking_for)])
+                state = state.prevState
         else:
             # format used by server
             while state.actionPerformed is not None:
@@ -448,5 +461,102 @@ class StateInit(Literals):
             child = StateInit(self)
             child.actionPerformed = ["NoOp", None]
             child.__addToExplored(children)
+
+        return children
+
+
+class StateConcurrent(StateInit):
+    """Extend StateInit with concurrent literals."""
+
+    def __init__(self, parent: StateInit = None, concurrent: Dict = None):
+        """Initialize by adding a time table to the usual `StateInit`.
+
+        parameters
+        ----------
+        parent: StateInit
+        concurrent:
+        """
+        # initializes the state
+        # it is (row, column) and not (x, y)
+        super().__init__(parent)
+        self.concurrent = concurrent if concurrent else parent.concurrent
+
+    def __NoOpPrec(self):
+        """Evaluate precondition for NoOp.
+
+        Something has changed given a concurrent action by another agent.
+        """
+        return self.t in self.concurrent
+
+    def __NoOpEffect(self, t):
+        """Modify environment according to concurrent actions at time `t`."""
+        # Moves the objects with the given parameters
+        # Does not check preconditions+
+        joint_concurrent = self.concurrent[t]
+        for obj_key in joint_concurrent:
+            pos = list(joint_concurrent[obj_key])
+            obj_group = "agents" if obj_key.isnumeric() else "boxes"
+            prev_pos = self.getPos(getattr(self, obj_group), obj_key)
+            self.setPos(getattr(self, obj_group), obj_key, pos)
+            self.map[prev_pos[0], prev_pos[1]] = chr(32)
+            self.map[pos[0], pos[1]] = obj_key
+        return True
+
+    def explore(self):
+        """Explore with 'NoOp's.
+
+        The Preconditions to a NoOp is
+        """
+        children = []
+
+        # Loop iterales through every possible action
+        child_def = StateConcurrent(self)
+        if child_def.__NoOpPrec():
+            # apply concurrent effects to all children but also append
+            # a NoOp children which just waits for the env to change
+            # println(f"prev\n{child_def}\n")
+            child_def.__NoOpEffect(child_def.t)
+            # println(f"post\n{child_def}\n")
+            child = copy.deepcopy(child_def)
+            child.actionPerformed = ["NoOp", None]
+            child._StateInit__addToExplored(children)
+            children.append(child)
+        for direction in self.dir:
+            for agtkey in self.agents:
+
+                # TODO reformat these nested loops and if statements!
+
+                # This can be perhaps be optimized by only looking at boxes at the
+                # neighboring tiles of the agent
+
+                for boxkey in child_def.boxes:
+                    for i in range(len(child_def.boxes[boxkey])):
+
+                        boxcolor = child_def.boxes[boxkey][i][1]
+
+                        # [agent letter][agent number (0 since it is unique)][color]
+                        if child_def.agents[agtkey][0][1] == boxcolor:
+                            # Checks a pull action if it is possible it is appended to the the children
+                            actionParams = child_def._StateInit__PullPrec(agtkey, boxkey, direction, i)
+                            if actionParams is not None:
+                                child = copy.deepcopy(child_def)
+                                child.actionPerformed = ["Pull", actionParams]
+                                child._StateInit__PullEffect(*actionParams)
+                                child._StateInit__addToExplored(children)
+                            # Checks a Push action if it is possible it is appended to the the children
+                            actionParams = child_def._StateInit__PushPrec(agtkey, boxkey, direction, i)
+                            if actionParams is not None:
+                                child = copy.deepcopy(child_def)
+                                child.actionPerformed = ["Push", actionParams]
+                                child._StateInit__PushEffect(*actionParams)
+                                child._StateInit__addToExplored(children)
+                # Checks a Move action if it is possible it is appended to the the children
+                actionParams = child_def._StateInit__MovePrec(agtkey, direction)
+                if actionParams is not None:
+                    child = copy.deepcopy(child_def)
+                    child.actionPerformed = ["Move", actionParams]
+
+                    child._StateInit__MoveEffect(*actionParams)
+                    child._StateInit__addToExplored(children)
 
         return children

@@ -130,7 +130,6 @@ class Manager:
                 self.nodes_explored += len(agent.task.explored)
                 if agent.status == STATUS.fail:
                     ok_agent = self.broadcast_message(message)
-                    println(self.agents)
                     if ok_agent:
                         println(f"Agent {name} broadcasted task!")
                         self.agents[ok_agent[0]].consume_message(message)
@@ -138,6 +137,8 @@ class Manager:
                         println(f"SOS of Agent {name} stored at inbox.")
                         self.inbox.append(message)
                 else:
+                    if message:
+                        self.inbox.append(message)
                     paths[name] = path
         self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
 
