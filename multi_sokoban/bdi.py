@@ -3,7 +3,8 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .emergency_aStar import BestFirstSearch, calcHuristicsFor
+from .emergency_aStar import BestFirstSearch
+from .heuristics import EasyRule
 from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
 
@@ -74,15 +75,12 @@ class Agent:
     """
 
     def __init__(
-        self,
-        task: StateInit,
-        strategy: BestFirstSearch,
-        heuristic: Callable = calcHuristicsFor,
+        self, task: StateInit, strategy: BestFirstSearch, heuristic: Callable = None,
     ):
         """Initialize the agent wit a task."""
         self.task = task
         self.strategy = strategy
-        self.heuristic = heuristic
+        self.heuristic = heuristic if heuristic else EasyRule()
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
@@ -149,11 +147,11 @@ class Agent:
         c_union = float("inf")
         if color != self.color:
             return c_union
-        calcHuristicsFor(broadcasted_task)
+        self.heuristic(broadcasted_task)
         c_ts = broadcasted_task.f
         joint_task = deepcopy(self.task)
         joint_task.addGoal(goal_key, pos, color)
-        cost = calcHuristicsFor(joint_task)
+        cost = self.heuristic(joint_task)
         if cost is None:
             cost = c_union
         c_union = min(c_union, cost)
