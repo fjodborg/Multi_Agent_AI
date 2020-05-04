@@ -35,7 +35,7 @@ class Resultsharing:
         self.agtA = Agent()
         self.agtB = Agent()
 
-    def addToHash(self, pos, time, identity):
+    def addToTimeTable(self, pos, time, identity):
         ''' Not in use at the moment '''
         key = (pos)
         value = (identity, time)
@@ -48,15 +48,15 @@ class Resultsharing:
             # timeTable[self.pos, time] = [identity]
             self.timeTable[key] = [value]
 
-    def generateHash(self):
+    def generateTimeTable(self):
         ''' Not in use at the moment '''
         for key in self.manager.top_problem.boxes:
             boxPos, boxColor = self.manager.top_problem.boxes[key][0]
-            self.addToHash(boxPos, 0, boxColor)
+            self.addToTimeTable(boxPos, 0, boxColor)
             # for agtKey in self.manager.top_problem.agents:
             #     _, agtColor = self.manager.top_problem.agents[agtKey][0]
             #     if agtColor == boxColor:
-            #         self.addToHash(boxPos, 0, agtKey)
+            #         self.addToTimeTable(boxPos, 0, agtKey)
 
         agtColor = []
         for goal, val in self.manager.tasks.items():
@@ -66,104 +66,11 @@ class Resultsharing:
             for time in range(len(self.pos[agtIdx])):
                 posAtTime = self.pos[agtIdx][time]
                 if len(posAtTime) > 1:
-                    self.addToHash(posAtTime[1], time, agtIdx) 
-                self.addToHash(posAtTime[0], time, agtIdx)
+                    self.addToTimeTable(posAtTime[1], time, agtIdx) 
+                self.addToTimeTable(posAtTime[0], time, agtIdx)
 
         return None
 
-    def isOutOfBound(self, time, agt):
-        # self.inbox.append(Message( object_problem="0", bla bla bla))
-        maxLength = len(self.pos[agt])
-        # if time >= maxLength:
-        #     #println(f"Out of bounds for agent {agt} at time {time}/{len(self.pos[agt])-1}")
-        #     self.pos[agt].append(self.pos[agt][-1])
-        #     println(f"extending bound for agent {agt} to {len(self.pos[agt])-1}")
-        if time < 0 or time >= maxLength:
-            self.isNotBound += 1
-            troubleMaker = agt #self.collidedAgents[1]
-            troubleTime = time #1+self.collidedAgents[3] #-self.traceback
-            # TODO make the call back
-            self.unsolvableReason = [troubleMaker, troubleTime, "out of bounds/no traceback"]
-            println(f"Out of bounds for agent {troubleMaker} at time {time}/{len(self.pos[troubleMaker])-1}")
-            return True
-        return False
-
-
-    def isCollision(self, agt1, agt2, pos1, pos2, time1, time2):
-        if pos1 == pos2:
-            self.collidedAgents = [agt1, agt2, time1, time2, pos1, pos2]
-            println(
-                f"collision! between {pos1} & {pos2} with time {time1, time2} and agent {agt1, agt2}"
-            )
-            return True
-        return False
-
-    def checkCollisions(self, agtA, agtB):
-        
-        agtA.t2 = agtA.t1
-        agtB.t2 = agtB.t1
-        # TODO Write this cleaner
-        if self.isOutOfBound(agtB.t2, agtB.id):
-            return None
-        agtB.poses = self.pos[agtB.id][agtB.t2]
-        for agtB.p2 in agtB.poses:
-            if self.isCollision(agtA.id, agtB.id, agtA.p1, agtB.p2, agtA.t1, agtB.t2):
-                return True
-    
-        agtB.t2 += 1
-        if self.isOutOfBound(agtB.t2, agtB.id):
-            return None
-        agtB.poses = self.pos[agtB.id][agtB.t2]
-        for agtB.p2 in agtB.poses:
-            if self.isCollision(agtA.id, agtB.id, agtA.p1, agtB.p2, agtA.t1, agtB.t2):
-                return True
-
-        agtB.t2 += 1
-        if self.isOutOfBound(agtB.t2, agtB.id):
-            return None
-        agtB.poses = self.pos[agtB.id][agtB.t2]
-        for agtB.p2 in agtB.poses:
-            if self.isCollision(agtA.id, agtB.id, agtA.p1, agtB.p2, agtA.t1, agtB.t2):
-                return True
-        
-        
-        agtA.t2 += 1
-        if self.isOutOfBound(agtA.t2, agtA.id):
-            return None
-        agtA.poses = self.pos[agtA.id][agtA.t2]
-        for agtA.p2 in agtA.poses:
-            if self.isCollision(agtA.id, agtB.id, agtA.p2, agtB.p1, agtA.t2, agtB.t1):
-                return True
-        
-        agtA.t2 += 1
-        if self.isOutOfBound(agtA.t2, agtA.id):
-            return None
-        agtA.poses = self.pos[agtA.id][agtA.t2]
-        for agtA.p2 in agtA.poses:
-            if self.isCollision(agtA.id, agtB.id, agtA.p2, agtB.p1, agtA.t2, agtB.t1):
-                return True
-
-
-        return False
-         
-
-    def findCollidingAgt(self, agtA, agtB):
-        agtA.Poses = self.pos[agtA.id][agtA.t1]
-        for agtA.p1 in agtA.Poses:
-            for agtB.id in range(len(self.pos)):
-                if agtA.id == agtB.id:
-                    continue
-                agtB.t1 = agtA.t1
-                isCollision = self.checkCollisions(agtA, agtB)
-                if isCollision:
-                    return True
-                elif isCollision is None:
-                    self.collidedAgents = None
-                    return None
-            else:
-                continue
-            break
-        return False
 
     def fixLength(self):
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
@@ -186,67 +93,6 @@ class Resultsharing:
                     else:
                         self.paths[agt].append("NoOp")
 
-    def tracebackCollision(self):
-        # TODO take into account if there is multiple agents
-        # TODO if out of bounds or no solution found return a new value
-        #println(self.collidedAgents)
-        agtA = self.agtA
-        agtB = self.agtB
-        collisionTime = agtA.t1
-        
-        for i in range(2):
-            noSolution = False
-            if i == 1:
-                agtA2 = deepcopy(agtB)
-                agtB2 = deepcopy(agtA)
-            else:
-                agtB2 = deepcopy(agtB)
-                agtA2 = deepcopy(agtA)
-
-            agtB2.t1 = collisionTime + 1
-            self.traceback = 0
-            self.collidedAgents = None
-            println("Traceback collision from now on:")
-            collision = True
-            for agtA2.t1 in range(collisionTime, len(self.pos[agtA2.id])):
-                collision = False
-                agtB2.t1 -= 1
-                self.traceback += 1
-                #println((agtA.poses,agtB.poses,agtA.t1,agtB.t1))
-                agtA2.poses = self.pos[agtA2.id][agtA2.t1]
-                agtB2.poses = self.pos[agtB2.id][agtB2.t1]
-                #println((agtA2.poses,agtB2.poses,agtA2.t1,agtB2.t1, self.collidedAgents))
-                
-                for agtA2.p1 in agtA2.poses:
-                    for agtB2.p2 in agtB2.poses:
-                        hasCollided = self.checkCollisions(agtA2, agtB2)
-                        if self.isOutOfBound(agtA2.t1 + 1, agtA2.id):
-                            println("test")
-                            break
-                        if hasCollided:
-                            collision = True
-                            break
-                        elif hasCollided is None:
-                            println(f"out of bound. Steps back {self.traceback}")
-                            noSolution = True
-                            break
-                            
-                    else:
-                        continue
-                    break  # if collision is True
-                if noSolution:
-                    println("no solution")
-                    break
-                if not collision:
-                    self.traceback -= 1
-                    println(f"Traceback found. Steps back {self.traceback}")
-                    self.unsolvableReason = [None]
-                    return agtB2.t1, agtB2.id 
-
-
-        println(f"out of bound. Steps back {self.traceback}")
-        return [None, None]
-           
 
     def fixCollision(self):
         backwardTime, agt = self.tracebackCollision()
@@ -295,7 +141,7 @@ class Resultsharing:
                         times_with_offset[agent_index] += offset_values
         if type(time1) == list:
             time1, time2 = time1
-            println(f"time is list yo {time1, time2}")
+            println(f"time is list {time1, time2}")
             collisions = times
         else:
             collisions = [
@@ -304,11 +150,21 @@ class Resultsharing:
             ]
         return [collisions, agents, times]
 
+    def fixPos(self):
+        for agent in self.offsetTable.keys():
+            for offsetTime, offsetValue in self.offsetTable[agent]:
+                for i in range(offsetValue):
+                    self.pos[agent].insert(offsetTime, self.pos[agent][offsetTime])
+                    pass
+                println((offsetTime, offsetValue, self.pos[agent][offsetTime]))
+
     def addOffset(self, agt, time, offset=1):
+        # comment this out when you need to see if it detects collisions
         if agt in self.offsetTable:
             self.offsetTable[agt].append([time, offset])
         else:
             self.offsetTable[agt] = [[time, offset]]
+        return
 
     def tracebackNew(self, agt1, agt2, time1, time2):
         println(f"collision for agts: {(agt1, agt2)} at new time: {(time1, time2)}")
@@ -323,10 +179,19 @@ class Resultsharing:
                 println(f"Out of bounds: {time1}/{0}. Adding delay to agent {agt2}")
                 self.addOffset(agt2, time2)
                 break
+            
             for pos1 in self.pos[agt1][time1]:
-                collisions = self.findCollisions(agt1, pos1, time1)
-                if collisions and any(collisions):
-                    collided = True
+                collisionData = self.findCollisions(agt1, pos1, time1)
+                if collisionData and any(collisionData):
+                    for collision, agt2_temp, time2 in list(zip(*collisionData)):
+                        if agt2_temp == agt2:
+                            collided = True
+                            break
+                        else:
+                            # TODO probably do a traceback if new agent is colliding
+                            pass
+                    else:
+                        continue
                     break
 
             if collided:
@@ -389,7 +254,7 @@ class Resultsharing:
         #     if self.manager.agent_to_status[goal] == agt:
         #         pass
         #         # do things with goal
-        self.generateHash()
+        self.generateTimeTable()
         println(self.timeTable)
         deadlock = False
         self.unsolvableReason = None
@@ -422,11 +287,11 @@ class Resultsharing:
                             # if 1 collides with 2, 2 is traced back, if it collides with 3, 3 is traced back
                             # and if it doesn't collide 2 i traced back and at last 1.
 
+        self.fixPos()
         self.fixLength()
 
-        println(self.isNotBound)
-        if self.isNotBound > 0:
-            self.unsolvableReason = [self.collidedAgents, "out of bounds/no traceback"]
+        # TODO delete hashtables
+
         println(f"unsolveable due to: {self.unsolvableReason}")
         return None
 
