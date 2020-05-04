@@ -1,7 +1,6 @@
 """Define literals and actions schemas for the muli-PDDL framework."""
 import copy
 import operator
-
 from typing import Dict
 
 import numpy as np
@@ -378,7 +377,9 @@ class StateInit(Literals):
             obj_group = "agents" if format.isnumeric() else "boxes"
 
             while state.actionPerformed is not None:
-                path.append([state.t, state.getPos(getattr(state, obj_group), looking_for)])
+                path.append(
+                    [state.t, state.getPos(getattr(state, obj_group), looking_for)]
+                )
                 state = state.prevState
         else:
             # format used by server
@@ -537,14 +538,18 @@ class StateConcurrent(StateInit):
                         # [agent letter][agent number (0 since it is unique)][color]
                         if child_def.agents[agtkey][0][1] == boxcolor:
                             # Checks a pull action if it is possible it is appended to the the children
-                            actionParams = child_def._StateInit__PullPrec(agtkey, boxkey, direction, i)
+                            actionParams = child_def._StateInit__PullPrec(
+                                agtkey, boxkey, direction, i
+                            )
                             if actionParams is not None:
                                 child = copy.deepcopy(child_def)
                                 child.actionPerformed = ["Pull", actionParams]
                                 child._StateInit__PullEffect(*actionParams)
                                 child._StateInit__addToExplored(children)
                             # Checks a Push action if it is possible it is appended to the the children
-                            actionParams = child_def._StateInit__PushPrec(agtkey, boxkey, direction, i)
+                            actionParams = child_def._StateInit__PushPrec(
+                                agtkey, boxkey, direction, i
+                            )
                             if actionParams is not None:
                                 child = copy.deepcopy(child_def)
                                 child.actionPerformed = ["Push", actionParams]

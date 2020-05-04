@@ -2,7 +2,7 @@
 from copy import deepcopy
 from typing import Callable, List, Tuple
 
-from .actions import StateInit, StateConcurrent
+from .actions import StateConcurrent, StateInit
 from .emergency_aStar import BestFirstSearch, calcHuristicsFor
 from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
@@ -12,7 +12,12 @@ class Message:
     """Simple class to encode a message."""
 
     def __init__(
-        self, object_problem: str, color: str, requester: str, status: STATUS, time: int = None
+        self,
+        object_problem: str,
+        color: str,
+        requester: str,
+        status: STATUS,
+        time: int = None,
     ):
         """Fill message fields.
 
@@ -187,8 +192,11 @@ class Agent:
         """Identify problem and formulate solution."""
         box, color = self._identify_problem()
         return Message(
-            object_problem=box, color=color, requester=self.name,
-            status=self.status, time=None
+            object_problem=box,
+            color=color,
+            requester=self.name,
+            status=self.status,
+            time=None,
         )
 
     def _send_success(self) -> StateInit:
