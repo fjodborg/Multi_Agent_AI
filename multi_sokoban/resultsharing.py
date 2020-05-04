@@ -42,8 +42,8 @@ class Resultsharing:
             self.addToHash(boxPos, 0, boxColor)
 
         agtColor = []
-        for goal, val in self.manager.tasks.items():
-            agtColor.append(list(val[0].agents.values())[0][0][1])
+        for agent in self.manager.agents.values():
+            agtColor.append(agent.color)
         println(agtColor)
 
         for agtIdx in range(len(self.paths)):
@@ -104,9 +104,9 @@ class Resultsharing:
                 if pos12 == pos21:
                     swap1 = True
                     break
-            else: 
-                continue 
-            break 
+            else:
+                continue
+            break
 
         for pos11 in pos1AtTime1:
             for pos22 in pos2AtTime2:
@@ -117,8 +117,8 @@ class Resultsharing:
                     )
                     return True
 
-        ''' # doesn't seem to work, but can't figure out why
-            
+        """ # doesn't seem to work, but can't figure out why
+
             println(f"{pos11,pos12,pos21,pos22}")
             println(f"{self.pos[agentsAtTime1Pos1[0]][time], self.pos[agentsAtTime1Pos2[0]][time]}")
             println(f"{self.pos[agentsAtTime1Pos1[0]][time+1], self.pos[agentsAtTime1Pos2[0]][time-1]}")
@@ -139,7 +139,7 @@ class Resultsharing:
                     f"swap! between {obj1Pos} & {obj2Pos} with time {time+1} & {time+1} and agent {agentsAtTime1Pos1} & {agentsAtTime1Pos2}"
                 )
                 self.collidedAgents = [agentsAtTime1Pos1, agentsAtTime1Pos2]
-                return True '''
+                return True """
         return None
 
     def fixBoxCollision(self):
@@ -182,7 +182,7 @@ class Resultsharing:
         agt1Pos = self.pos[agt1][time]
         for pos1 in agt1Pos:
             for agt2 in range(len(self.pos)):
-                if agt1 == agt2:
+                if agt1 == agt2 or (time + 1) >= len(self.pos[agt2]):
                     continue
                 agt2Pos = self.pos[agt2][time]
                 if self.isCollisionNew(agt1, agt2, pos1, agt2Pos, time) is True:
@@ -192,25 +192,22 @@ class Resultsharing:
                     self.collisionType = "swap"
                     return agt2
 
-
         return None
 
     def isCollision(self, time, agt1):
         # TODO box and agent collision
         # TODO box and agent collision is only a problem if the box is infront
-        
-        
-        return self.findCollidingAgt(agt1, time)
-        #println((agt1,agt2))
 
-        
+        return self.findCollidingAgt(agt1, time)
+        # println((agt1,agt2))
+
         # collision = self.checkPureCollision(time, agt1)
         # if collision is not None:
         #     if collision is True:
         #         return "now"
         #     # check if the next position has a collision at the same time
         #     obj2Pos = self.pos[agt1][time + 1]
-            
+
         #     for pos in obj2Pos:
         #         collision2 = self.checkPureCollision(pos, time, agt1)
         #         if collision2 is not None:
@@ -294,23 +291,10 @@ class Resultsharing:
         # moving away from the object and for not standing in the path. Probably use astar for this!
         # +100 for being on the path and -1 for being outside the path
         sorted_agents = self.manager.sort_agents()
-        self.paths = [
-            self.manager.status[agent]
-            for agent in sorted_agents
-            if self.manager.status[agent]
-        ]
+        self.paths = self.manager.solutions
 
-        initpos = [
-            [
-                [
-                    self.manager.top_problem.agents[
-                        self.manager.agent_to_status[agent]
-                    ][0][0]
-                ]
-            ]
-            for agent in sorted_agents
-        ]
-        self.pos = convert2pos(self.manager, initpos, self.paths)
+        init_pos = [[[self.manager.agents[agent].init_pos]] for agent in sorted_agents]
+        self.pos = convert2pos(self.manager, init_pos, self.paths)
         println(self.pos)
 
         # self.generateHash()
@@ -322,9 +306,6 @@ class Resultsharing:
         # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
 
         # sorted goals according to first agent
-        goals = self.manager.sort_agents()  # for now assume len(goals) = len(agents)
-        println(self.manager.tasks[goals[0]][0])
-
         # for goal in self.manager.agent_to_status.keys():
         #     if self.manager.agent_to_status[goal] == agt:
         #         pass
@@ -342,7 +323,7 @@ class Resultsharing:
                 for time in range(len(self.pos[agt1]) - 2):
                     self.traceback = 0
                     collisionType = self.isCollision(time, agt1)
-                    #println(collisionType)
+                    # println(collisionType)
                     if collisionType is not None:
                         # #TODO break out to deadlock loop, fix actions and rehash
                         ####
