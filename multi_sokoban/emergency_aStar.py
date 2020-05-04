@@ -15,7 +15,6 @@ class BestFirstSearch(ABC):
     def __init__(self, init_state: actions.StateInit, heuristic: Callable = None):
         """Initialize strategy."""
         self.frontier = PriorityQueue()
-        self.heuristic = heuristic
         self.leaf = init_state
         self.count = 0
         self.heuristic = heuristic if heuristic else EasyRule()
