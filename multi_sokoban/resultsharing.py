@@ -126,7 +126,7 @@ class Resultsharing:
                 #            collision                     chase
                 (abs(time1WithOffset - time2WithOffset) <= 1) for time2WithOffset in timesWithOffset
                 # fore some reason this one doesn't work the way intended:
-                #(time2 == time1WithOffset) or (time2 == time1WithOffset + 1) for agt2, time2 in enumerate(timesWithOffset)
+                #(time2WithOffset >= time1WithOffset - 1) and (time2WithOffset <= time1WithOffset + 1) for  time2WithOffset in timesWithOffset
                 # TODO remove agt2 from above?
             ]
         
@@ -137,6 +137,7 @@ class Resultsharing:
         if collisionData and any(collisionData[0]):
             for collision, agt2, time2 in list(zip(*collisionData)):
                 if collision:
+                    println(f"collision for agts: {(agt1, agt2)} at time: {(time1, time2)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
                     actualCollisions.append([agt2, time2])
                     #println(f"collisionData: {actualCollisions}, times {(time1, time2)}/{(len(self.pos[agt1]),len(self.pos[agt2]))}")
                     if time1 >= len(self.pos[agt1]) or time2 >= len(self.pos[agt2]):
@@ -155,7 +156,7 @@ class Resultsharing:
                 #println((offsetTime, offsetValue, self.pos[agent][offsetTime]))
 
     def addOffset(self, agt, time, offset=1):
-        println(f"offset added at time: {time}")
+        println(f"offset added at time {time} is {offset}")
         # comment this out when you need to see if it detects collisions
         if agt in self.offsetTable:
             self.offsetTable[agt].append([time, offset])
@@ -164,7 +165,6 @@ class Resultsharing:
         return
 
     def tracebackNew(self, agt1, agt2, time1, time2):
-        println(f"collision for agts: {(agt1, agt2)} at new time: {(time1, time2)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
         iterations = time1 + 1
         time2 = time2 + 1
         collided = False
@@ -179,7 +179,6 @@ class Resultsharing:
             
             for pos1 in self.pos[agt1][time1]:
                 collisionData = self.findCollisions(agt1, pos1, time1)
-                println(f"collision for agts: {(agt1, agt2)} at new time: {(time1, time2)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
                 if collisionData and any(collisionData):
                     for agt2_temp, time2 in collisionData:
                         
@@ -197,6 +196,10 @@ class Resultsharing:
                 continue
             else:
                 println(f"collision stopped. Adding delay to agent {agt2}")
+                #delayTime = time2
+                #println((self.pos[agt2][time2], self.pos[agt1][time1]))
+                
+                println((int((time1 + time2) / 2),time1, time2,self.getOffsetTime(agt1, time1),self.getOffsetTime(agt2, time2)))
                 self.addOffset(agt2, time2)
                 break
             #println((time1, self.pos[agt1][time1], time2, self.pos[agt2][time2]))
@@ -274,6 +277,8 @@ class Resultsharing:
             #println(agentOrder)
             for agt1 in agentOrder:
                 println(f"\nNewagent {agt1}")
+                if agt1 in self.offsetTable:
+                    println(f"offset table for agt {agt1}: {self.offsetTable[agt1]}")
                 for time1, poses in reversed(list(enumerate(self.pos[agt1]))):
                     # Find a way to implement so the next iteration of agents get's the correct time
                     # could be to rehash or to simply add the time offset and fix bounds
