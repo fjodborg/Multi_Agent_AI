@@ -126,7 +126,7 @@ class Resultsharing:
                 #            collision                     chase
                 #(abs(time1WithOffset - time2WithOffset) <= 1) for time2WithOffset in timesWithOffset
                 # fore some reason this one doesn't work the way intended:
-                (time2WithOffset >= time1WithOffset) and (time2WithOffset <= time1WithOffset + 1) for  time2WithOffset in timesWithOffset
+                (time2WithOffset == time1WithOffset) or (time2WithOffset == time1WithOffset + 1) for time2WithOffset in timesWithOffset
                 # TODO remove agt2 from above?
             ]
         
@@ -165,7 +165,67 @@ class Resultsharing:
             self.offsetTable[agt] = [[time, offset]]
         return
 
-    def tracebackNew(self, agt1, agt2, time1, time2):
+    def tracebackChase(self, agt1, agt2, time1, time2):
+        iterations = time1 + 1
+        time2 = time2 + 1
+        # Checking and fixing if one is chasing the other
+        for time1 in reversed(range(-1, iterations)):
+            time2 -= 1
+            chasing = False
+            if time1 < 0:
+                println(f"Out of bounds: {time1}/{0}. Adding delay to agent {agt2}")
+                self.addOffset(agt2, time2)
+                break
+            
+            for pos1 in self.pos[agt1][time1]:
+                collisionData = self.findCollisions(agt1, pos1, time1)
+                if collisionData and any(collisionData):
+                    for agt2_temp, time2 in collisionData:
+                        
+                        if agt2_temp == agt2:
+                            chasing = True
+                            break
+                        else:
+                            println("########## nested traceback not implemented yet###########")
+                            # raise Exception("nested traceback not implemented yet")
+                            # TODO probably do a traceback if new agent is colliding
+                            pass
+                    else:
+                        continue
+                    break
+
+            if chasing:
+                continue
+            else:
+
+                println(f"collision stopped. Adding delay to agent {agt2}")
+                println(f"collision variables {(agt1, agt2)}, {(time1,time2)}, {self.pos[agt1][time1], self.pos[agt2][time2]}")
+                println(f"collision variables {(agt1, agt2)}, {(time2,time1)}, {self.pos[agt1][time1-1], self.pos[agt2][time2-1]}")
+                println(f"collision calculate {self.pos[agt1][time1], self.pos[agt2][time2]}, { self.pos[agt1][time1-1], self.pos[agt2][time2-1]}")
+                # for pos11 in [self.pos[agt1][time1]:
+                #     for pos12 in [self.pos[agt1][time1+1]:
+                #         pass
+                # for pos21 in [self.pos[agt2][time1]:
+                #     for pos22 in [self.pos[agt2][time1+1]:
+                #         pass
+                        
+                #println(f"{pos1,pos2}is swap and not collision")
+
+                #delayTime = time2
+                #println((self.pos[agt2][time2], self.pos[agt1][time1]))
+                
+                # println((int((time1 + time2) / 2),time1, time2,self.getOffsetTime(agt1, time1),self.getOffsetTime(agt2, time2)))
+                self.addOffset(agt2, time1)
+                break
+            #println((time1, self.pos[agt1][time1], time2, self.pos[agt2][time2]))
+            
+            pass
+
+        return True
+
+
+
+    def tracebackCollision(self, agt1, agt2, time1, time2):
         iterations = time1 + 1
         time2 = time2 + 1
         collided = False
@@ -187,6 +247,7 @@ class Resultsharing:
                             collided = True
                             break
                         else:
+                            raise Exception("nested traceback not implemented yet")
                             # TODO probably do a traceback if new agent is colliding
                             pass
                     else:
@@ -210,10 +271,7 @@ class Resultsharing:
         return True
 
     def minimalRep(self):
-        # TODO make a representation where it looks at collision poitns rather than the last positions
-        # TODO TODO TODO the above one!
-        test2 = self.collisionPoints
-        return str(test2)
+        return str(self.collisionPoints)
 
     def addVisitedState(self):
         self.visitedStates.add(self.minimalRep())
@@ -224,6 +282,9 @@ class Resultsharing:
         return self.minimalRep() in self.visitedStates
 
     def findAndResolveCollision(self):
+        # TODO just call the function traceback in a nest then no deadlock detection is needed
+        # get next pos and check if someone is there
+
         # TODO make every pos an object attribute
         # TODO TODO TODO, reimplement the way it's done, if a collision is found
         # every agent moves away from the other agents path and gets + points for
@@ -304,7 +365,10 @@ class Resultsharing:
                                         self.pos[agt2][time2]
                                     ]
                                 )
-                                self.tracebackNew(agt1, agt2, time1, time2)
+                                
+                                self.tracebackChase(agt1, agt2, time1, time2)
+                                
+                                #self.tracebackSwap(agt1, agt2, time1, time2)
                                 # println(self.offsetTable)
                                     #deadlock = False
                                     # fixPos shouldn't be called here
@@ -314,11 +378,13 @@ class Resultsharing:
                             # the second agent should traceback until it can't or collides with a new one:
                             # if 1 collides with 2, 2 is traced back, if it collides with 3, 3 is traced back
                             # and if it doesn't collide 2 i traced back and at last 1.
-            println(f"collision points {self.collisionPoints}")
-            # if self.isGoal():
-            #     println("goal achieved")
+            #println(f"collision points {self.collisionPoints}")
+            if not self.collisionPoints:
+                println("goal achieved")
+                break
             if self.deadlock():
-                println(f"goal deadlock detected. These are the collisions {self.collisionPoints}")
+                println(f"\n\n deadlock detected. These are the collisions {self.collisionPoints} \n\n")
+                break
 
         self.fixPos()
         self.fixLength()
