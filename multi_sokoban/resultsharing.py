@@ -124,9 +124,9 @@ class Resultsharing:
             collisions = [
                 # find proper time condition!
                 #            collision                     chase
-                (abs(time1WithOffset - time2WithOffset) <= 1) for time2WithOffset in timesWithOffset
+                #(abs(time1WithOffset - time2WithOffset) <= 1) for time2WithOffset in timesWithOffset
                 # fore some reason this one doesn't work the way intended:
-                #(time2WithOffset >= time1WithOffset - 1) and (time2WithOffset <= time1WithOffset + 1) for  time2WithOffset in timesWithOffset
+                (time2WithOffset >= time1WithOffset) and (time2WithOffset <= time1WithOffset + 1) for  time2WithOffset in timesWithOffset
                 # TODO remove agt2 from above?
             ]
         
@@ -137,10 +137,11 @@ class Resultsharing:
         if collisionData and any(collisionData[0]):
             for collision, agt2, time2 in list(zip(*collisionData)):
                 if collision:
-                    println(f"collision for agts: {(agt1, agt2)} at time: {(time1, time2)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
-                    actualCollisions.append([agt2, time2])
+                    time2WithOffset = self.getOffsetTime(agt2, time2)
+                    println(f"collision for agts: {(agt1, agt2)} at time: {(time1WithOffset, time2WithOffset)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
+                    actualCollisions.append([agt2, time2WithOffset])
                     #println(f"collisionData: {actualCollisions}, times {(time1, time2)}/{(len(self.pos[agt1]),len(self.pos[agt2]))}")
-                    if time1 >= len(self.pos[agt1]) or time2 >= len(self.pos[agt2]):
+                    if time1 >= len(self.pos[agt1]) or time2WithOffset >= len(self.pos[agt2]):
                         # TODO VERY IMPORTANT, make solution if time is out of bounds!
                         raise Exception("out of bounds!")
                         # maybe fix length and then rehash?
@@ -200,7 +201,7 @@ class Resultsharing:
                 #println((self.pos[agt2][time2], self.pos[agt1][time1]))
                 
                 println((int((time1 + time2) / 2),time1, time2,self.getOffsetTime(agt1, time1),self.getOffsetTime(agt2, time2)))
-                self.addOffset(agt2, time2)
+                self.addOffset(agt2, time1)
                 break
             #println((time1, self.pos[agt1][time1], time2, self.pos[agt2][time2]))
             
