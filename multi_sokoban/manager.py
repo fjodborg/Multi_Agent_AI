@@ -3,25 +3,44 @@ from copy import deepcopy
 from typing import List
 
 from .actions import StateInit
-from .emergency_aStar import BestFirstSearch, calcHuristicsFor
-from .memory import MAX_USAGE, get_usage
-from .utils import ResourceLimit, println
-from .resultsharing import Resultsharing, convert2pos
+from .bdi import Agent, Message
+from .strategy import BestFirstSearch
+from .resultsharing import Resultsharing
+from .utils import STATUS, println
 
 
 class Manager:
-    """Top manager that performs problem subdivision and task broadcasting."""
+    """Top manager that performs problem subdivision and task broadcasting.
+
+    Attributes
+    ----------
+    top_problem: StateInit
+        whole problem definition
+    strategy: BestFirstSearch
+        child strategy of BestFirstSearch
+    agents: dict
+        agent names as keys and Agent objects as values. Agents are generated
+        on demand; i.e., there can be idle agents in the map that won't have an
+        associated Agent object (see multi_sokoban/bdi.py)
+    solutions: List[List]
+        the solutions of the different agents to their particular subproblems.
+        `None` until there is a solution
+    nodes_explored: int
+        sum of the number of explored nodes by the agents
+    inbox: List[Message]
+        List of OK `Message`s (see multi_sokoban/bdi.py) that the agents
+        generate when they solve a request of another agent.
+
+    """
 
     def __init__(self, top_problem: StateInit, strategy: BestFirstSearch):
         """Initialize with the whole problem definition `top_problem`."""
         self.top_problem = top_problem
         self.strategy = strategy
-        self.tasks = {}
-        # TODO: move status to BFS class
-        self.status = {}
-        self.freed_agents = {}
-        self.agent_to_status = {}
+        self.agents = {}
+        self.solutions = None
         self.nodes_explored = 0
+        self.inbox = []
 
     def run(self) -> List:
         """Perform the task sharing."""
@@ -38,26 +57,33 @@ class Manager:
         for goal in self.top_problem.goals:
             # create subproblem and remove other goals
             task = deepcopy(self.top_problem)
-            ext_goals = list(task.goals.keys())
-            for external_goal in ext_goals:
-                if external_goal != goal:
-                    task.deleteGoal(external_goal)
-
+            task.keepJustGoal(goal)
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
-            ext_agents = list(task.agents.keys())
-            for external_agent in ext_agents:
-                if external_agent != agent:
-                    # del task.agents[external_agent]
-                    task.deleteAgent(external_agent)
+            task.keepJustAgent(agent)
+            if agent in self.agents:
+                self.agents[agent].add_task(task)
+            else:
+                self.agents[agent] = Agent(task, self.strategy)
 
-            self.tasks[goal] = (task, agent)
-            self.status[goal] = None
-            self.agent_to_status[goal] = agent
-
-    def bidding(self, task: StateInit, agents):
-        """Request a heuristic from the agents to solve a particular task."""
-        raise NotImplementedError
+    def bidding(self, task: StateInit, agents: List[str]) -> str:
+        """Request heuristic from the `agents` to solve a particular `task`."""
+        min_marginal_cost = float("inf")
+        for agent in agents:
+            if agent in self.agents:
+                # agent got already tasks assigned so you have to use the joint
+                marginal_cost = self.agents[agent].marginal_task_cost(task)
+            else:
+                # here marginal cost is the total heuristic estimate
+                tmp_task = deepcopy(task)
+                tmp_task.keepJustAgent(agent)
+                self.heuristic(tmp_task)
+                marginal_cost = tmp_task.f
+            # greater or equal to guarantee a selected agent
+            if min_marginal_cost >= marginal_cost:
+                min_marginal_cost = marginal_cost
+                selected_agent = agent
+        return selected_agent
 
     def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
@@ -68,32 +94,20 @@ class Manager:
         if len(ok_agents) > 1:
             selected_agent = self.bidding(task, ok_agents)
         else:
+            # direct contract, the usual case
             selected_agent = ok_agents[0]
         return selected_agent
+
+    def broadcast_message(self, message: Message) -> str:
+        """Request help in the form of a message."""
+        color_of = message.color
+        ok_agents = [k for k, v in self.agents.items() if color_of == v.color][0]
+        return ok_agents
 
     def sort_agents(self):
         """Return sorted agents by name of agent (0-10)."""
         # WARNING: ths fails if there are more than 10 agents
-        return sorted(list(self.status.keys()), key=lambda a: self.agent_to_status[a])
-
-    def solve_task(self, task) -> List:
-        """Search for task.
-
-        Returns
-        -------
-        Path to the solutions (in actions) or none.
-
-        """
-        searcher = self.strategy(task)
-        println(
-            f"goals -> {task.goals}\n"
-            f"agents -> {task.agents}\nboxes -> {task.boxes}\n"
-        )
-        path, strategy = search(searcher)
-        # println(f"{path}\n\n")
-        if path is None:
-            task.forget_exploration()
-        return path, strategy.leaf
+        return sorted(self.agents)
 
     def solveCollision(self):
         # findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
@@ -108,31 +122,24 @@ class Manager:
 
     def solve_world(self):
         """Solve the top problem."""
-        to_del = []
-        for goal, val in self.tasks.items():
-            task, agent = val
-            if agent in self.freed_agents:
-                # substitute this task with previous task using the agent
-                prev_task = self.freed_agents[agent]
-                pos, color = list(task.goals.values())[0][0]
-                prev_task.addGoal(goal, pos, color)
-                task = prev_task
-                task.forget_exploration()
-                to_del.append(goal)
-            path, last_state = self.solve_task(task)
-            if path is not None:
-                self.freed_agents[agent] = last_state
-                if goal not in to_del:
-                    self.tasks[goal] = (last_state, self.tasks[goal][1])
-                prev_goal = list(last_state.goals.keys())[0]
-                self.status[prev_goal] = path
-                # make sure that we are not removing the correct one
-                if prev_goal in to_del:
-                    to_del.remove(prev_goal)
-
-        for goal in to_del:
-            del self.status[goal]
-            del self.tasks[goal]
+        paths = {}
+        while len(paths) != len(self.agents):
+            for name, agent in self.agents.items():
+                path, message = agent.solve(self.inbox)
+                self.nodes_explored += len(agent.task.explored)
+                if agent.status == STATUS.fail:
+                    ok_agent = self.broadcast_message(message)
+                    if ok_agent:
+                        println(f"Agent {name} broadcasted task!")
+                        self.agents[ok_agent[0]].consume_message(message)
+                    else:
+                        println(f"SOS of Agent {name} stored at inbox.")
+                        self.inbox.append(message)
+                else:
+                    if message:
+                        self.inbox.append(message)
+                    paths[name] = path
+        self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
 
     def join_tasks(self) -> List:
         """Join all the task in one big path.
@@ -142,47 +149,6 @@ class Manager:
         list of actions to the best solution
 
         """
-        sorted_agents = self.sort_agents()
-
-        paths = [self.status[agent] for agent in sorted_agents]
+        paths = self.solutions
         println(paths)
         return [";".join(actions) for actions in zip(*paths)]
-
-
-def search(strategy: BestFirstSearch) -> List:
-    """Search function.
-
-    Returns
-    -------
-    Path to the solutions (in actions) or none.
-
-    """
-
-    iterations = 0
-    while not strategy.leaf.isGoalState():
-        if iterations == 1000:
-            println(f"{strategy.count} nodes explored")
-            iterations = 0
-
-        if get_usage() > MAX_USAGE:
-            raise ResourceLimit("Maximum memory usage exceeded.")
-            return None, strategy
-
-        strategy.explore_and_add()
-
-        if strategy.frontier_empty():
-            println(f"Frontier empty! ({strategy.count} nodes explored)")
-            return None, strategy
-
-
-        strategy.get_and_remove_leaf()
-
-
-        if strategy.leaf.isGoalState():
-            println(
-                    f"(Subproblem) Solution found with "
-                    f"{len(strategy.leaf.explored)} nodes explored"
-            )
-            return strategy.walk_best_path(), strategy
-
-        iterations += 1

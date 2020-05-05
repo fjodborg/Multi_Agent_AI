@@ -25,11 +25,11 @@ exe_serve.sh SAD1.lvl -astar
 
 ## Objectives
 
-- [ ] Run _lvl1_ without getting an error.
+- [x] Run _lvl1_ without getting an error.
 - [ ] Create required maps.
 - [x] Choose a theoretical framework -> PPDL | BDI | POP | HTL.
-- [ ] Choose a method of communication -> online-planing, deadlocks avoidance.
-- [x] Find paper for Sokoban-like with the chose framework and multiagent.
+- [x] Choose a method of communication -> online-planing, deadlocks avoidance.
+- [x] Find paper for Sokoban-like with the chosen framework and multiagent.
 - [ ] Solve all the levels with the agent.
 - [ ] Papers in AAAI style of 6 pages.
 - [x] Open the repository.
@@ -37,7 +37,7 @@ exe_serve.sh SAD1.lvl -astar
 
 ## Installation
 
-The python client was packed as a module to ease its use. Once clones, it can be
+The python client was packed as a module to ease its use. Once cloned, it can be
 installed from source via `pip`.
 
 ```bash
