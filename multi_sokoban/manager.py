@@ -4,7 +4,7 @@ from typing import List
 
 from .actions import StateInit
 from .bdi import Agent, Message
-from .emergency_aStar import BestFirstSearch, calcHuristicsFor
+from .strategy import BestFirstSearch
 from .resultsharing import Resultsharing
 from .utils import STATUS, println
 
@@ -77,7 +77,7 @@ class Manager:
                 # here marginal cost is the total heuristic estimate
                 tmp_task = deepcopy(task)
                 tmp_task.keepJustAgent(agent)
-                calcHuristicsFor(tmp_task)
+                self.heuristic(tmp_task)
                 marginal_cost = tmp_task.f
             # greater or equal to guarantee a selected agent
             if min_marginal_cost >= marginal_cost:

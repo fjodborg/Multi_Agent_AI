@@ -3,7 +3,8 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .emergency_aStar import BestFirstSearch, calcHuristicsFor
+from .strategy import BestFirstSearch
+from .heuristics import EasyRule, WeightedRule
 from .memory import MAX_USAGE, get_usage
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
 
@@ -74,15 +75,13 @@ class Agent:
     """
 
     def __init__(
-        self,
-        task: StateInit,
-        strategy: BestFirstSearch,
-        heuristic: Callable = calcHuristicsFor,
+        self, task: StateInit, strategy: BestFirstSearch, heuristic: Callable = None,
     ):
         """Initialize the agent wit a task."""
         self.task = task
+        self.init_task = deepcopy(task)
         self.strategy = strategy
-        self.heuristic = heuristic
+        self.heuristic = heuristic if heuristic else EasyRule()
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
@@ -103,7 +102,7 @@ class Agent:
 
         """
         # update beliefs and desires
-        if self.status == STATUS.ok:  # and not self.helping:
+        if self.status == STATUS.ok and not self.helping:
             # avoid recomputing solutions when not needed
             return self.saved_solution, self.broadcast()
         if inbox and self.status == STATUS.fail:
@@ -116,12 +115,14 @@ class Agent:
             if to_del:
                 del inbox[message]
         # execute intention
-        searcher = self.strategy(self.task)
+        searcher = self.strategy(self.task, self.heuristic)
         println(
             f"goals -> {self.task.goals}\n"
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
+        println(self.task)
         path = self.search(searcher)
+        println(path)
         # communicate
         self.status = STATUS.ok if path else STATUS.fail
         self.saved_solution = path
@@ -149,11 +150,11 @@ class Agent:
         c_union = float("inf")
         if color != self.color:
             return c_union
-        calcHuristicsFor(broadcasted_task)
+        self.heuristic(broadcasted_task)
         c_ts = broadcasted_task.f
         joint_task = deepcopy(self.task)
         joint_task.addGoal(goal_key, pos, color)
-        cost = calcHuristicsFor(joint_task)
+        cost = self.heuristic(joint_task)
         if cost is None:
             cost = c_union
         c_union = min(c_union, cost)
@@ -176,6 +177,9 @@ class Agent:
         else:
             println(f"Agent {self.name} received message!")
             self.helping = message
+            self.task = deepcopy(self.init_task)
+            self.heuristic = WeightedRule(message.object_problem)
+            # solution will be recomputed with updated priorities in heuristics
         # TODO: logic of weighting the goal here!
 
     def broadcast(self) -> Message:
@@ -243,6 +247,7 @@ class Agent:
             if pos_color[0][1] != self.color
         }
         agent_trace = self.track_back(self.name)
+        println(agent_trace)
         for box, pos_color in boxes.items():
             for agent_pos in agent_trace:
                 if self.task.Neighbour(pos_color[0], agent_pos):
