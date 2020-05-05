@@ -55,7 +55,6 @@ class Resultsharing:
                 if len(posAtTime) > 1:
                     self.addToTimeTable(posAtTime[1], time, agtIdx) 
                 self.addToTimeTable(posAtTime[0], time, agtIdx)
-
         return None
 
 
@@ -257,9 +256,6 @@ class Resultsharing:
         # and finds a new path. keeping in mind that it shouldn't occupy that spot at that time
 
         # sorted goals according to first agent
-        goals = self.manager.sort_agents()  # for now assume len(goals) = len(agents)
-        println(self.manager.tasks[goals[0]][0])
-
         # for goal in self.manager.agent_to_status.keys():
         #     if self.manager.agent_to_status[goal] == agt:
         #         pass
@@ -326,6 +322,7 @@ class Resultsharing:
         # TODO delete hashtables
 
         println(f"unsolveable due to: {self.unsolvableReason}")
+
         return None
 
     def color2agt(self, objid):
