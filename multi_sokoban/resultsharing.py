@@ -17,7 +17,6 @@ class Resultsharing:
         self.collisionPoints = []
 
     def addToTimeTable(self, pos, time, identity):
-        ''' Not in use at the moment '''
         key = (pos)
         value = (identity, time)
         if key in self.timeTable:
@@ -30,27 +29,17 @@ class Resultsharing:
             self.timeTable[key] = [value]
 
     def generateTimeTable(self):
-        ''' Not in use at the moment '''
         for key in self.manager.top_problem.boxes:
             boxPos, boxColor = self.manager.top_problem.boxes[key][0]
             self.addToTimeTable(boxPos, 0, boxColor)
-            # for agtKey in self.manager.top_problem.agents:
-            #     _, agtColor = self.manager.top_problem.agents[agtKey][0]
-            #     if agtColor == boxColor:
-            #         self.addToTimeTable(boxPos, 0, agtKey)
-
-        agtColor = []
-        for goal, val in self.manager.tasks.items():
-            agtColor.append(list(val[0].agents.values())[0][0][1])
 
         for agtIdx in range(len(self.paths)):
             for time in range(len(self.pos[agtIdx])):
                 posAtTime = self.pos[agtIdx][time]
                 if len(posAtTime) > 1:
-                    self.addToTimeTable(posAtTime[1], time, agtIdx) 
+                    self.addToTimeTable(posAtTime[1], time, agtIdx)
                 self.addToTimeTable(posAtTime[0], time, agtIdx)
         return None
-
 
     def fixLength(self):
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
@@ -223,22 +212,10 @@ class Resultsharing:
         # moving away from the object and for not standing in the path. Probably use astar for this!
         # +100 for being on the path and -1 for being outside the path
         sorted_agents = self.manager.sort_agents()
-        self.paths = [
-            self.manager.status[agent]
-            for agent in sorted_agents
-            if self.manager.status[agent]
-        ]
-
-        initpos = [
-            [
-                [
-                    self.manager.top_problem.agents[
-                        self.manager.agent_to_status[agent]
-                    ][0][0]
-                ]
-            ]
-            for agent in sorted_agents
-        ]
+        self.paths = self.manager.solutions
+        println(self.manager.solutions)
+        
+        initpos = [[[self.manager.agents[agent].init_pos]] for agent in sorted_agents]
         self.pos = convert2pos(self.manager, initpos, self.paths)
 
         # for pos in self.pos:
