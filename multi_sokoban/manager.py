@@ -114,9 +114,8 @@ class Manager:
 
         # TODO check for empty frontiers
         # check for traceback possiblities
-        #
-
-        rs = Resultsharing(self)
+        # frontier empty len()
+        rs = Resultsharing(self, [])
         rs.findAndResolveCollision()  # This function can be found in resultsharing.py
         # println(pos)
         # println(self.tasks['a'][0].map)
