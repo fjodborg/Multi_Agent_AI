@@ -95,6 +95,7 @@ class SearchClient:
         state = StateInit()
         all_objects = []
         agent_n_boxes = string.digits + string.ascii_uppercase
+        possible_colors = set(self.colors.values())
         all_objects = self._locate_objects(np.array(map), agent_n_boxes)
         # it is required to add the map first and then the rest level objects
         state.addMap(map)
@@ -103,7 +104,10 @@ class SearchClient:
             if obj in string.digits:
                 state.addAgent(obj, (row, col), color)
             elif obj in string.ascii_uppercase:
-                state.addBox(obj, (row, col), color)
+                if color in possible_colors:
+                    state.addBox(obj, (row, col), color)
+                else:
+                    state.map[row, col] = "+"
         goals = string.ascii_uppercase
         all_objects = self._locate_objects(np.array(goal_state), goals)
         for obj, pos, color in all_objects:
