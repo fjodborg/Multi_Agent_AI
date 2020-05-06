@@ -124,7 +124,7 @@ class Agent:
         path = self.search(searcher)
         println(path)
         # communicate
-        self.status = STATUS.ok if path else STATUS.fail
+        self.status = STATUS.fail if path is None else STATUS.ok
         self.saved_solution = path
         return path, self.broadcast()
 
@@ -262,6 +262,10 @@ class Agent:
 
         """
         iterations = 0
+        if strategy.leaf.isGoalState():
+            println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
+            return []
+
         while not strategy.leaf.isGoalState():
             if iterations == 1000:
                 println(f"{strategy.count} nodes explored")
