@@ -19,6 +19,7 @@ class Message:
         requester: str,
         status: STATUS,
         time: int = None,
+        index: int = 0,
     ):
         """Fill message fields.
 
@@ -26,6 +27,8 @@ class Message:
         ----------
         object_problem: str
             name of the object concerning the problem
+        index: str
+            index of the object concerning the problem
         color: str
             color of the box concerning the problem
         requester: str:
@@ -39,6 +42,7 @@ class Message:
         """
         self.object_problem = object_problem
         self.color = color
+        self.index = index
         self.requester = requester
         self.status = status
         self.time = time
@@ -128,9 +132,7 @@ class Agent:
             f"goals -> {self.task.goals}\n"
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
-        println(self.task)
         path = self.search(searcher)
-        println(path)
         # communicate
         self.status = STATUS.fail if path is None else STATUS.ok
         self.saved_solution = path
@@ -142,6 +144,12 @@ class Agent:
         if color != self.color:
             IncorrectTask(f"Agent {self.name}: I'm {self.color}, not {color}.")
         self.task.goals = {**self.task.goals, **task.goals}
+        self.init_task = deepcopy(self.task)
+
+    def reboot(self):
+        """Replace current task with initial task."""
+        self.task.forget_exploration()
+        self.task = deepcopy(self.init_task)
 
     def marginal_task_cost(self, broadcasted_task: StateInit) -> float:
         """Compute cost of adding task `broadcasted_task`.
@@ -177,7 +185,9 @@ class Agent:
                 pos = event[1]
                 if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
                     curr_pos = pos
-                    concurrent[event[0]] = {message.object_problem: pos}
+                    concurrent[event[0]] = {
+                        message.object_problem: [pos, message.index]
+                    }
             self.task = StateConcurrent(self.task, concurrent)
             # println(self.task.__dict__)
             # import sys; sys.exit(0)
@@ -185,7 +195,7 @@ class Agent:
         else:
             println(f"Agent {self.name} received message!")
             self.helping = message
-            self.task = deepcopy(self.init_task)
+            self.reboot()
             # solution will be recomputed with updated priorities in heuristics
             self.heuristic = WeightedRule(message.object_problem)
 
@@ -194,16 +204,18 @@ class Agent:
         message = False
         if self.status == STATUS.fail:
             message = self._sos()
-            self.task.forget_exploration()
+            self.reboot()
         if self.helping:
             message = self._send_success()
         return message
 
     def _sos(self) -> StateInit:
         """Identify problem and formulate solution."""
-        box, color = self._identify_problem()
+        box, color, index = self._identify_problem()
+        println(f"{box}, {index}, {color}")
         return Message(
             object_problem=box,
+            index=index,
             color=color,
             requester=self.name,
             status=self.status,
@@ -213,13 +225,16 @@ class Agent:
     def _send_success(self) -> StateInit:
         """Return a message indicating that the problem was solved."""
         # TODO: weight heuristics and recompute alternative solution
-        time_pos = self.task.bestPath(format=self.helping.object_problem)
+        time_pos = self.task.bestPath(
+            format=self.helping.object_problem, index=self.helping.index
+        )
         message = Message(
-            self.helping.object_problem,
-            self.helping.color,
-            self.helping.requester,
-            self.status,
-            time_pos,
+            object_problem=self.helping.object_problem,
+            index=self.helping.index,
+            color=self.helping.color,
+            requester=self.helping.requester,
+            status=self.status,
+            time=time_pos,
         )
         self.helping = False
         return message
@@ -248,17 +263,18 @@ class Agent:
             goal and color as strings of the block which is blocking the agent
 
         """
-        boxes = {
-            box: pos_color[0]
+        boxes = [
+            [box, pos_color[i][0], pos_color[i][1], i]
             for box, pos_color in self.task.boxes.items()
+            for i in range(len(pos_color))
             if pos_color[0][1] != self.color
-        }
+        ]
         agent_trace = self.track_back(self.name)
-        println(agent_trace)
-        for box, pos_color in boxes.items():
+        for box in boxes:
+            name, pos, color, index = box
             for agent_pos in agent_trace:
-                if self.task.Neighbour(pos_color[0], agent_pos):
-                    return box, pos_color[1]
+                if self.task.Neighbour(pos, agent_pos):
+                    return name, color, index
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.
@@ -269,6 +285,7 @@ class Agent:
 
         """
         iterations = 0
+        advanced = False
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
@@ -285,14 +302,23 @@ class Agent:
             strategy.explore_and_add()
 
             if strategy.frontier_empty():
-                println(f"Frontier empty! ({strategy.count} nodes explored)")
+                if (not advanced) and isinstance(self.task, StateConcurrent):
+                    # look for events in the future and search again
+                    println("Advancing!")
+                    advanced = True
+                    strategy.leaf = strategy.leaf.advance()
+                    println(strategy.leaf)
+                    continue
+                println(
+                    f"Agent {self.name}: Frontier empty! ({strategy.count} nodes explored)"
+                )
                 return None
 
             strategy.get_and_remove_leaf()
 
             if strategy.leaf.isGoalState():
                 println(
-                    f"(Subproblem) Solution found with "
+                    f"Agent {self.name}: Solution found with "
                     f"{len(strategy.leaf.explored)} nodes explored"
                 )
                 self.task = strategy.leaf

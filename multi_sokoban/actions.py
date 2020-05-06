@@ -155,7 +155,7 @@ class Literals:
 
     def __str__(self):
         # Debugging purposes
-        return "\n".join(["".join(line) for line in self.map])
+        return "\n".join(["".join(line) for line in self.map]) + f" t={self.t}"
 
 
 class StateInit(Literals):
@@ -362,7 +362,7 @@ class StateInit(Literals):
                     return False
         return True
 
-    def bestPath(self, format=0):
+    def bestPath(self, format=0, index=0):
         # function returns the list of actions used to reach the state
         path = []
         state = self
@@ -378,7 +378,7 @@ class StateInit(Literals):
 
             while state.actionPerformed is not None:
                 path.append(
-                    [state.t, state.getPos(getattr(state, obj_group), looking_for)]
+                    [state.t, state.getPos(getattr(state, obj_group), looking_for, index)]
                 )
                 state = state.prevState
         else:
@@ -478,7 +478,7 @@ class StateConcurrent(StateInit):
         concurrent: Dict
             Shared table that contains times where an object (box) in the
             environment has been changed by another agent:
-                {t: {box: (row, col), ...}, ...}
+                {t: {box: [(row, col), index], ...}, ...}
 
         """
         super().__init__(parent)
@@ -495,10 +495,10 @@ class StateConcurrent(StateInit):
         """Modify environment according to concurrent actions at time `t`."""
         joint_concurrent = self.concurrent[t]
         for obj_key in joint_concurrent:
-            pos = list(joint_concurrent[obj_key])
+            pos, index = list(joint_concurrent[obj_key])
             obj_group = "agents" if obj_key.isnumeric() else "boxes"
-            prev_pos = self.getPos(getattr(self, obj_group), obj_key)
-            self.setPos(getattr(self, obj_group), obj_key, pos)
+            prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
+            self.setPos(getattr(self, obj_group), obj_key, pos, index)
             self.map[prev_pos[0], prev_pos[1]] = chr(32)
             self.map[pos[0], pos[1]] = obj_key
         return True
@@ -518,6 +518,7 @@ class StateConcurrent(StateInit):
         if child_def.__NoOpPrec():
             # apply concurrent effects to all children but also append
             # a NoOp children which just waits for the env to change
+            print("Applying NoOp")
             child_def.__NoOpEffect(child_def.t)
             child = copy.deepcopy(child_def)
             child.actionPerformed = ["NoOp", None]
@@ -566,3 +567,13 @@ class StateConcurrent(StateInit):
                     child._StateInit__addToExplored(children)
 
         return children
+
+    def advance(self):
+        """Advance in time until the environment is changed by other agent."""
+        next_time = int(list(self.concurrent.keys())[0])
+        future_self = self
+        while next_time > future_self.t:
+            println(future_self)
+            future_self = StateConcurrent(future_self)
+            future_self.actionPerformed = ["NoOp", None]
+        return future_self
