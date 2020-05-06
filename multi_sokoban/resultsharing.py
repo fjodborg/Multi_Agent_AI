@@ -167,13 +167,16 @@ class Resultsharing:
 
         return False
 
-    def checkDepth(self, depth):
+    def checkDepth(self, depth, time):
         if depth > 10:
             raise Exception("too deep")
+        if time > len(self.paths[0]) * 100:
+            raise Exception("pos expanded too much")
+        
 
     def solveChase(self, agt1, agt2, time1, depth=0):
         println("chasing")
-        self.checkDepth(depth)
+        self.checkDepth(depth, time1)
         traceback = 0
         
         for index1 in reversed(range(-1, time1 - 1)):
@@ -211,7 +214,7 @@ class Resultsharing:
 
     def solveSwap(self, agt1, agt2, time1, time2, depth=0):
         println("Doing swap")
-        self.checkDepth(depth)
+        self.checkDepth(depth, time1)
         traceback = 0
         for index1 in range(time1 + 1, len(self.pos[agt1])):
             traceback += 1
@@ -409,7 +412,7 @@ class Resultsharing:
         i = 0
         for agt, agtPoses in enumerate(self.pos):
             penalty = 0
-            #longestPath = -len(self.pos[agt])
+            longestPath = 0#-len(self.pos[agt])
             for pos1 in agtPoses[0]:
                 for pos2 in agtPoses[-1]:
                     occupiedA = self.timeTable[pos1]
@@ -424,7 +427,7 @@ class Resultsharing:
                     penalty += -aliensA + aliensB
 
                     println((occupiedA, penalty, occupiedB))
-            #penalty += longestPath
+            penalty += longestPath
             penalties.append(penalty)
             i += 1
         println(f"penalties on agents(0-x): {penalties}")
