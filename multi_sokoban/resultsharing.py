@@ -395,7 +395,7 @@ class Resultsharing:
 
         println(f"unsolveable due to: {self.unsolvableReason}")
 
-        return None
+        return True
 
     def color2agt(self, objid):
         if type(objid) == str:
