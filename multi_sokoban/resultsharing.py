@@ -388,7 +388,7 @@ class Resultsharing:
                 break
             if self.deadlock():
                 println(f"\n\n deadlock detected. These are the collisions {self.collisionPoints} \n\n")
-                break
+                return None
         self.fixLength()
         #self.removeNoOps()
         # TODO delete hashtables
