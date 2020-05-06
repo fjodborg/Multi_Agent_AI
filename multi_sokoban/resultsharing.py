@@ -234,7 +234,7 @@ class Resultsharing:
     def solveChase(self, agt1, agt2, time1, depth=0):
         println("Doing chase")
         self.checkDepth(depth)
-        traceback = 0
+        traceback = 1
         
         for index1 in reversed(range(-1, time1)):
             traceback -= 1
@@ -252,12 +252,12 @@ class Resultsharing:
                             index2 = time2_temp + traceback
                             #println(f"New collision needs to be fixed agt {agt1, agt2, agt2_temp}")
                             if self.detectCollisionType(agt1, agt2_temp, index1, index2) == "swap":
-                                if self.solveSwap(agt1, agt2_temp, index1 + 1, index2 - 1, depth + 1):
+                                if self.solveSwap(agt1, agt2_temp, index1, index2, depth + 1):
                                     break
                                 else:
                                     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
                             else:
-                                if self.solveChase(agt1, agt2_temp, index1 + 1, depth + 1):
+                                if self.solveChase(agt1, agt2_temp, index1, depth + 1):
                                     break
                                 else:
                                     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
@@ -290,9 +290,7 @@ class Resultsharing:
                 #println(self.pos[agt2][index2])
                 if collisionData:
                     for agt2_temp, time2_temp in collisionData:
-                        if agt2_temp == agt2:
-                            println("am i here?")
-                        else:
+                        if agt2_temp != agt2:
                             #index2 = time2_temp - traceback
                             #println(f"New collision needs to be fixed agt {agt1, agt2, agt2_temp}")
                             if self.detectCollisionType(agt1, agt2_temp, index1, index2) == "swap":
@@ -302,7 +300,7 @@ class Resultsharing:
                                 else:
                                     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
                             else:
-                                if self.solveChase(agt1, agt2_temp, index1, depth + 1):
+                                if self.solveChase(agt1, agt2_temp, index1 - 1, depth + 1):
                                     break
                                 else:
                                     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
@@ -342,18 +340,6 @@ class Resultsharing:
             return "swap"
         else:
             return "chase"
-
-
-
-
-
-
-
-
-
-
-
-
 
     def minimalRep(self):
         return str(self.collisionPoints)
