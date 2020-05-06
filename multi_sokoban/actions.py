@@ -568,7 +568,7 @@ class StateConcurrent(StateInit):
 
         return children
 
-    def advance(self):
+    def advance(self) -> StateInit:
         """Advance in time until the environment is changed by other agent."""
         next_time = int(list(self.concurrent.keys())[0])
         future_self = self
