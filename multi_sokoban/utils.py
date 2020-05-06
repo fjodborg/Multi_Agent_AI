@@ -14,9 +14,9 @@ class IncorrectTask(Exception):
     pass
 
 
-def println(msg):
+def println(*msg):
     """Print to stderr."""
-    print(msg, file=sys.stderr, flush=True)
+    print(*msg, file=sys.stderr, flush=True)
 
 
 def enum(**named_values):
