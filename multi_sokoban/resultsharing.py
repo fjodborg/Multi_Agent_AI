@@ -1,5 +1,6 @@
 from .utils import println
 import copy
+import numpy as np
 
 
 class Resultsharing:
@@ -46,7 +47,7 @@ class Resultsharing:
         lengths = [len(self.pos[agt]) for agt in range(len(self.pos))]
         longest = max(lengths)
         shortest = min(lengths)
-        if longest <= shortest:
+        if longest < shortest:
             return None
 
         # TODO fix frontier empty problem
@@ -62,6 +63,7 @@ class Resultsharing:
                         self.paths[agt].insert(i, "NoOp")
                     else:
                         self.paths[agt].append("NoOp")
+
 
 
     def extractFromHash(self, hash, agt):
@@ -83,50 +85,53 @@ class Resultsharing:
 
         return timeWithOffset
 
+    def isSwap(self, agt1, agt2, time1, time2, pos1):
+        if time1 + 1 < len(self.pos[agt1]):
+            pos12 = self.pos[agt1][time1 + 1]
+        else:
+            pos12 = pos1
+
+        if time2 + 1 < len(self.pos[agt2]):
+            pos22 = self.pos[agt2][time2 + 1]
+        else:
+            pos22 = pos1
+
+        if type(pos12) == list:
+            pos12 = pos12[0]
+        if type(pos22) == list:
+            pos22 = pos22[0]
+        
+        dist1 = abs((pos1[0] - pos12[0]) + (pos1[0] - pos22[0]))
+        dist2 = abs((pos1[1] - pos12[1]) + (pos1[1] - pos22[1]))
+        #println((f"swap values is {dist1+dist2 <= 1}", dist1, dist2))
+        if dist1 + dist2 <= 1:
+            return True
+        else:
+            return False
+
+
     def findCollisions(self, agt1, pos1, time1, traceback=0):
         #println(f"pos {pos1}, time {time} has the these values {self.timeTable[pos1]}")
         #println(any(occupiedTimes == 10))
-        
-        time1WithOffset = self.getOffsetTime(agt1, time1)        
-        extracted = self.extractFromHash(self.timeTable[pos1], agt1)
-        if extracted:
-            agents2, times2 = extracted
-            
-        else: 
-            return None
-        
-        times2WithOffset = copy.copy(times2)
-        for agentIndex, agt2 in enumerate(agents2):
-            #println((("test", pos1, (time1, times2[agentIndex])), (self.pos[agt1][time1], self.pos[agt2][times2[agentIndex]])))
-            times2WithOffset[agentIndex] = self.getOffsetTime(agt2, times2[agentIndex]) + traceback
-        #println(f"positions and times for the hash {time1, times2[0], times2[1], pos1, self.pos[agt2][times2[0]], self.pos[agt2][times2[1]]}")
-        #println(f"timetable {self.timeTable[pos1]}")
-        collisions = [
-            (time2WithOffset == time1WithOffset)
-            or (time2WithOffset == time1WithOffset + 1)
-            for time2WithOffset in times2WithOffset
-        ]
 
-        #println((collisions, self.offsetTable, agents, times, self.pos[agt2][times[0]], agt1, time1, self.pos[agt1][time1]))
-        
-        collisionData = [collisions, agents2, times2]
-        #println(((collisionData), (time1WithOffset, [test - traceback for test in times2WithOffset], times2WithOffset, traceback)))
-        actualCollisions = []
-        if collisionData and any(collisionData[0]):
-            #println(collisionData)
-            for collision, agt2, time2 in list(zip(*collisionData)):
-                #println((time1, time2))
-                if collision:
-                    time2WithOffset = self.getOffsetTime(agt2, time2)
-                    println(f"collision for agts: {(agt1, agt2)} at time: {(time1, time2-traceback)} and position {(self.pos[agt1][time1],self.pos[agt2][time2],)}")
-                    actualCollisions.append([agt2, time2WithOffset])
-                    #println(f"collisionData: {actualCollisions}, times {(time1, time2)}/{(len(self.pos[agt1]),len(self.pos[agt2]))}")
-                    if time1 >= len(self.pos[agt1]) or time2 >= len(self.pos[agt2]):
-                        # TODO VERY IMPORTANT, make solution if time is out of bounds!
-                        raise Exception("out of bounds!")
-                        # maybe fix length and then rehash?
-                    
-        return actualCollisions
+        limit = 2
+
+        potentialCollisions = []
+        for agt2, poses2 in enumerate(self.pos):
+            if agt2 == agt1:
+                continue
+            time2 = time1 - traceback
+            if len(self.pos[agt2]) <= time2 + limit:
+                continue
+            for time2New in range(time2, time2 + limit):
+                for pos2 in poses2[time2New]:
+                    #println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
+                    if pos2 == pos1:
+                        isSwap = self.isSwap(agt1, agt2, time1, time2New, pos1)
+                        potentialCollisions.append((isSwap, agt2, time2New))
+                        println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
+           
+        return potentialCollisions
 
     def fixPos(self):
         for agent in self.offsetTable.keys():
@@ -137,74 +142,13 @@ class Resultsharing:
                 #println((offsetTime, offsetValue, self.pos[agent][offsetTime]))
 
     def addOffset(self, agt, time, offset=1):
-        println(f"offset added at time {time} is {offset}")
+        println(f"offset for agt {agt} added at time {time} is {offset}")
         # comment this out when you need to see if it detects collisions
-        if agt in self.offsetTable:
-            self.offsetTable[agt].append([time, offset])
-        else:
-            self.offsetTable[agt] = [[time, offset]]
-        return
-
-    def tracebackChase(self, agt1, agt2, time1, time2):
-        iterations = time1 + 1
-        traceback = 1
-        
-        # Checking and fixing if one is chasing the other
-        for time1 in reversed(range(-1, iterations)):
-            traceback -= 1
-            collided = False
-            if time1 < 0:
-                println(f"Out of bounds: {time1}/{0}. Adding delay to agent {agt2}")
-                self.addOffset(agt2, time2 + traceback)
-                break
-            
-            for pos1 in self.pos[agt1][time1]:
-                collisionData = self.findCollisions(agt1, pos1, time1)
-                if collisionData and any(collisionData):
-                    for agt2_temp, time2_temp in collisionData:
-                        
-                        if agt2_temp == agt2:
-                            collided = True
-                            break
-                        else:
-                            self.tracebackChase(agt1, agt2_temp, time1, time2_temp)
-                            println("########## nested traceback not implemented yet###########")
-                            # raise Exception("nested traceback not implemented yet")
-                            # TODO probably do a traceback if new agent is colliding
-                            pass
-                    else:
-                        continue
-                    break
-
-            if collided:
-                continue
-            else:
-
-                println(f"collision stopped. Adding delay to agent {agt2}")
-                #println(f"{pos1,pos2}is swap and not collision")
-
-                #delayTime = time2
-                #println((self.pos[agt2][time2], self.pos[agt1][time1]))
-                
-                # println((int((time1 + time2) / 2),time1, time2,self.getOffsetTime(agt1, time1),self.getOffsetTime(agt2, time2)))
-                self.addOffset(agt2, time1)
-                break
-            #println((time1, self.pos[agt1][time1], time2, self.pos[agt2][time2]))
-            
-            pass
-
-        return True
+        for i in range(offset):
+            self.pos[agt].insert(time, self.pos[agt][time])
 
     def handleInitialCollisionData(self, collisionData, agt1, time1):
-        for agt2, time2 in collisionData:
-            # if time2 >= len(self.pos[agt2]):
-            #     for i in range(time2 - len(self.pos[agt2]) + 1):
-            #         self.pos[agt2].append(self.pos[agt2][-1])
-            '''  
-            # Old solution
-            self.tracebackChase(agt1, agt2, time1, time2)
-            # old solution
-            ''' 
+        for isSwap, agt2, time2 in collisionData:
             self.collisionPoints.append(
                 [
                     agt1,
@@ -213,18 +157,14 @@ class Resultsharing:
                     self.pos[agt2][time2]
                 ]
             )
-
-            if (self.detectCollisionType(agt1, agt2, time1, time2) == "swap"):
+            if (isSwap):
                 if self.solveSwap(agt1, agt2, time1, time2):
                     return True
-                # else:
-                #     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                           
+                  
             else:
                 if self.solveChase(agt1, agt2, time1):
                     return True
-                # else:
-                #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
+
         return False
 
     def checkDepth(self, depth):
@@ -232,98 +172,111 @@ class Resultsharing:
             raise Exception("too deep")
 
     def solveChase(self, agt1, agt2, time1, depth=0):
-        println("Doing chase")
+        println("chasing")
         self.checkDepth(depth)
-        traceback = 1
+        traceback = 0
         
-        for index1 in reversed(range(-1, time1)):
-            traceback -= 1
+        for index1 in reversed(range(-1, time1 - 1)):
+            traceback += 1
             if index1 < 0:
-                println("out of bounds")
+                println("out of lower bound in chase")
                 self.addOffset(agt2, 0)
                 return True
 
-            next_poses = self.pos[agt1][index1]
-            for next_pos1 in next_poses:
-                collisionData = self.findCollisions(agt1, next_pos1, time1)
+            nextPoses = self.pos[agt1][index1]
+            for nextPos1 in nextPoses:
+                collisionData = self.findCollisions(agt1, nextPos1, time1)
+                #println(("test", collisionData))
                 if collisionData:
-                    for agt2_temp, time2_temp in collisionData:
+                    for isSwap, agt2_temp, time2_temp in collisionData:
                         if agt2_temp != agt2:
-                            index2 = time2_temp + traceback
+                            index2 = time2_temp - traceback
                             #println(f"New collision needs to be fixed agt {agt1, agt2, agt2_temp}")
-                            if self.detectCollisionType(agt1, agt2_temp, index1, index2) == "swap":
+                            if isSwap:
                                 if self.solveSwap(agt1, agt2_temp, index1, index2, depth + 1):
                                     break
-                                else:
-                                    raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
+                                # else:
+                                #     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
                             else:
                                 if self.solveChase(agt1, agt2_temp, index1, depth + 1):
                                     break
-                                else:
-                                    raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
+                                # else:
+                                #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
                         pass
                 else:
                     println("No collision anymore, adding chase delay")
-                    self.addOffset(agt2, time1 - 1)
+                    self.addOffset(agt2, index1, traceback)
                     return True
         return False
 
     def solveSwap(self, agt1, agt2, time1, time2, depth=0):
         println("Doing swap")
         self.checkDepth(depth)
-        index1 = time1
         traceback = 0
-        for index2 in reversed(range(-1, time2)):
+        for index1 in range(time1 + 1, len(self.pos[agt1])):
             traceback += 1
-            index1 += 1
-            if index2 < 0:
-                println("out of bounds")
-                self.addOffset(agt1, 0)
+            index2 = time2 - traceback
+            if index2 - traceback < 0:
+                println("out of lower bound")
+                self.addOffset(agt2, 0)
                 return True
+            if index1 >= len(self.pos[agt1]):
+                println("out of upper bound")
+                return False
 
-            #println("")
-            #println((index1, index2))
             next_poses = self.pos[agt1][index1]
             for next_pos1 in next_poses:
-                #println(next_pos1)
                 collisionData = self.findCollisions(agt1, next_pos1, index1, index1 - index2)
-                #println(self.pos[agt2][index2])
+                #println(collisionData)
                 if collisionData:
-                    for agt2_temp, time2_temp in collisionData:
+                    for isSwap, agt2_temp, time2_temp in collisionData:
                         if agt2_temp != agt2:
                             #index2 = time2_temp - traceback
                             #println(f"New collision needs to be fixed agt {agt1, agt2, agt2_temp}")
-                            if self.detectCollisionType(agt1, agt2_temp, index1, index2) == "swap":
-                                
+                            if isSwap:
                                 if self.solveSwap(agt1, agt2_temp, index1, index2, depth + 1):
                                     break
-                                else:
-                                    raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
+                                # else:
+                                #     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
                             else:
                                 if self.solveChase(agt1, agt2_temp, index1 - 1, depth + 1):
                                     break
-                                else:
-                                    raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                        pass
+                                # else:
+                                #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
+                        
                 else:
                     #println(self.pos[agt2][index2])
                     println("No collision anymore, adding swap delay")
-                    totalOffsetValue = index1 - index2
+                    totalOffsetValue = index1 - index2 
                     totalOffsetTime = index2
-                    if self.paths[agt1][index1 - 2][0:4] == "Push":
-                        totalOffsetValue += 1
-                        totalOffsetTime -= 1
-                    if self.paths[agt2][index2][0:4] == "Push":
-                        totalOffsetValue += 1
-                    self.addOffset(agt2, totalOffsetTime, totalOffsetValue)
+                    
+                    # TODO Change this part to get better solutions!
+                    # this was previously done with PUSH, but since we change pos we can't do that
+
+                    # if self.paths[agt1][index1 - 2][0:4] == "Push":
+                    #     totalOffsetValue += 1
+                    #     totalOffsetTime -= 1
+                    # if self.paths[agt2][index2][0:4] == "Push":
+                    #     totalOffsetValue += 1
+                    # self.addOffset(agt2, totalOffsetTime, totalOffsetValue)
+                    self.addOffset(agt2, totalOffsetTime -1 , totalOffsetValue + 2)
                     return True
+                        
         return False
 
     def detectCollisionType(self, agt1, agt2, time1, time2):
         pos11 = self.pos[agt1][time1]
-        pos12 = self.pos[agt1][time1 + 1]
+        if time1 + 1 < len(self.pos[agt1]):
+            pos12 = self.pos[agt1][time1 + 1]
+        else:
+            pos12 = pos11
+
         pos21 = self.pos[agt2][time2]
-        pos22 = self.pos[agt2][time2 + 1]
+        if time2 + 1 < len(self.pos[agt2]):
+            pos22 = self.pos[agt2][time2 + 1]
+        else:
+            pos22 = pos21
+
         if type(pos11) == list:
             pos11 = pos11[0]
         if type(pos12) == list:
@@ -399,24 +352,20 @@ class Resultsharing:
             #println(agentOrder)
             for agt1 in agentOrder:
                 println(f"\nNewagent {agt1}")
-                if agt1 in self.offsetTable:
-                    println(f"offset table for agt {agt1}: {self.offsetTable[agt1]}")
                 for time1, poses in (list(enumerate(self.pos[agt1]))):
-                    # Find a way to implement so the next iteration of agents get's the correct time
-                    # could be to rehash or to simply add the time offset and fix bounds
-                    # if agt in self.offsetTable:
-                    #     for offsetTime, offsetValue in self.offsetTable[agt]:
-                    #         if time >= offsetTime:
-                    #             newTime += offsetValue
-
-                    for pos in poses:
+                    for pos1 in poses:
                         
-                        collisionData = self.findCollisions(agt1, pos, time1)
-                        #println((collisionData, self.offsetTable, agt, time, self.pos[agt][time]))
+                        collisionData = self.findCollisions(agt1, pos1, time1)
+                        #println((collisionData, pos1))
+                        #println((collisionData, self.offsetTable, agt1, time1, self.pos[agt1][time1]))
                         
                         #println(f"collision: {collisionData[0]}, agts: {(agt, agt2)}, time: {(time, time2)}")
                         if collisionData:
-                            self.handleInitialCollisionData(collisionData, agt1, time1)
+                            try:
+                                self.handleInitialCollisionData(collisionData, agt1, time1)
+                            except Exception:
+                                println(f"something went wrong {self.collisionPoints}")
+                                return None
                                 
                                 # self.tracebackChase(agt1, agt2, time1, time2)
                                 
@@ -437,10 +386,8 @@ class Resultsharing:
             if self.deadlock():
                 println(f"\n\n deadlock detected. These are the collisions {self.collisionPoints} \n\n")
                 break
-
-        self.fixPos()
         self.fixLength()
-
+        #self.removeNoOps()
         # TODO delete hashtables
 
         println(f"unsolveable due to: {self.unsolvableReason}")
@@ -460,10 +407,11 @@ class Resultsharing:
         penalties = []
         
         i = 0
-        for agtPos in self.pos:
+        for agt, agtPoses in enumerate(self.pos):
             penalty = 0
-            for pos1 in agtPos[0]:
-                for pos2 in agtPos[-1]:
+            #longestPath = -len(self.pos[agt])
+            for pos1 in agtPoses[0]:
+                for pos2 in agtPoses[-1]:
                     occupiedA = self.timeTable[pos1]
                     occupiedB = self.timeTable[pos2]
 
@@ -472,10 +420,11 @@ class Resultsharing:
                     aliensA = len(agentsA) - agentsA.count(i)
                     aliensB = len(agentsB) - agentsB.count(i)
                     
+                    
                     penalty += -aliensA + aliensB
 
-                    #println((occupiedA, penalty, occupiedB))
-                    
+                    println((occupiedA, penalty, occupiedB))
+            #penalty += longestPath
             penalties.append(penalty)
             i += 1
         println(f"penalties on agents(0-x): {penalties}")
