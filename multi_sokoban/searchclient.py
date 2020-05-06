@@ -9,9 +9,8 @@ import numpy as np
 
 from _io import TextIOWrapper
 from multi_sokoban.actions import StateInit
-from multi_sokoban.strategy import (BestFirstSearch, aStarSearch,
-                                           greedySearch)
 from multi_sokoban.manager import Manager
+from multi_sokoban.strategy import BestFirstSearch, aStarSearch, greedySearch
 from multi_sokoban.utils import println
 
 

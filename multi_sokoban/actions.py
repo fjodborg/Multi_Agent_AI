@@ -472,13 +472,15 @@ class StateConcurrent(StateInit):
     def __init__(self, parent: StateInit = None, concurrent: Dict = None):
         """Initialize by adding a time table to the usual `StateInit`.
 
-        parameters
+        Parameters
         ----------
         parent: StateInit
-        concurrent:
+        concurrent: Dict
+            Shared table that contains times where an object (box) in the
+            environment has been changed by another agent:
+                {t: {box: (row, col), ...}, ...}
+
         """
-        # initializes the state
-        # it is (row, column) and not (x, y)
         super().__init__(parent)
         self.concurrent = concurrent if concurrent else parent.concurrent
 
@@ -491,8 +493,6 @@ class StateConcurrent(StateInit):
 
     def __NoOpEffect(self, t):
         """Modify environment according to concurrent actions at time `t`."""
-        # Moves the objects with the given parameters
-        # Does not check preconditions+
         joint_concurrent = self.concurrent[t]
         for obj_key in joint_concurrent:
             pos = list(joint_concurrent[obj_key])
@@ -506,7 +506,10 @@ class StateConcurrent(StateInit):
     def explore(self):
         """Explore with 'NoOp's.
 
-        The Preconditions to a NoOp is
+        The Preconditions to a NoOp is that the environment was changed
+        by another agent; i.e., there is an entry in `self.concurrent`
+        for the next time `self.t`. This ensures that agents just wait if the
+        next state is new and applies the concurrent changes to all children.
         """
         children = []
 
@@ -515,9 +518,7 @@ class StateConcurrent(StateInit):
         if child_def.__NoOpPrec():
             # apply concurrent effects to all children but also append
             # a NoOp children which just waits for the env to change
-            # println(f"prev\n{child_def}\n")
             child_def.__NoOpEffect(child_def.t)
-            # println(f"post\n{child_def}\n")
             child = copy.deepcopy(child_def)
             child.actionPerformed = ["NoOp", None]
             child._StateInit__addToExplored(children)
