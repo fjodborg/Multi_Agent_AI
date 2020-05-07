@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule, WeightedRule
+from .heuristics import EasyRule, L1Clarkson
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
@@ -87,7 +87,8 @@ class Agent:
         self.task = task
         self.init_task = deepcopy(task)
         self.strategy = strategy
-        self.heuristic = heuristic if heuristic else EasyRule()
+        self.heuristic = heuristic if heuristic else L1Clarkson(self.task)
+        # self.heuristic = heuristic if heuristic else EasyRule()
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
@@ -197,7 +198,7 @@ class Agent:
             self.helping = message
             self.reboot()
             # solution will be recomputed with updated priorities in heuristics
-            self.heuristic = WeightedRule(message.object_problem)
+            self.heuristic = L1Clarkson(self.task, message.object_problem)
 
     def broadcast(self) -> Message:
         """Send a `Message` of stuff the agent wants to communicate."""

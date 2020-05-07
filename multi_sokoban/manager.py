@@ -6,6 +6,7 @@ from .actions import StateInit
 from .bdi import Agent, Message
 from .resultsharing import Resultsharing
 from .strategy import BestFirstSearch
+from .heuristics import L1Clarkson
 from .utils import STATUS, println
 
 
@@ -36,6 +37,7 @@ class Manager:
     def __init__(self, top_problem: StateInit, strategy: BestFirstSearch):
         """Initialize with the whole problem definition `top_problem`."""
         self.top_problem = top_problem
+        self.heuristic = L1Clarkson(top_problem)
         self.strategy = strategy
         self.agents = {}
         self.solutions = None
