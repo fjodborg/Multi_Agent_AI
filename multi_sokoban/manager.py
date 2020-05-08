@@ -147,5 +147,11 @@ class Manager:
 
         """
         paths = self.solutions
+        # make sure that all paths has the same length
+        sol_len = max([len(path) for path in paths])
+        for i in range(len(paths)):
+            while sol_len > len(paths[i]):
+                paths[i].append("NoOp")
+
         println(paths)
         return [";".join(actions) for actions in zip(*paths)]
