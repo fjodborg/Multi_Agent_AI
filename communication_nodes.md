@@ -30,7 +30,7 @@ The smaller subproblems will be solved independently and combined.
 
 - [x] Color.
 - [x] Initial Problem recognition (subdivide goal state) top manager.
-- [ ] Blind path solving.
-- [ ] Bidding.
-- [ ] Broadcast new tasks (agent-manager) in the way.
-- [ ] Task costs.
+- [x] Blind path solving.
+- [x] Bidding.
+- [x] Broadcast new tasks (agent-manager) in the way.
+- [x] Task costs.

@@ -4,8 +4,8 @@ from typing import List
 
 from .actions import StateInit
 from .bdi import Agent, Message
-from .strategy import BestFirstSearch
 from .resultsharing import Resultsharing
+from .strategy import BestFirstSearch
 from .utils import STATUS, println
 
 
@@ -48,7 +48,6 @@ class Manager:
         self.solve_world()
 
         self.solveCollision()
-        # println(new_paths)
 
         return self.join_tasks()
 
@@ -88,7 +87,6 @@ class Manager:
     def broadcast_task(self, task: StateInit) -> str:
         """Request task for agents."""
         # a task is guaranteed to have exactly one goal
-        # color_of = list(task.goals)[0][1]
         color_of = list(task.goals.values())[0][0][1]
         ok_agents = [k for k, v in task.agents.items() if color_of == v[0][1]]
         if len(ok_agents) > 1:
@@ -110,15 +108,14 @@ class Manager:
         return sorted(self.agents)
 
     def solveCollision(self):
-        # findAndResolveCollisionOld(self) # This function can be found in resultsharing.py
+        """Call the Result Sharing module: avoid deadlocks and collisions.
 
+        -> multi_sokoban/resultsharing.py
+        """
         # TODO check for empty frontiers
-        # check for traceback possiblities
-        # frontier empty len()
+        # check for traceback possibilities
         rs = Resultsharing(self, [])
-        rs.findAndResolveCollision()  # This function can be found in resultsharing.py
-        # println(pos)
-        # println(self.tasks['a'][0].map)
+        rs.findAndResolveCollision()
 
     def solve_world(self):
         """Solve the top problem."""

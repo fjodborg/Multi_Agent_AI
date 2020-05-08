@@ -11,7 +11,7 @@ def manha_dist(a, b):
 
 
 class Heuristics(ABC):
-    """Class for definin heuristcs."""
+    """Class for defining heuristics."""
 
     @abstractmethod
     def __call__(self, states: List):
@@ -46,7 +46,6 @@ class EasyRule(Heuristics):
                 # find every position of goals and boxes with the given key
                 for goal_pos, goal_color in goal_params:
                     box_goal_costs = []
-                    # agtBoxCosts = []
                     for box_pos, _ in box_params:
                         # only take agents with the same color as goalColor
                         agent_keys = state.getAgentsByColor(goal_color)
@@ -101,7 +100,6 @@ class WeightedRule(Heuristics):
                 # find every position of goals and boxes with the given key
                 for goal_pos, goal_color in goal_params:
                     box_goal_costs = []
-                    # agtBoxCosts = []
                     for box_pos, _ in box_params:
                         # only take agents with the same color as goalColor
                         agent_keys = state.getAgentsByColor(goal_color)

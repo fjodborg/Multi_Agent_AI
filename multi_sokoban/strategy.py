@@ -51,7 +51,7 @@ class greedySearch(BestFirstSearch):
             self.frontier.put((state.h, self.count, state))
 
     def __str__(self):
-        """Printable descriptuion."""
+        """Printable description."""
         return "greedy Best First Search"
 
 
@@ -68,5 +68,5 @@ class aStarSearch(BestFirstSearch):
             self.frontier.put((state.f, self.count, state))
 
     def __str__(self):
-        """Printable descriptuion."""
+        """Printable description."""
         return "A* Best First Search"

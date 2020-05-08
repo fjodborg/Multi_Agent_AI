@@ -3,9 +3,9 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .strategy import BestFirstSearch
 from .heuristics import EasyRule, WeightedRule
 from .memory import MAX_USAGE, get_usage
+from .strategy import BestFirstSearch
 from .utils import STATUS, IncorrectTask, ResourceLimit, println
 
 
@@ -56,7 +56,9 @@ class Agent:
     strategy: BestFirstSearch
         child strategy of BestFirstSearch
     heuristic: Callable
-        function to generate the heuristic. Default: calcHuristicsFor
+        function to calculate the heuristic. This is usually an object of a child
+        class of Heuristics that implement __call__() but can be any function
+        that accepts a list of states. Default: EasyRule
     color: str
     name: str
     init_pos: tuple[x,y]
@@ -96,9 +98,15 @@ class Agent:
         Returns
         -------
         path: List
-            path to goal
+            path to goal: Three possible values:
+            * None: task not solved
+            * List of states: task is solved
+            * Empty list: initial state is goal state
         message: Message
-            Message of current state
+            Message of current state. Three possible messages:
+            * None: task was solved and not helping other agents
+            * Success: task was solved and helps other agents
+            * Fail: task was not solved and seeks help
 
         """
         # update beliefs and desires
@@ -124,7 +132,7 @@ class Agent:
         path = self.search(searcher)
         println(path)
         # communicate
-        self.status = STATUS.ok if path else STATUS.fail
+        self.status = STATUS.fail if path is None else STATUS.ok
         self.saved_solution = path
         return path, self.broadcast()
 
@@ -178,9 +186,8 @@ class Agent:
             println(f"Agent {self.name} received message!")
             self.helping = message
             self.task = deepcopy(self.init_task)
-            self.heuristic = WeightedRule(message.object_problem)
             # solution will be recomputed with updated priorities in heuristics
-        # TODO: logic of weighting the goal here!
+            self.heuristic = WeightedRule(message.object_problem)
 
     def broadcast(self) -> Message:
         """Send a `Message` of stuff the agent wants to communicate."""
@@ -262,6 +269,10 @@ class Agent:
 
         """
         iterations = 0
+        if strategy.leaf.isGoalState():
+            println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
+            return []
+
         while not strategy.leaf.isGoalState():
             if iterations == 1000:
                 println(f"{strategy.count} nodes explored")

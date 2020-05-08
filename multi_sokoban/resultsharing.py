@@ -241,6 +241,7 @@ class Resultsharing:
                                 # else:
                                 #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
 
+
                 else:
                     # println("No collision anymore, adding swap delay")
                     totalOffsetValue = index1 - index2
@@ -294,6 +295,7 @@ class Resultsharing:
                             except Exception:
                                 println(f"something went wrong {self.collisionPoints}")
                                 return None
+
 
             if not self.collisionPoints:
                 println("goal achieved")
