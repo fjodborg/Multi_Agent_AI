@@ -162,7 +162,7 @@ class Agent:
     def solve_relaxed(self, box, index):
         """Replan task after removing the `box` from the problem."""
         println("Relaxing!")
-        self.task.concurrent[self.task.t + 1] = {box: [(51, 51), index]}
+        self.task.concurrent[self.task.t + 1] = {box: [None, index]}
         searcher = self.strategy(self.task, self.heuristic)
         path = self.search(searcher)
         return path
@@ -353,7 +353,10 @@ class Agent:
             strategy.explore_and_add()
 
             if strategy.frontier_empty():
-                if isinstance(self.task, StateConcurrent) and strategy.leaf.AdvancePrec():
+                if (
+                    isinstance(self.task, StateConcurrent)
+                    and strategy.leaf.AdvancePrec()
+                ):
                     # look for events in the future and search again
                     println("Advancing!")
                     strategy.leaf = strategy.leaf.advance()
