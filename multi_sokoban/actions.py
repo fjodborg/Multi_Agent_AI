@@ -501,6 +501,8 @@ class StateConcurrent(StateInit):
             # a state that it is being solved is guaranteed to have only one agent
             agent_pos = self.getPos(self.agents, list(self.agents.keys())[0])
             for pos, _ in joint_concurrent.values():
+                if pos is None:
+                    continue
                 if agent_pos[0] == pos[0] and agent_pos[1] == pos[1]:
                     return False
         return True
@@ -522,7 +524,8 @@ class StateConcurrent(StateInit):
             self.setPos(getattr(self, obj_group), obj_key, pos, index)
             # introduce a ghost box which will be removed on child nodes
             self.map[prev_pos[0], prev_pos[1]] = "Ñ"
-            self.map[pos[0], pos[1]] = obj_key
+            if pos is not None:
+                self.map[pos[0], pos[1]] = obj_key
         return True
 
     def hunt_ghost(self):
