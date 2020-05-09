@@ -135,7 +135,7 @@ class Manager:
                 if message:
                     ok_agent = self.broadcast_message(message)
                     message.receiver = ok_agent
-                    println(f"Agent {name} broadcasted task!")
+                    println(f"Agent({name}) broadcasted {message.header} task!")
                     self.inbox.append(message)
                 if agent.status == STATUS.ok:
                     paths[name] = path

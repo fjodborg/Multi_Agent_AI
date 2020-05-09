@@ -129,13 +129,14 @@ class Agent:
         # update beliefs and desires
         recompute = self.status != STATUS.ok
         if inbox:
-            to_del = False
+            to_del = None
             for i, message in enumerate(inbox):
                 if message.receiver == self.name:
                     recompute = self.consume_message(message)
+                    println(f"Agent({self.name}) received {message.header} message!")
                     to_del = i
                     break
-            if to_del:
+            if to_del is not None:
                 del inbox[to_del]
         if not recompute and self.status != STATUS.init:
             # avoid recomputing solutions when not needed
@@ -164,8 +165,9 @@ class Agent:
         println("Relaxing!")
         # unsafe identification of box that is not solved
         for own_box in self.task.boxes:
-            if self.task.getGoalsByKey(own_box)[0][0] != own_box[index][0]:
-                object_problem = own_box
+            if own_box.lower() in self.task.goals:
+                if self.task.getGoalsByKey(own_box.lower())[0][0] != own_box[index][0]:
+                    object_problem = own_box
         # remove the object in next step and solve
         self.task.concurrent[self.task.t + 1] = {box: [None, index]}
         searcher = self.strategy(self.task, self.heuristic)
@@ -173,7 +175,7 @@ class Agent:
         self.stored_message.header = HEADER.corrupt
         self.stored_message.object_problem = object_problem
         # TODO: not optimal...
-        self.stored_message.index = 0
+        self.stored_message.index = index
         return path
 
     def add_task(self, task: StateInit):
@@ -232,7 +234,6 @@ class Agent:
             # import sys; sys.exit(0)
             self.task.t = 0
         elif message.header == HEADER.share:
-            println(f"Agent {self.name} received message!")
             # self.reboot()
             # solution will be recomputed with updated priorities in heuristics
             # self.heuristic = WeightedRule(message.object_problem)
@@ -283,14 +284,16 @@ class Agent:
                 time=time_pos,
             )
         elif self.stored_message.header == HEADER.corrupt:
+            obj_prob = self.stored_message.object_problem
+            pos = self.task.goals[obj_prob.lower()][0][0]
             time_pos = self.task.bestPath(
                 format=self.stored_message.object_problem,
                 index=self.stored_message.index,
             )
             message = Message(
                 object_problem=self.stored_message.object_problem,
-                index=self.stored_message.index,
-                color=self.stored_message.color,
+                index=pos,
+                color=self.color,
                 requester=self.name,
                 receiver=self.stored_message.requester,
                 header=HEADER.replan,  # this is the important part
