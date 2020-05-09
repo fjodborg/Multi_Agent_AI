@@ -483,15 +483,33 @@ class StateConcurrent(StateInit):
         """
         super().__init__(parent)
         self.concurrent = concurrent if concurrent else parent.concurrent
+        self.hunt_ghost()
 
     def __NoOpPrec(self):
         """Evaluate precondition for NoOp.
+
+        Agent can stay at his position without doing anything.
+        """
+        return self.__WaitPrec_t(self.t) and self.__WaitPrec_t(self.t+1)
+
+    def __WaitPrec_t(self, t):
+        if t in self.concurrent:
+            joint_concurrent = self.concurrent[t]
+            # a state that it is being solved is guaranteed to have only one agent
+            agent_pos = self.getPos(self.agents, list(self.agents.keys())[0])
+            for pos, _ in joint_concurrent.values():
+                if agent_pos[0] == pos[0] and agent_pos[1] == pos[1]:
+                    return False
+        return True
+
+    def __ConcurrentPrec(self):
+        """Evaluate precondition for concurrent changes of the world.
 
         Something has changed given a concurrent action by another agent.
         """
         return self.t in self.concurrent
 
-    def __NoOpEffect(self, t):
+    def __ConcurrentEffect(self, t):
         """Modify environment according to concurrent actions at time `t`."""
         joint_concurrent = self.concurrent[t]
         for obj_key in joint_concurrent:
@@ -499,9 +517,14 @@ class StateConcurrent(StateInit):
             obj_group = "agents" if obj_key.isnumeric() else "boxes"
             prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
             self.setPos(getattr(self, obj_group), obj_key, pos, index)
-            self.map[prev_pos[0], prev_pos[1]] = chr(32)
+            # introduce a ghost box which will be removed on child nodes
+            self.map[prev_pos[0], prev_pos[1]] = "Ñ"
             self.map[pos[0], pos[1]] = obj_key
         return True
+
+    def hunt_ghost(self):
+        """Remove ghosted positions put by a Councurent Effect."""
+        self.map[self.map == "Ñ"] = " "
 
     def explore(self):
         """Explore with 'NoOp's.
@@ -516,14 +539,15 @@ class StateConcurrent(StateInit):
         # Loop iterales through every possible action
         child_def = StateConcurrent(self)
 
-        if child_def.__NoOpPrec():
+        if child_def.__ConcurrentPrec():
             # apply concurrent effects to all children but also append
             # a NoOp children which just waits for the env to change
-            println("Applying NoOp")
-            child_def.__NoOpEffect(child_def.t)
-            child = copy.deepcopy(child_def)
-            child.actionPerformed = ["NoOp", None]
-            child._StateInit__addToExplored(children)
+            # println("Applying NoOp")
+            child_def.__ConcurrentEffect(child_def.t)
+            if child_def.__NoOpPrec():
+                child = copy.deepcopy(child_def)
+                child.actionPerformed = ["NoOp", None]
+                child._StateInit__addToExplored(children)
 
         for direction in self.dir:
             for agtkey in self.agents:
