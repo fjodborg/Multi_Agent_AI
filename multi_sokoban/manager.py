@@ -38,7 +38,12 @@ class Manager:
 
     """
 
-    def __init__(self, top_problem: StateInit, strategy: BestFirstSearch, heuristic: Callable = None):
+    def __init__(
+        self,
+        top_problem: StateInit,
+        strategy: BestFirstSearch,
+        heuristic: Callable = None,
+    ):
         """Initialize with the whole problem definition `top_problem`."""
         self.top_problem = top_problem
         self.strategy = strategy
@@ -138,7 +143,10 @@ class Manager:
                     println(f"Agent({name}) broadcasted {message.header} task!")
                     self.inbox.append(message)
                 if agent.status == STATUS.ok:
-                    paths[name] = path
+                    if name in paths:
+                        paths[name] += path
+                    else:
+                        paths[name] = path
         self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
 
     def join_tasks(self) -> List:
