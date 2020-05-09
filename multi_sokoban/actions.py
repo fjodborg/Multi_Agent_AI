@@ -515,15 +515,16 @@ class StateConcurrent(StateInit):
 
         # Loop iterales through every possible action
         child_def = StateConcurrent(self)
+
         if child_def.__NoOpPrec():
             # apply concurrent effects to all children but also append
             # a NoOp children which just waits for the env to change
-            print("Applying NoOp")
+            println("Applying NoOp")
             child_def.__NoOpEffect(child_def.t)
             child = copy.deepcopy(child_def)
             child.actionPerformed = ["NoOp", None]
             child._StateInit__addToExplored(children)
-            children.append(child)
+
         for direction in self.dir:
             for agtkey in self.agents:
 
@@ -568,9 +569,18 @@ class StateConcurrent(StateInit):
 
         return children
 
+    def __AdvancePrec(self):
+        """Is there some concurrent change in the future."""
+        future = [t for t in self.concurrent if t > self.t]
+        if future:
+            return min(future)
+        return False
+
     def advance(self) -> StateInit:
         """Advance in time until the environment is changed by other agent."""
-        next_time = int(list(self.concurrent.keys())[0])
+        next_time = self.__AdvancePrec()
+        if not next_time:
+            return self
         future_self = self
         while next_time > future_self.t:
             println(future_self)
