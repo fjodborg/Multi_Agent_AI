@@ -24,6 +24,7 @@ class Message:
         receiver: str = None,
         time: int = None,
         index: int = 0,
+        new_goal: Tuple = None
     ):
         """Fill message fields.
 
@@ -50,6 +51,8 @@ class Message:
                 a replan
         time: List[(int, (row, col))]
             time when the agent solves the problem at
+        new_goal: Tuple
+            position of goal to aDD
 
         """
         self.object_problem = object_problem
@@ -59,8 +62,11 @@ class Message:
         self.receiver = receiver
         self.header = header
         self.time = time
+        self.new_goal = new_goal
         if header in [HEADER.replan, HEADER.update] and time is None:
             raise IncorrectTask("Solutions to SOS messages require a time!")
+        if header == HEADER.replan and new_goal is None:
+            raise IncorrectTask("Replanning messages require a new_goal!")
 
 
 class Agent:
@@ -140,7 +146,7 @@ class Agent:
                 del inbox[to_del]
         if not recompute and self.status != STATUS.init:
             # avoid recomputing solutions when not needed
-            return self.saved_solution, self.broadcast()
+            return [], self.broadcast()
         # execute intention
         searcher = self.strategy(self.task, self.heuristic)
         println(
@@ -167,6 +173,7 @@ class Agent:
         for own_box in self.task.boxes:
             if own_box.lower() in self.task.goals:
                 if self.task.getGoalsByKey(own_box.lower())[0][0] != own_box[index][0]:
+                    pos = self.task.getGoalsByKey(own_box.lower())[0][0]
                     object_problem = own_box
         # remove the object in next step and solve
         self.task.concurrent[self.task.t + 1] = {box: [None, index]}
@@ -176,6 +183,7 @@ class Agent:
         self.stored_message.object_problem = object_problem
         # TODO: not optimal...
         self.stored_message.index = index
+        self.stored_message.new_goal = pos
         return path
 
     def add_task(self, task: StateInit):
@@ -233,7 +241,13 @@ class Agent:
             # self.heuristic = WeightedRule(message.object_problem)
             recompute = False
         elif message.header == HEADER.replan:
-            pass
+            box = message.object_problem
+            concurrent = self.filter_concurrent(
+                message.time, box, message.index
+            )
+            println(concurrent)
+            self.task = StateConcurrent(self.task, concurrent)
+            self.task.addGoal(box.lower(), message.new_goal, message.color)
         self.stored_message = message
         return recompute
 
@@ -290,19 +304,19 @@ class Agent:
             )
         elif self.stored_message.header == HEADER.corrupt:
             obj_prob = self.stored_message.object_problem
-            pos = self.task.goals[obj_prob.lower()][0][0]
             time_pos = self.task.bestPath(
                 format=self.stored_message.object_problem,
                 index=self.stored_message.index,
             )
             message = Message(
-                object_problem=self.stored_message.object_problem,
-                index=pos,
+                object_problem=obj_prob,
+                index=self.stored_message.index,
                 color=self.color,
                 requester=self.name,
                 receiver=self.stored_message.requester,
                 header=HEADER.replan,  # this is the important part
                 time=time_pos,
+                new_goal=self.stored_message.new_goal
             )
         else:
             message = False
