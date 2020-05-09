@@ -10,7 +10,7 @@ else
   lvl=$1
 fi
 
-
+method="-astar"
 [ -z "$2" ] || method=$2
 mem=2048
 [ -z "$3" ] || mem=$3
