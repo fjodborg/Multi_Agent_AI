@@ -162,9 +162,18 @@ class Agent:
     def solve_relaxed(self, box, index):
         """Replan task after removing the `box` from the problem."""
         println("Relaxing!")
+        # unsafe identification of box that is not solved
+        for own_box in self.task.boxes:
+            if self.task.getGoalsByKey(own_box)[0][0] != own_box[index][0]:
+                object_problem = own_box
+        # remove the object in next step and solve
         self.task.concurrent[self.task.t + 1] = {box: [None, index]}
         searcher = self.strategy(self.task, self.heuristic)
         path = self.search(searcher)
+        self.stored_message.header = HEADER.corrupt
+        self.stored_message.object_problem = object_problem
+        # TODO: not optimal...
+        self.stored_message.index = 0
         return path
 
     def add_task(self, task: StateInit):
