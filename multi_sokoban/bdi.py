@@ -1,6 +1,6 @@
 """Components of the BDI loop."""
 from copy import deepcopy
-from typing import Callable, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from .actions import StateConcurrent, StateInit
 from .heuristics import EasyRule
@@ -220,15 +220,9 @@ class Agent:
         """Take a message."""
         recompute = True
         if message.header == HEADER.update:
-            curr_pos = message.time[0][1]
-            concurrent = {}
-            for event in message.time:
-                pos = event[1]
-                if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
-                    curr_pos = pos
-                    concurrent[event[0]] = {
-                        message.object_problem: [pos, message.index]
-                    }
+            concurrent = self.filter_concurrent(
+                message.time, message.object_problem, message.index
+            )
             self.task = StateConcurrent(self.task, concurrent)
             # println(self.task.__dict__)
             # import sys; sys.exit(0)
@@ -242,6 +236,17 @@ class Agent:
             pass
         self.stored_message = message
         return recompute
+
+    def filter_concurrent(self, time: List, box: str, index: int) -> Dict:
+        """Filter out irrelevant times and convert to dict."""
+        curr_pos = time[0][1]
+        concurrent = {}
+        for event in time:
+            pos = event[1]
+            if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
+                curr_pos = pos
+                concurrent[event[0]] = {box: [pos, index]}
+        return concurrent
 
     def broadcast(self) -> Message:
         """Send a `Message` of stuff the agent wants to communicate."""
