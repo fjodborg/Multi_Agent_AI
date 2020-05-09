@@ -3,13 +3,13 @@ from copy import deepcopy
 from typing import Callable, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule, WeightedRule
+from .heuristics import EasyRule
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
 from .utils import STATUS, IncorrectTask, ResourceLimit, println, enum
 
 
-HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN")
+HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN", corrupt="CORRUPT")
 
 
 class Message:
@@ -46,6 +46,8 @@ class Message:
                 problem
             * HEADER.replan requester wants to add a goal to other agent, also
                 shares concurrent state
+            * HEADER.corrupt original problem has been relaxed, will need to emit
+                a replan
         time: List[(int, (row, col))]
             time when the agent solves the problem at
 
@@ -135,7 +137,7 @@ class Agent:
                     break
             if to_del:
                 del inbox[to_del]
-        if not recompute:
+        if not recompute and self.status != STATUS.init:
             # avoid recomputing solutions when not needed
             return self.saved_solution, self.broadcast()
         # execute intention
@@ -145,10 +147,25 @@ class Agent:
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
         path = self.search(searcher)
+        if path is None and self.stored_message:
+            # updating didn't work
+            # that could be caused but yet another box, but c'mon...
+            path = self.solve_relaxed(
+                self.stored_message.object_problem, self.stored_message.index
+            )
+
         # communicate
         self.status = STATUS.fail if path is None else STATUS.ok
         self.saved_solution = path
         return path, self.broadcast()
+
+    def solve_relaxed(self, box, index):
+        """Replan task after removing the `box` from the problem."""
+        println("Relaxing!")
+        self.task.concurrent[self.task.t + 1] = {box: [(51, 51), index]}
+        searcher = self.strategy(self.task, self.heuristic)
+        path = self.search(searcher)
+        return path
 
     def add_task(self, task: StateInit):
         """Merge task with previous task."""
@@ -222,7 +239,7 @@ class Agent:
         if self.status == STATUS.fail:
             message = self._sos()
             self.reboot()
-        if self.stored_message:
+        elif self.stored_message:
             message = self._send_success()
         return message
 
@@ -244,7 +261,8 @@ class Agent:
         """Return a message indicating that the problem was solved."""
         if self.stored_message.header == HEADER.share:
             time_pos = self.task.bestPath(
-                format=self.stored_message.object_problem, index=self.stored_message.index
+                format=self.stored_message.object_problem,
+                index=self.stored_message.index,
             )
             message = Message(
                 object_problem=self.stored_message.object_problem,
@@ -255,11 +273,22 @@ class Agent:
                 header=HEADER.update,
                 time=time_pos,
             )
-        elif self.stored_message.header == HEADER.replan:
-            pass
+        elif self.stored_message.header == HEADER.corrupt:
+            time_pos = self.task.bestPath(
+                format=self.stored_message.object_problem,
+                index=self.stored_message.index,
+            )
+            message = Message(
+                object_problem=self.stored_message.object_problem,
+                index=self.stored_message.index,
+                color=self.stored_message.color,
+                requester=self.name,
+                receiver=self.stored_message.requester,
+                header=HEADER.replan,  # this is the important part
+                time=time_pos,
+            )
         else:
-            message = None
-        self.helping = False
+            message = False
         return message
 
     def track_back(self, looking_for: str = "") -> List:
@@ -308,7 +337,6 @@ class Agent:
 
         """
         iterations = 0
-        advanced = False
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
@@ -334,6 +362,7 @@ class Agent:
                 println(
                     f"Agent {self.name}: Frontier empty! ({strategy.count} nodes explored)"
                 )
+                self.task = strategy.leaf
                 return None
 
             strategy.get_and_remove_leaf()
