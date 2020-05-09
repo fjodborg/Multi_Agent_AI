@@ -353,14 +353,15 @@ class Agent:
             strategy.explore_and_add()
 
             if strategy.frontier_empty():
-                if isinstance(self.task, StateConcurrent):
+                if isinstance(self.task, StateConcurrent) and strategy.leaf.AdvancePrec():
                     # look for events in the future and search again
                     println("Advancing!")
                     strategy.leaf = strategy.leaf.advance()
                     println(strategy.leaf)
                     continue
                 println(
-                    f"Agent {self.name}: Frontier empty! ({strategy.count} nodes explored)"
+                    f"Agent {self.name}: Frontier empty! ({strategy.count} "
+                    f"nodes explored)"
                 )
                 self.task = strategy.leaf
                 return None
