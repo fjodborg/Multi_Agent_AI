@@ -378,7 +378,10 @@ class StateInit(Literals):
 
             while state.actionPerformed is not None:
                 path.append(
-                    [state.t, state.getPos(getattr(state, obj_group), looking_for, index)]
+                    [
+                        state.t,
+                        state.getPos(getattr(state, obj_group), looking_for, index),
+                    ]
                 )
                 state = state.prevState
         else:
@@ -490,7 +493,7 @@ class StateConcurrent(StateInit):
 
         Agent can stay at his position without doing anything.
         """
-        return self.__WaitPrec_t(self.t) and self.__WaitPrec_t(self.t+1)
+        return self.__WaitPrec_t(self.t)
 
     def __WaitPrec_t(self, t):
         if t in self.concurrent:
@@ -554,8 +557,8 @@ class StateConcurrent(StateInit):
 
                 # TODO reformat these nested loops and if statements!
 
-                # This can be perhaps be optimized by only looking at boxes at the
-                # neighboring tiles of the agent
+                # This can be perhaps be optimized by only looking at boxes at
+                # the neighboring tiles of the agent
 
                 for boxkey in child_def.boxes:
                     for i in range(len(child_def.boxes[boxkey])):
@@ -593,8 +596,11 @@ class StateConcurrent(StateInit):
 
         return children
 
-    def __AdvancePrec(self):
-        """Is there some concurrent change in the future."""
+    def AdvancePrec(self):
+        """Is there some concurrent change in the future.
+
+        It will be called by by strategy.
+        """
         future = [t for t in self.concurrent if t > self.t]
         if future:
             return min(future)
@@ -602,7 +608,7 @@ class StateConcurrent(StateInit):
 
     def advance(self) -> StateInit:
         """Advance in time until the environment is changed by other agent."""
-        next_time = self.__AdvancePrec()
+        next_time = self.AdvancePrec()
         if not next_time:
             return self
         future_self = self
