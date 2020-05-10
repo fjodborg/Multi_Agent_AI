@@ -48,14 +48,15 @@ class EasyRule(Heuristics):
                     box_goal_costs = []
                     for box_pos, _ in box_params:
                         # only take agents with the same color as goalColor
-                        agent_keys = state.getAgentsByColor(goal_color)
+                        if goal_color in state.agentColor:
+                            agent_keys = state.getAgentsByColor(goal_color)
 
-                        if manha_dist(goal_pos, box_pos) == 0:
-                            continue
+                            if manha_dist(goal_pos, box_pos) == 0:
+                                continue
 
-                        for agent_key in agent_keys:
-                            agentPos = state.getAgentsByKey(agent_key)[0][0]
-                            agt_box_costs.append(manha_dist(agentPos, box_pos))
+                            for agent_key in agent_keys:
+                                agentPos = state.getAgentsByKey(agent_key)[0][0]
+                                agt_box_costs.append(manha_dist(agentPos, box_pos))
 
                         box_goal_costs.append(manha_dist(box_pos, goal_pos))
 

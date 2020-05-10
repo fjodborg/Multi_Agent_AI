@@ -1,9 +1,10 @@
 """Task sharing MA communication."""
 from copy import deepcopy
-from typing import List
+from typing import Callable, List
 
 from .actions import StateInit
 from .bdi import Agent, Message
+from .heuristics import EasyRule
 from .resultsharing import Resultsharing
 from .strategy import BestFirstSearch
 from .utils import STATUS, println
@@ -22,6 +23,10 @@ class Manager:
         agent names as keys and Agent objects as values. Agents are generated
         on demand; i.e., there can be idle agents in the map that won't have an
         associated Agent object (see multi_sokoban/bdi.py)
+    heuristic: Callable
+        function to calculate the heuristic. This is usually an object of a child
+        class of Heuristics that implement __call__() but can be any function
+        that accepts a list of states. Default: EasyRule
     solutions: List[List]
         the solutions of the different agents to their particular subproblems.
         `None` until there is a solution
@@ -33,11 +38,17 @@ class Manager:
 
     """
 
-    def __init__(self, top_problem: StateInit, strategy: BestFirstSearch):
+    def __init__(
+        self,
+        top_problem: StateInit,
+        strategy: BestFirstSearch,
+        heuristic: Callable = None,
+    ):
         """Initialize with the whole problem definition `top_problem`."""
         self.top_problem = top_problem
         self.strategy = strategy
         self.agents = {}
+        self.heuristic = heuristic if heuristic else EasyRule()
         self.solutions = None
         self.nodes_explored = 0
         self.inbox = []
@@ -98,6 +109,8 @@ class Manager:
 
     def broadcast_message(self, message: Message) -> str:
         """Request help in the form of a message."""
+        if message.receiver:
+            return message.receiver
         color_of = message.color
         ok_agents = [k for k, v in self.agents.items() if color_of == v.color][0]
         return ok_agents
@@ -124,18 +137,16 @@ class Manager:
             for name, agent in self.agents.items():
                 path, message = agent.solve(self.inbox)
                 self.nodes_explored += len(agent.task.explored)
-                if agent.status == STATUS.fail:
+                if message:
                     ok_agent = self.broadcast_message(message)
-                    if ok_agent:
-                        println(f"Agent {name} broadcasted task!")
-                        self.agents[ok_agent[0]].consume_message(message)
+                    message.receiver = ok_agent
+                    println(f"Agent({name}) broadcasted {message.header} task!")
+                    self.inbox.append(message)
+                if agent.status == STATUS.ok:
+                    if name in paths:
+                        paths[name] += path
                     else:
-                        println(f"SOS of Agent {name} stored at inbox.")
-                        self.inbox.append(message)
-                else:
-                    if message:
-                        self.inbox.append(message)
-                    paths[name] = path
+                        paths[name] = path
         self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
 
     def join_tasks(self) -> List:

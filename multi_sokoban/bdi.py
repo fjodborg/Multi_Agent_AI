@@ -1,12 +1,15 @@
 """Components of the BDI loop."""
 from copy import deepcopy
-from typing import Callable, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule, WeightedRule
+from .heuristics import EasyRule
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
-from .utils import STATUS, IncorrectTask, ResourceLimit, println
+from .utils import STATUS, IncorrectTask, ResourceLimit, println, enum
+
+
+HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN", corrupt="CORRUPT")
 
 
 class Message:
@@ -17,9 +20,11 @@ class Message:
         object_problem: str,
         color: str,
         requester: str,
-        status: STATUS,
+        header: STATUS,
+        receiver: str = None,
         time: int = None,
         index: int = 0,
+        new_goal: Tuple = None
     ):
         """Fill message fields.
 
@@ -33,21 +38,35 @@ class Message:
             color of the box concerning the problem
         requester: str:
             name of agent that sends the sos message
-        status: STATUS
-            * STATUS.ok if agent solved the problem for another agent (response)
-            * STATUS.fail if agent needs help (query)
+        receiver: str
+            name of agent that receives message (decided by Manager)
+        header: HEADER
+            * HEADER.update requester solved the problem for another agent, just
+                share concurrent state
+            * HEADER.share requester asks for concurrent states when having a
+                problem
+            * HEADER.replan requester wants to add a goal to other agent, also
+                shares concurrent state
+            * HEADER.corrupt original problem has been relaxed, will need to emit
+                a replan
         time: List[(int, (row, col))]
             time when the agent solves the problem at
+        new_goal: Tuple
+            position of goal to aDD
 
         """
         self.object_problem = object_problem
         self.color = color
         self.index = index
         self.requester = requester
-        self.status = status
+        self.receiver = receiver
+        self.header = header
         self.time = time
-        if status == STATUS.ok and time is None:
+        self.new_goal = new_goal
+        if header in [HEADER.replan, HEADER.update] and time is None:
             raise IncorrectTask("Solutions to SOS messages require a time!")
+        if header == HEADER.replan and new_goal is None:
+            raise IncorrectTask("Replanning messages require a new_goal!")
 
 
 class Agent:
@@ -93,7 +112,7 @@ class Agent:
         self.init_pos = list(task.agents.values())[0][0][0]
         # status can be ok, fail or init
         self.status = STATUS.init
-        self.helping = False
+        self.stored_message = False
         self.saved_solution = None
 
     def solve(self, inbox: List[Message]) -> Tuple[List, Message]:
@@ -114,18 +133,20 @@ class Agent:
 
         """
         # update beliefs and desires
-        if self.status == STATUS.ok and not self.helping:
-            # avoid recomputing solutions when not needed
-            return self.saved_solution, self.broadcast()
-        if inbox and self.status == STATUS.fail:
-            to_del = False
+        recompute = self.status != STATUS.ok
+        if inbox:
+            to_del = None
             for i, message in enumerate(inbox):
-                if message.requester == self.name:
-                    self.consume_message(message)
+                if message.receiver == self.name:
+                    recompute = self.consume_message(message)
+                    println(f"Agent({self.name}) received {message.header} message!")
                     to_del = i
                     break
-            if to_del:
-                del inbox[message]
+            if to_del is not None:
+                del inbox[to_del]
+        if not recompute and self.status != STATUS.init:
+            # avoid recomputing solutions when not needed
+            return [], self.broadcast()
         # execute intention
         searcher = self.strategy(self.task, self.heuristic)
         println(
@@ -133,10 +154,37 @@ class Agent:
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
         path = self.search(searcher)
+        if path is None and self.stored_message:
+            # updating didn't work
+            # that could be caused but yet another box, but c'mon...
+            path = self.solve_relaxed(
+                self.stored_message.object_problem, self.stored_message.index
+            )
+
         # communicate
         self.status = STATUS.fail if path is None else STATUS.ok
         self.saved_solution = path
         return path, self.broadcast()
+
+    def solve_relaxed(self, box, index):
+        """Replan task after removing the `box` from the problem."""
+        println("Relaxing!")
+        # unsafe identification of box that is not solved
+        for own_box in self.task.boxes:
+            if own_box.lower() in self.task.goals:
+                if self.task.getGoalsByKey(own_box.lower())[0][0] != own_box[index][0]:
+                    pos = self.task.getGoalsByKey(own_box.lower())[0][0]
+                    object_problem = own_box
+        # remove the object in next step and solve
+        self.task.concurrent[self.task.t + 1] = {box: [None, index]}
+        searcher = self.strategy(self.task, self.heuristic)
+        path = self.search(searcher)
+        self.stored_message.header = HEADER.corrupt
+        self.stored_message.object_problem = object_problem
+        # TODO: not optimal...
+        self.stored_message.index = index
+        self.stored_message.new_goal = pos
+        return path
 
     def add_task(self, task: StateInit):
         """Merge task with previous task."""
@@ -178,26 +226,41 @@ class Agent:
 
     def consume_message(self, message: Message) -> StateInit:
         """Take a message."""
-        if self.status == STATUS.fail:
-            curr_pos = message.time[0][1]
-            concurrent = {}
-            for event in message.time:
-                pos = event[1]
-                if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
-                    curr_pos = pos
-                    concurrent[event[0]] = {
-                        message.object_problem: [pos, message.index]
-                    }
+        recompute = True
+        if message.header == HEADER.update:
+            concurrent = self.filter_concurrent(
+                message.time, message.object_problem, message.index
+            )
             self.task = StateConcurrent(self.task, concurrent)
             # println(self.task.__dict__)
             # import sys; sys.exit(0)
             self.task.t = 0
-        else:
-            println(f"Agent {self.name} received message!")
-            self.helping = message
-            self.reboot()
+        elif message.header == HEADER.share:
+            # self.reboot()
             # solution will be recomputed with updated priorities in heuristics
-            self.heuristic = WeightedRule(message.object_problem)
+            # self.heuristic = WeightedRule(message.object_problem)
+            recompute = False
+        elif message.header == HEADER.replan:
+            box = message.object_problem
+            concurrent = self.filter_concurrent(
+                message.time, box, message.index
+            )
+            println(concurrent)
+            self.task = StateConcurrent(self.task, concurrent)
+            self.task.addGoal(box.lower(), message.new_goal, message.color)
+        self.stored_message = message
+        return recompute
+
+    def filter_concurrent(self, time: List, box: str, index: int) -> Dict:
+        """Filter out irrelevant times and convert to dict."""
+        curr_pos = time[0][1]
+        concurrent = {}
+        for event in time:
+            pos = event[1]
+            if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
+                curr_pos = pos
+                concurrent[event[0]] = {box: [pos, index]}
+        return concurrent
 
     def broadcast(self) -> Message:
         """Send a `Message` of stuff the agent wants to communicate."""
@@ -205,7 +268,7 @@ class Agent:
         if self.status == STATUS.fail:
             message = self._sos()
             self.reboot()
-        if self.helping:
+        elif self.stored_message:
             message = self._send_success()
         return message
 
@@ -213,30 +276,50 @@ class Agent:
         """Identify problem and formulate solution."""
         box, color, index = self._identify_problem()
         println(f"{box}, {index}, {color}")
+        # TODO: if already shared and same box, replan
         return Message(
             object_problem=box,
             index=index,
             color=color,
             requester=self.name,
-            status=self.status,
+            header=HEADER.share,
             time=None,
         )
 
     def _send_success(self) -> StateInit:
         """Return a message indicating that the problem was solved."""
-        # TODO: weight heuristics and recompute alternative solution
-        time_pos = self.task.bestPath(
-            format=self.helping.object_problem, index=self.helping.index
-        )
-        message = Message(
-            object_problem=self.helping.object_problem,
-            index=self.helping.index,
-            color=self.helping.color,
-            requester=self.helping.requester,
-            status=self.status,
-            time=time_pos,
-        )
-        self.helping = False
+        if self.stored_message.header == HEADER.share:
+            time_pos = self.task.bestPath(
+                format=self.stored_message.object_problem,
+                index=self.stored_message.index,
+            )
+            message = Message(
+                object_problem=self.stored_message.object_problem,
+                index=self.stored_message.index,
+                color=self.stored_message.color,
+                requester=self.name,
+                receiver=self.stored_message.requester,
+                header=HEADER.update,
+                time=time_pos,
+            )
+        elif self.stored_message.header == HEADER.corrupt:
+            obj_prob = self.stored_message.object_problem
+            time_pos = self.task.bestPath(
+                format=self.stored_message.object_problem,
+                index=self.stored_message.index,
+            )
+            message = Message(
+                object_problem=obj_prob,
+                index=self.stored_message.index,
+                color=self.color,
+                requester=self.name,
+                receiver=self.stored_message.requester,
+                header=HEADER.replan,  # this is the important part
+                time=time_pos,
+                new_goal=self.stored_message.new_goal
+            )
+        else:
+            message = False
         return message
 
     def track_back(self, looking_for: str = "") -> List:
@@ -285,7 +368,6 @@ class Agent:
 
         """
         iterations = 0
-        advanced = False
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
@@ -302,16 +384,20 @@ class Agent:
             strategy.explore_and_add()
 
             if strategy.frontier_empty():
-                if (not advanced) and isinstance(self.task, StateConcurrent):
+                if (
+                    isinstance(self.task, StateConcurrent)
+                    and strategy.leaf.AdvancePrec()
+                ):
                     # look for events in the future and search again
                     println("Advancing!")
-                    advanced = True
                     strategy.leaf = strategy.leaf.advance()
                     println(strategy.leaf)
                     continue
                 println(
-                    f"Agent {self.name}: Frontier empty! ({strategy.count} nodes explored)"
+                    f"Agent {self.name}: Frontier empty! ({strategy.count} "
+                    f"nodes explored)"
                 )
+                self.task = strategy.leaf
                 return None
 
             strategy.get_and_remove_leaf()

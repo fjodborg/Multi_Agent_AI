@@ -378,7 +378,10 @@ class StateInit(Literals):
 
             while state.actionPerformed is not None:
                 path.append(
-                    [state.t, state.getPos(getattr(state, obj_group), looking_for, index)]
+                    [
+                        state.t,
+                        state.getPos(getattr(state, obj_group), looking_for, index),
+                    ]
                 )
                 state = state.prevState
         else:
@@ -483,15 +486,35 @@ class StateConcurrent(StateInit):
         """
         super().__init__(parent)
         self.concurrent = concurrent if concurrent else parent.concurrent
+        self.hunt_ghost()
 
     def __NoOpPrec(self):
         """Evaluate precondition for NoOp.
+
+        Agent can stay at his position without doing anything.
+        """
+        return self.__WaitPrec_t(self.t)
+
+    def __WaitPrec_t(self, t):
+        if t in self.concurrent:
+            joint_concurrent = self.concurrent[t]
+            # a state that it is being solved is guaranteed to have only one agent
+            agent_pos = self.getPos(self.agents, list(self.agents.keys())[0])
+            for pos, _ in joint_concurrent.values():
+                if pos is None:
+                    continue
+                if agent_pos[0] == pos[0] and agent_pos[1] == pos[1]:
+                    return False
+        return True
+
+    def __ConcurrentPrec(self):
+        """Evaluate precondition for concurrent changes of the world.
 
         Something has changed given a concurrent action by another agent.
         """
         return self.t in self.concurrent
 
-    def __NoOpEffect(self, t):
+    def __ConcurrentEffect(self, t):
         """Modify environment according to concurrent actions at time `t`."""
         joint_concurrent = self.concurrent[t]
         for obj_key in joint_concurrent:
@@ -499,9 +522,15 @@ class StateConcurrent(StateInit):
             obj_group = "agents" if obj_key.isnumeric() else "boxes"
             prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
             self.setPos(getattr(self, obj_group), obj_key, pos, index)
-            self.map[prev_pos[0], prev_pos[1]] = chr(32)
-            self.map[pos[0], pos[1]] = obj_key
+            # introduce a ghost box which will be removed on child nodes
+            self.map[prev_pos[0], prev_pos[1]] = "Ñ"
+            if pos is not None:
+                self.map[pos[0], pos[1]] = obj_key
         return True
+
+    def hunt_ghost(self):
+        """Remove ghosted positions put by a Councurent Effect."""
+        self.map[self.map == "Ñ"] = " "
 
     def explore(self):
         """Explore with 'NoOp's.
@@ -515,22 +544,24 @@ class StateConcurrent(StateInit):
 
         # Loop iterales through every possible action
         child_def = StateConcurrent(self)
-        if child_def.__NoOpPrec():
+
+        if child_def.__ConcurrentPrec():
             # apply concurrent effects to all children but also append
             # a NoOp children which just waits for the env to change
-            print("Applying NoOp")
-            child_def.__NoOpEffect(child_def.t)
-            child = copy.deepcopy(child_def)
-            child.actionPerformed = ["NoOp", None]
-            child._StateInit__addToExplored(children)
-            children.append(child)
+            # println("Applying NoOp")
+            child_def.__ConcurrentEffect(child_def.t)
+            if child_def.__NoOpPrec():
+                child = copy.deepcopy(child_def)
+                child.actionPerformed = ["NoOp", None]
+                child._StateInit__addToExplored(children)
+
         for direction in self.dir:
             for agtkey in self.agents:
 
                 # TODO reformat these nested loops and if statements!
 
-                # This can be perhaps be optimized by only looking at boxes at the
-                # neighboring tiles of the agent
+                # This can be perhaps be optimized by only looking at boxes at
+                # the neighboring tiles of the agent
 
                 for boxkey in child_def.boxes:
                     for i in range(len(child_def.boxes[boxkey])):
@@ -568,9 +599,21 @@ class StateConcurrent(StateInit):
 
         return children
 
+    def AdvancePrec(self):
+        """Is there some concurrent change in the future.
+
+        It will be called by by strategy.
+        """
+        future = [t for t in self.concurrent if t > self.t]
+        if future:
+            return min(future)
+        return False
+
     def advance(self) -> StateInit:
         """Advance in time until the environment is changed by other agent."""
-        next_time = int(list(self.concurrent.keys())[0])
+        next_time = self.AdvancePrec()
+        if not next_time:
+            return self
         future_self = self
         while next_time > future_self.t:
             println(future_self)
