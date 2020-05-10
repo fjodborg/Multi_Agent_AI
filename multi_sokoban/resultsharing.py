@@ -283,8 +283,7 @@ class Resultsharing:
                         println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
         return potentialCollisions
 
-    def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):
-        #println(collisionData)                
+    def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):            
         if collisionData:
             agt2 = collisionData[0][1]
             if collisionData[0][0]:
@@ -294,6 +293,19 @@ class Resultsharing:
             return True
         return False
 
+    def isSolved(self, agt1):
+        otherAgents = []
+        for agt2 in range(len(self.pos)):
+            #println(agt2)
+            if agt2 != agt1:
+                otherAgents.append(agt2)
+        for time1, poses1 in enumerate(self.pos[agt1]):
+            for pos1 in poses1:
+                collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
+                if collisionData:
+                    return False
+        return True
+
     def findAndSolveAgt1(self, agt1, agentOrder):
         foundSolution = False
         otherAgents = copy.deepcopy(agentOrder)
@@ -301,15 +313,12 @@ class Resultsharing:
         time1 = 0
         while time1 < len(self.pos[agt1]):
             poses1 = self.pos[agt1][time1]
-            println(time1, agt1, otherAgents)
+            #println(time1, agt1, otherAgents)
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
                 collision = self.solveAgt1(agt1, otherAgents, pos1, time1, collisionData)
                 if collision:
                     time1 -= 1
-                    foundSolution = False
-                else:
-                    foundSolution = True
                 #try:
                 #isHandled = self.handleCollisionData(collisionData, agt1, agentOrder, time1)
                 # except Exception:
@@ -320,6 +329,11 @@ class Resultsharing:
                 #     println(agentOrder)
                 #     break
             time1 += 1 
+
+        if not self.isSolved(agt1):
+            raise Exception(f"couldn't solve {agt1}")
+            return False
+
         return foundSolution
 
     def findAndResolveCollision(self):
@@ -347,7 +361,7 @@ class Resultsharing:
                     println("something wrong here1")
                 else:
                     otherAgents.remove(agt1)
-                println(otherAgents)
+                #println(otherAgents)
             # if not self.collisionPoints:
             #     println("goal achieved")
             #     break
@@ -356,7 +370,7 @@ class Resultsharing:
             #     return None
         self.fixLength()
 
-        println(f"unsolveable due to: {self.unsolvableReason}")
+        # println(f"unsolveable due to: {self.unsolvableReason}")
 
         return True
 
