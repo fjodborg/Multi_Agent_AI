@@ -284,7 +284,7 @@ class Resultsharing:
         return potentialCollisions
 
     def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):
-        println(collisionData)                
+        #println(collisionData)                
         if collisionData:
             agt2 = collisionData[0][1]
             if collisionData[0][0]:
