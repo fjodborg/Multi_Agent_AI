@@ -22,12 +22,8 @@ class Resultsharing:
         key = (pos)
         value = (identity, time)
         if key in self.timeTable:
-            # timeTable[self.pos, identity].append(time)
-            # timeTable[self.pos, time].append(identity)
             self.timeTable[key].append(value)
         else:
-            # timeTable[self.pos, identity] = [time]
-            # timeTable[self.pos, time] = [identity]
             self.timeTable[key] = [value]
 
     def generateTimeTable(self):
@@ -64,9 +60,8 @@ class Resultsharing:
                     else:
                         self.paths[agt].append("NoOp")
 
-
-
     def extractFromHash(self, hash, agt):
+        '''Not in use at the moment'''
         params = hash
         #println(f"before {params}, {agt}")
         params = list(filter(lambda x: self.color2agt(x[0]) != agt, params))
@@ -77,6 +72,7 @@ class Resultsharing:
         return None
 
     def getOffsetTime(self, agt2, time):
+        '''Not in use at the moment'''
         timeWithOffset = time
         if agt2 in self.offsetTable:
             for offsetTimes, offsetValues in self.offsetTable[agt2]:
@@ -109,30 +105,6 @@ class Resultsharing:
         else:
             return False
 
-
-    def findCollisions(self, agt1, pos1, time1, traceback=0):
-        #println(f"pos {pos1}, time {time} has the these values {self.timeTable[pos1]}")
-        #println(any(occupiedTimes == 10))
-
-        limit = 2
-
-        potentialCollisions = []
-        for agt2, poses2 in enumerate(self.pos):
-            if agt2 == agt1:
-                continue
-            time2 = time1 - traceback
-            if len(self.pos[agt2]) <= time2 + limit:
-                continue
-            for time2New in range(time2, time2 + limit):
-                for pos2 in poses2[time2New]:
-                    #println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
-                    if pos2 == pos1:
-                        isSwap = self.isSwap(agt1, agt2, time1, time2New, pos1)
-                        potentialCollisions.append((isSwap, agt2, time2New))
-                        println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
-        #println(potentialCollisions)
-        return potentialCollisions
-
     def fixPos(self):
         for agent in self.offsetTable.keys():
             for offsetTime, offsetValue in self.offsetTable[agent]:
@@ -141,127 +113,6 @@ class Resultsharing:
                     pass
                 #println((offsetTime, offsetValue, self.pos[agent][offsetTime]))
 
-    def addOffset(self, agt, time, offset=1):
-        println(f"offset for agt {agt} added at time {time} is {offset}")
-        # comment this out when you need to see if it detects collisions
-        for i in range(offset):
-            self.pos[agt].insert(time, self.pos[agt][time])
-
-    def handleCollisionData(self, collisionData, agt1, time1):
-        if collisionData:
-            for isSwap, agt2, time2 in collisionData:
-                self.collisionPoints.append(
-                    [
-                        agt1,
-                        agt2,
-                        self.pos[agt1][time1],
-                        self.pos[agt2][time2]
-                    ]
-                )
-                if (isSwap):
-                    isSolved = self.solveSwapNew(agt1, agt2, time1, time2)
-                    return isSolved
-                # else:
-                #     isSolved = self.solveChaseNew(agt1, agt2, time1)
-                #     return isSolved
-        return False
-
-    def checkDepth(self, depth, time):
-        if depth > 10:
-            raise Exception("too deep")
-        if time > len(self.paths[0]) * 100:
-            raise Exception("pos expanded too much")
-        
-
-    def solveChase(self, agt1, agt2, time1, depth=0):
-        println("chasing")
-        self.checkDepth(depth, time1)
-        traceback = 0
-        nextPos1 = (-2, -2)
-        for index1 in reversed(range(-1, time1 - 1)):
-            traceback += 1
-            if index1 < 0:
-                println("agtA out of lower bound in chase")
-                self.addOffset(agt2, 0, 2)
-                return False
-
-            nextPoses = self.pos[agt1][index1]
-            for nextPos1 in nextPoses:
-                collisionData = self.findCollisions(agt1, nextPos1, index1)
-                if collisionData:
-                    for isSwap, agt2_temp, time2_temp in collisionData:
-                        if agt2_temp != agt2:
-                            index2 = time2_temp - traceback
-                            #println(f"New collision needs to be fixed agt {agt1, agt2, agt2_temp}")
-                            if isSwap:
-                                if self.solveSwap(agt1, agt2_temp, index1, index2, depth + 1):
-                                    break
-                                # else:
-                                #     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                            else:
-                                if self.solveChase(agt1, agt2_temp, index1, depth + 1):
-                                    break
-                                # else:
-                                #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                        pass
-                else:
-                    println("No collision anymore, adding chase delay")
-                    self.addOffset(agt2, index1, 1)
-                    return True
-        return None
-
-    def solveSwap(self, agt1, agt2, time1, time2, depth=0):
-        println("Doing swap")
-        self.checkDepth(depth, time1)
-        traceback = 0
-        for index1 in range(time1 + 1, len(self.pos[agt1])):
-            traceback += 1
-            index2 = time2 - traceback
-            if index2 - traceback < 0:
-                println("out of lower bound")
-                self.addOffset(agt2, 0, traceback)
-                return True
-            if index1 >= len(self.pos[agt1]):
-                println("out of upper bound")
-                return None 
-
-            next_poses = self.pos[agt1][index1]
-            for next_pos1 in next_poses:
-                collisionData = self.findCollisions(agt1, next_pos1, index1, index1 - index2)
-                if collisionData:
-                    for isSwap, agt2_temp, time2_temp in collisionData:
-                        if agt2_temp != agt2:
-                            if isSwap:
-                                if self.solveSwap(agt1, agt2_temp, index1, index2, depth + 1):
-                                    break
-                                # else:
-                                #     raise Exception(f"no solution for this swap between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                            else:
-                                if self.solveChase(agt1, agt2_temp, index1 - 1, depth + 1):
-                                    break
-                                # else:
-                                #     raise Exception(f"no solution for this chase between{(agt1, agt2_temp)} at time {(index1, index2)}")
-                        
-                else:
-                    println("No collision anymore, adding swap delay")
-                    totalOffsetValue = index1 - index2 
-                    totalOffsetTime = index2
-                    
-                    self.addOffset(agt2, totalOffsetTime - 1, totalOffsetValue + 2)
-                    return True
-                        
-        return None
-
-    def minimalRep(self):
-        return str(self.collisionPoints)
-
-    def addVisitedState(self):
-        self.visitedStates.add(self.minimalRep())
-        println(f"\nvisited states {self.visitedStates}\n")
-        return
-
-    def deadlock(self):
-        return self.minimalRep() in self.visitedStates
 
     def findCollisionsNew(self, agt1, agentsOrder, pos1, time1, traceback=0):
         limit = 3
@@ -352,15 +203,12 @@ class Resultsharing:
         
         agentOrder = self.prioritiedAgents()
         otherAgents = copy.copy(agentOrder)
-        while not self.deadlock():
-            self.addVisitedState()
-            self.collisionPoints = []
-            for agt1 in agentOrder:
-                println(f"\nNewagent {agt1}")
-                if not self.findAndSolveAgt1(agt1, otherAgents):
-                    println("something wrong here1")
-                else:
-                    otherAgents.remove(agt1)
+        for agt1 in agentOrder:
+            println(f"\nNewagent {agt1}")
+            if not self.findAndSolveAgt1(agt1, otherAgents):
+                println("something wrong here1")
+            else:
+                otherAgents.remove(agt1)
                 #println(otherAgents)
             # if not self.collisionPoints:
             #     println("goal achieved")
