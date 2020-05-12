@@ -115,6 +115,7 @@ class Resultsharing:
 
 
     def findCollisionsNew(self, agt1, agentsOrder, pos1, time1, traceback=0):
+        # TODO, if pushing box consider one more length, limit should be 2, 3 if pushing 1 and 4 if other is also pulling
         limit = 3
 
         potentialCollisions = []
@@ -179,7 +180,8 @@ class Resultsharing:
                 #     agentOrder.remove(agt1)
                 #     println(agentOrder)
                 #     break
-            time1 += 1 
+            time1 += 1
+
 
         if not self.isSolved(agt1):
             raise Exception(f"couldn't solve {agt1}")
@@ -219,8 +221,13 @@ class Resultsharing:
         self.fixLength()
 
         # println(f"unsolveable due to: {self.unsolvableReason}")
-
-        return True
+        reciever = True
+        requester = True
+        if reciever and requester:  # find solution
+            # in MAAIFather_simple, 0 was requester and 1 was the reciever
+            # return reciever is the agt1, and requester is the agt2
+            return (reciever, requester)
+        return None, None
 
     def color2agt(self, objid):
         if type(objid) == str:
