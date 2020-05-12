@@ -46,7 +46,6 @@ class Resultsharing:
         if longest < shortest:
             return None
 
-        # TODO fix frontier empty problem
         for pos in self.pos:
             for i in range(longest - len(pos)):
                 pos.append(pos[-1])
@@ -113,19 +112,21 @@ class Resultsharing:
                     pass
                 #println((offsetTime, offsetValue, self.pos[agent][offsetTime]))
 
-
     def findCollisionsNew(self, agt1, agentsOrder, pos1, time1, traceback=0):
-        # TODO, if pushing box consider one more length, limit should be 2, 3 if pushing 1 and 4 if other is also pulling
-        limit = 3
+        limit = 2
 
         potentialCollisions = []
         for agt2 in reversed(agentsOrder):
             poses2 = self.pos[agt2]
             time2 = time1 - traceback - 1
             
-            for time2New in range(time2, time2 + limit):
+            for time2New in range(time2, time2 + limit + 1):
+                if time2New < 0:
+                    time2New = 0
+                if time2New >= len(poses2):
+                    time2New = len(poses2) - 1
                 if len(poses2) <= time2New or time2New < 0:
-                    #println("time2 out of bounds")
+                    #println("time2 out of bounds", time2New)
                     break
                 for pos2 in poses2[time2New]:
                     #println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
@@ -135,9 +136,10 @@ class Resultsharing:
                         println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
         return potentialCollisions
 
-    def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):            
+    def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):
         if collisionData:
             agt2 = collisionData[0][1]
+            #println(collisionData)
             if collisionData[0][0]:
                 self.pos[agt2].insert(0, self.pos[agt2][0])
             else:
@@ -145,7 +147,7 @@ class Resultsharing:
             return True
         return False
 
-    def isSolved(self, agt1):
+    def isStillCollided(self, agt1):
         otherAgents = []
         for agt2 in range(len(self.pos)):
             #println(agt2)
@@ -155,11 +157,10 @@ class Resultsharing:
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
                 if collisionData:
-                    return False
-        return True
+                    return (agt1, agt2)
+        return False
 
     def findAndSolveAgt1(self, agt1, agentOrder):
-        foundSolution = False
         otherAgents = copy.deepcopy(agentOrder)
         otherAgents.remove(agt1)
         time1 = 0
@@ -180,14 +181,10 @@ class Resultsharing:
                 #     agentOrder.remove(agt1)
                 #     println(agentOrder)
                 #     break
-            time1 += 1
-
-
-        if not self.isSolved(agt1):
-            raise Exception(f"couldn't solve {agt1}")
-            return False
-
-        return foundSolution
+            time1 += 1 
+        
+        collidedAgents = self.isStillCollided(agt1)
+        return collidedAgents
 
     def findAndResolveCollision(self):
         sorted_agents = self.manager.sort_agents()
@@ -204,30 +201,31 @@ class Resultsharing:
         self.unsolvableReason = None
         
         agentOrder = self.prioritiedAgents()
-        otherAgents = copy.copy(agentOrder)
+        otherAgents = copy.copy(agentOrder) 
+        solvedPos = copy.deepcopy(self.pos)
+        println(solvedPos)
+        couldntBeSolved = False
         for agt1 in agentOrder:
             println(f"\nNewagent {agt1}")
-            if not self.findAndSolveAgt1(agt1, otherAgents):
-                println("something wrong here1")
+            collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
+            if collidedAgents:
+                self.pos = copy.deepcopy(solvedPos)
+                couldntBeSolved = True
+                println(f"Something went wrong with agt {collidedAgents}")
+                break
             else:
-                otherAgents.remove(agt1)
-                #println(otherAgents)
-            # if not self.collisionPoints:
-            #     println("goal achieved")
-            #     break
-            # if self.deadlock():
-            #     println(f"\n\n deadlock detected. These are the collisions {self.collisionPoints} \n\n")
-            #     return None
+                solvedPos = copy.deepcopy(self.pos)
+                println("solved agt", agt1)
+
+        println(solvedPos)
+        self.pos = solvedPos
         self.fixLength()
 
-        # println(f"unsolveable due to: {self.unsolvableReason}")
-        reciever = True
-        requester = True
-        if reciever and requester:  # find solution
-            # in MAAIFather_simple, 0 was requester and 1 was the reciever
-            # return reciever is the agt1, and requester is the agt2
-            return (reciever, requester)
-        return None, None
+        if couldntBeSolved:
+            return (collidedAgents[1], collidedAgents[0])
+        else:
+            return None
+
 
     def color2agt(self, objid):
         if type(objid) == str:
