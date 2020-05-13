@@ -185,7 +185,8 @@ class Resultsharing:
         otherAgents.remove(agt1)
         time1 = 0
         lastCollisionData = []
-        #println("now solving path")
+        explored = set()
+        # println("now solving path")
         
         while time1 < len(self.pos[agt1]):
             if time1 >= self.appendTime - 1:
@@ -206,6 +207,9 @@ class Resultsharing:
                             break
                         else:
                             lastCollisionData = copy.deepcopy(collisionData)
+                            if str(collisionData) in explored:
+                                break
+                            explored.add(str(collisionData))
                             time1 = -1
                 #try:
                 #isHandled = self.handleCollisionData(collisionData, agt1, agentOrder, time1)
