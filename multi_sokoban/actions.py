@@ -118,6 +118,12 @@ class Literals:
             if external_goal != external_key:
                 self.deleteGoal(external_goal)
 
+    def keepJustBox(self, external_key):
+        boxes = list(self.boxes.keys())
+        for external_agent in boxes:
+            if external_agent != external_key:
+                self.deleteBox(external_agent)
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
@@ -365,7 +371,7 @@ class StateInit(Literals):
     def bestPath(self, format=0, index=0):
         # function returns the list of actions used to reach the state
         path = []
-        state = self
+        state = copy.deepcopy(self)
         if format == 1:
             # format used by actions
             while state.actionPerformed is not None:

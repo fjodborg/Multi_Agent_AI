@@ -6,10 +6,7 @@ from .actions import StateConcurrent, StateInit
 from .heuristics import EasyRule
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
-from .utils import STATUS, IncorrectTask, ResourceLimit, println, enum
-
-
-HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN", corrupt="CORRUPT")
+from .utils import STATUS, HEADER, IncorrectTask, ResourceLimit, println
 
 
 class Message:
@@ -24,7 +21,7 @@ class Message:
         receiver: str = None,
         time: int = None,
         index: int = 0,
-        new_goal: Tuple = None
+        new_goal: Tuple = None,
     ):
         """Fill message fields.
 
@@ -51,8 +48,6 @@ class Message:
                 a replan
         time: List[(int, (row, col))]
             time when the agent solves the problem at
-        new_goal: Tuple
-            position of goal to aDD
 
         """
         self.object_problem = object_problem
@@ -62,11 +57,8 @@ class Message:
         self.receiver = receiver
         self.header = header
         self.time = time
-        self.new_goal = new_goal
         if header in [HEADER.replan, HEADER.update] and time is None:
             raise IncorrectTask("Solutions to SOS messages require a time!")
-        if header == HEADER.replan and new_goal is None:
-            raise IncorrectTask("Replanning messages require a new_goal!")
 
 
 class Agent:
@@ -90,7 +82,7 @@ class Agent:
         * STATUS.ok if agent solved the problem
         * STATUS.fail if Frontier empty
         * STATUS.init if agent hasn't invoked self.solve()
-    helping: Message
+    stored_message: Message
         Message if the agent has been assigned a request from other agent,
         `False` otherwise
     saved_solution: List
@@ -137,7 +129,7 @@ class Agent:
         if inbox:
             to_del = None
             for i, message in enumerate(inbox):
-                if message.receiver == self.name:
+                if int(message.receiver) == int(self.name):
                     recompute = self.consume_message(message)
                     println(f"Agent({self.name}) received {message.header} message!")
                     to_del = i
@@ -146,6 +138,7 @@ class Agent:
                 del inbox[to_del]
         if not recompute and self.status != STATUS.init:
             # avoid recomputing solutions when not needed
+            println(f"Agent({self.name}) not recomputing")
             return [], self.broadcast()
         # execute intention
         searcher = self.strategy(self.task, self.heuristic)
@@ -154,6 +147,7 @@ class Agent:
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
         path = self.search(searcher)
+        println(path)
         if path is None and self.stored_message:
             # updating didn't work
             # that could be caused but yet another box, but c'mon...
@@ -183,7 +177,6 @@ class Agent:
         self.stored_message.object_problem = object_problem
         # TODO: not optimal...
         self.stored_message.index = index
-        self.stored_message.new_goal = pos
         return path
 
     def add_task(self, task: StateInit):
@@ -242,12 +235,17 @@ class Agent:
             recompute = False
         elif message.header == HEADER.replan:
             box = message.object_problem
-            concurrent = self.filter_concurrent(
-                message.time, box, message.index
-            )
+            concurrent = self.filter_concurrent(message.time, box, message.index)
             println(concurrent)
             self.task = StateConcurrent(self.task, concurrent)
-            self.task.addGoal(box.lower(), message.new_goal, message.color)
+            # last position of the concurrent box as goal
+            # for more flexibility
+            last_t = concurrent[max(concurrent)]
+            pos = [v[0] for k, v in last_t.items() if k == box and v[1] == message.index][0]
+            self.task.addGoal(box.lower(), pos, message.color)
+            self.task.keepJustGoal(box.lower())
+            self.task.keepJustBox(box)
+            self.task.advance()
         self.stored_message = message
         return recompute
 
@@ -316,7 +314,7 @@ class Agent:
                 receiver=self.stored_message.requester,
                 header=HEADER.replan,  # this is the important part
                 time=time_pos,
-                new_goal=self.stored_message.new_goal
+                new_goal=self.stored_message.new_goal,
             )
         else:
             message = False
