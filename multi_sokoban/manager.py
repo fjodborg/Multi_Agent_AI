@@ -70,6 +70,9 @@ class Manager:
             if colliding is not None:
                 # we have all the information to do direct contracting
                 self.pack_collision(colliding)
+                self.solve_world()
+                self.solveCollision()
+                break
 
         return self.join_tasks()
 
@@ -143,8 +146,8 @@ class Manager:
 
     def pack_collision(self, colliding: List):
         """Write a message to inbox from self.solveCollision results."""
-        receiver = str(colliding[0])
-        requester = str(colliding[1])
+        requester = str(colliding[0])
+        receiver = str(colliding[1])
         moving_task = self.agents[requester].task
         # let's try with just one goal and one box
         box = list(moving_task.goals)[0].upper()

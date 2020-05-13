@@ -95,7 +95,7 @@ class Resultsharing:
             pos12 = pos12[0]
         if type(pos22) == list:
             pos22 = pos22[0]
-        
+
         dist1 = abs((pos1[0] - pos12[0]) + (pos1[0] - pos22[0]))
         dist2 = abs((pos1[1] - pos12[1]) + (pos1[1] - pos22[1]))
         #println((f"swap values is {dist1+dist2 <= 1}", dist1, dist2))
@@ -114,13 +114,13 @@ class Resultsharing:
 
     def findCollisionsNew(self, agt1, agentsOrder, pos1, time1, traceback=0):
         limit = 2
-        
+
 
         potentialCollisions = []
         for agt2 in reversed(agentsOrder):
             poses2 = self.pos[agt2]
             time2 = time1 - traceback - 1
-            
+
             for time2New in range(time2, time2 + limit + 1):
                 artificialFix = False
                 if time2New < 0:
@@ -161,8 +161,9 @@ class Resultsharing:
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
                 if collisionData:
-                    #println(collisionData, time1)
-                    return (agt1, agt2)
+                    println(f"####################{collisionData}, {time1}, {otherAgents}")
+                    println(f"$$$$$$$$$$$$$$$$$$$#{agt1}, {collisionData[0][1]}")
+                    return (agt1, collisionData[0][1])
         return False
 
     def findAndSolveAgt1(self, agt1, agentOrder):
@@ -186,8 +187,8 @@ class Resultsharing:
                 #     agentOrder.remove(agt1)
                 #     println(agentOrder)
                 #     break
-            time1 += 1 
-        
+            time1 += 1
+
         collidedAgents = self.isStillCollided(agt1)
         return collidedAgents
 
@@ -195,7 +196,7 @@ class Resultsharing:
         sorted_agents = self.manager.sort_agents()
         self.paths = self.manager.solutions
         println(self.manager.solutions)
-        
+
         initpos = [[[self.manager.agents[agent].init_pos]] for agent in sorted_agents]
         self.pos = convert2pos(self.manager, initpos, self.paths)
 
@@ -204,9 +205,9 @@ class Resultsharing:
         self.generateTimeTable()
         println(self.timeTable)
         self.unsolvableReason = None
-        
+
         agentOrder = self.prioritiedAgents()
-        otherAgents = copy.copy(agentOrder) 
+        otherAgents = copy.copy(agentOrder)
         solvedPos = copy.deepcopy(self.pos)
         println(solvedPos)
         couldntBeSolved = False
@@ -246,7 +247,7 @@ class Resultsharing:
         penalties = []
         safeZone = []
         safe = True
-        
+
         i = 0
         for agt, agtPoses in enumerate(self.pos):
             penalty = 0
@@ -263,7 +264,7 @@ class Resultsharing:
                     agentsB = [self.color2agt(agtB) for agtB, _ in occupiedB]
                     aliensA = len(agentsA) - agentsA.count(i)
                     aliensB = len(agentsB) - agentsB.count(i)
-                    
+
                     penalty += -aliensA + aliensB
 
             penalty += hasFreeSpot
