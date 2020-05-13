@@ -121,12 +121,14 @@ class Resultsharing:
             poses2 = self.pos[agt2]
             time2 = time1 - traceback - 1
 
+            artificialFix = False
             for time2New in range(time2, time2 + limit + 1):
-                artificialFix = False
                 if time2New < 0:
                     time2New = 0
                 if time2New >= len(poses2):
-                    artificialFix = True
+                    # if not artificialFix:
+                    #     self.pos[agt2].insert(0, self.pos[agt2][0])
+                    # artificialFix = True
                     time2New = len(poses2) - 1
                 if len(poses2) <= time2New or time2New < 0:
                     println("time2 out of bounds", time2New)
@@ -211,17 +213,18 @@ class Resultsharing:
         solvedPos = copy.deepcopy(self.pos)
         println(solvedPos)
         couldntBeSolved = False
-        for agt1 in agentOrder:
-            println(f"\nNewagent {agt1}")
-            collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
-            if collidedAgents:
-                self.pos = copy.deepcopy(solvedPos)
-                couldntBeSolved = True
-                println(f"Something went wrong with agt {collidedAgents}")
-                break
-            else:
-                solvedPos = copy.deepcopy(self.pos)
-                println("solved agt", agt1)
+        for _ in range(2):
+            for agt1 in agentOrder:
+                println(f"\nNewagent {agt1}")
+                collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
+                if collidedAgents:
+                    self.pos = copy.deepcopy(solvedPos)
+                    couldntBeSolved = True
+                    println(f"Something went wrong with agt {collidedAgents}")
+                    break
+                else:
+                    solvedPos = copy.deepcopy(self.pos)
+                    println("solved agt", agt1)
 
         println(solvedPos)
         self.pos = solvedPos
