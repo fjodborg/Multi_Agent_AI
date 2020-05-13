@@ -17,6 +17,8 @@ class Resultsharing:
         self.inbox = inbox
         self.visitedStates = set()
         self.collisionPoints = []
+        self.appendTime = 0
+        self.appendAtNewTime = False
 
     def addToTimeTable(self, pos, time, identity):
         key = (pos)
@@ -145,11 +147,16 @@ class Resultsharing:
             agt2 = collisionData[0][1]
             #println(collisionData)
             if not collisionData[0][3]:
+                if self.appendAtNewTime:
+                    appendTime = self.appendTime
+                else:
+                    appendTime = 0
+                
                 #println(f"added 1 noop to agt {agt2}")
                 if collisionData[0][0]:  # check if it is a swap
-                    self.pos[agt2].insert(0, self.pos[agt2][0])
+                    self.pos[agt2].insert(appendTime0, self.pos[agt2][appendTime])
                 else:
-                    self.pos[agt2].insert(0, self.pos[agt2][0])
+                    self.pos[agt2].insert(appendTime, self.pos[agt2][appendTime])
                 return True
         return False
 
@@ -175,6 +182,10 @@ class Resultsharing:
         lastCollisionData = []
         println("now solving path")
         while time1 < len(self.pos[agt1]):
+            if time1 >= self.appendTime - 1:
+                self.appendAtNewTime = True
+            else:
+                self.appendAtNewTime = False
             poses1 = self.pos[agt1][time1]
             #println(time1, agt1, otherAgents)
             for pos1 in poses1:
@@ -204,7 +215,9 @@ class Resultsharing:
         println(collidedAgents)
         return collidedAgents
 
-    def findAndResolveCollision(self):
+    def findAndResolveCollision(self, newTime):
+        self.appendTime = newTime
+
         sorted_agents = self.manager.sort_agents()
         self.paths = self.manager.solutions
         println(self.manager.solutions)
