@@ -59,20 +59,25 @@ class Manager:
         self.divide_problem()
 
         colliding = True
+        new_time = 0
         while colliding is not None:
             println("===================TASK SHARING!===================")
             self.solve_world()
             println(f"Solution: {self.join_tasks()}")
 
             println("==================RESULT SHARING!==================")
-            colliding = self.solveCollision()
-
+            colliding = self.solveCollision(new_time)
+            println(colliding)
             if colliding is not None:
                 # we have all the information to do direct contracting
                 self.pack_collision(colliding)
-                self.solve_world()
-                self.solveCollision()
-                break
+                time = self.inbox[0].time
+                curr_pos = time[0][1]
+                for event in time:
+                    pos = event[1]
+                    if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
+                        new_time = event[0]
+                        break
 
         return self.join_tasks()
 
@@ -134,7 +139,7 @@ class Manager:
         # WARNING: ths fails if there are more than 10 agents
         return sorted(self.agents)
 
-    def solveCollision(self):
+    def solveCollision(self, new_time):
         """Call the Result Sharing module: avoid deadlocks and collisions.
 
         -> multi_sokoban/resultsharing.py
@@ -142,12 +147,17 @@ class Manager:
         # TODO check for empty frontiers
         # check for traceback possibilities
         rs = Resultsharing(self, [])
+        if new_time != 0:
+            println(new_time)
+            import sys;sys.exit(0)
         return rs.findAndResolveCollision()
 
     def pack_collision(self, colliding: List):
         """Write a message to inbox from self.solveCollision results."""
-        requester = str(colliding[0])
-        receiver = str(colliding[1])
+        receiver = str(colliding[0])
+        requester = str(colliding[1])
+        span = colliding[2]
+        println(span)
         moving_task = self.agents[requester].task
         # let's try with just one goal and one box
         box = list(moving_task.goals)[0].upper()
@@ -159,6 +169,9 @@ class Manager:
         time = self.agents[requester].task.bestPath(
             format=box, index=index,
         )
+        println(time)
+        for i in range(len(time)):
+            time[i][0] += span
         # to get the right times, we need to trim artificial NoOps
         while self.paths[receiver][-1] == "NoOp":
             self.paths[receiver].pop()
