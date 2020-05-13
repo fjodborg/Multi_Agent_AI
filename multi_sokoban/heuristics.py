@@ -288,7 +288,7 @@ class dGraph(Heuristics):
                     pos = newPos
                     break
             dir = (prevDir - 2) 
-
+        corners.append(pos + self.dirs[dir - 1] + self.dirs[initdir - 1])
         println(corners)
 
     def distance(self, pos1: List, pos2: List) -> List:
