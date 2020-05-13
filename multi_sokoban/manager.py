@@ -78,21 +78,6 @@ class Manager:
                     if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
                         new_time = event[0]
                         break
-                self.solve_world()
-                colliding = self.solveCollision(new_time)
-                if colliding is not None:
-                    # we have all the information to do direct contracting
-                    self.pack_collision(colliding)
-                    time = self.inbox[0].time
-                    curr_pos = time[0][1]
-                    for event in time:
-                        pos = event[1]
-                        if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
-                            new_time = event[0]
-                            break
-                    self.solve_world()
-                    colliding = self.solveCollision(new_time)
-                break
 
         return self.join_tasks()
 

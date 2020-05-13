@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Callable, Dict, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule
+from .heuristics import EasyRule, GoAway
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
 from .utils import STATUS, HEADER, IncorrectTask, ResourceLimit, println
@@ -133,7 +133,7 @@ class Agent:
             for i, message in enumerate(inbox):
                 if int(message.receiver) == int(self.name):
                     recompute = self.consume_message(message)
-                    println(f"Agent({self.name}) received {message.header} message!")
+                    println(f"Agent({self.name}) received {message.header}{message.object_problem} message!")
                     to_del = i
                     break
             if to_del is not None:
@@ -361,7 +361,7 @@ class Agent:
             name, pos, color, index = box
             for agent_pos in agent_trace:
                 if self.task.Neighbour(pos, agent_pos):
-                    return name, color, index
+                    return "C", color, index
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.
@@ -374,6 +374,8 @@ class Agent:
         iterations = 0
         if self.stored_message:
             if self.stored_message.header == HEADER.replan:
+                strategy.frontier = self.frontier
+                strategy.heuristic = GoAway()
                 strategy.leaf = strategy.leaf.advance()
                 # strategy = self.strategy(strategy.leaf, self.heuristic)
         if strategy.leaf.isGoalState():
@@ -414,6 +416,7 @@ class Agent:
                     f"Agent {self.name}: Solution found with "
                     f"{len(strategy.leaf.explored)} nodes explored"
                 )
+                println(strategy.heuristic)
                 self.frontier = strategy.frontier
                 self.task = strategy.leaf
                 return strategy.walk_best_path()

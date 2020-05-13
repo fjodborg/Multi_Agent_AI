@@ -499,7 +499,7 @@ class StateConcurrent(StateInit):
 
         Agent can stay at his position without doing anything.
         """
-        return self.__WaitPrec_t(self.t)
+        return self.__WaitPrec_t(self.t) and self.__WaitPrec_t(self.t+1)
 
     def __WaitPrec_t(self, t):
         if t in self.concurrent:
@@ -535,10 +535,8 @@ class StateConcurrent(StateInit):
                     self.map[pos[0], pos[1]] = obj_key
             else:
                 # agents don't leave ghosts behind and are not in the StateInit
-                println("Agent NoOp.")
                 self.map[self.map == obj_key] = "Ñ"
                 self.map[pos[0], pos[1]] = obj_key
-                println(self)
         return True
 
     def hunt_ghost(self):
