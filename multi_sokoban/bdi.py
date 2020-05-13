@@ -3,13 +3,10 @@ from copy import deepcopy
 from typing import Callable, Dict, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule
+from .heuristics import EasyRule, GoAway
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
-from .utils import STATUS, IncorrectTask, ResourceLimit, println, enum
-
-
-HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN", corrupt="CORRUPT")
+from .utils import STATUS, HEADER, IncorrectTask, ResourceLimit, println
 
 
 class Message:
@@ -24,7 +21,8 @@ class Message:
         receiver: str = None,
         time: int = None,
         index: int = 0,
-        new_goal: Tuple = None
+        new_goal: Tuple = None,
+        agent: int = None,
     ):
         """Fill message fields.
 
@@ -51,8 +49,6 @@ class Message:
                 a replan
         time: List[(int, (row, col))]
             time when the agent solves the problem at
-        new_goal: Tuple
-            position of goal to aDD
 
         """
         self.object_problem = object_problem
@@ -62,11 +58,9 @@ class Message:
         self.receiver = receiver
         self.header = header
         self.time = time
-        self.new_goal = new_goal
+        self.agent = agent
         if header in [HEADER.replan, HEADER.update] and time is None:
             raise IncorrectTask("Solutions to SOS messages require a time!")
-        if header == HEADER.replan and new_goal is None:
-            raise IncorrectTask("Replanning messages require a new_goal!")
 
 
 class Agent:
@@ -90,7 +84,7 @@ class Agent:
         * STATUS.ok if agent solved the problem
         * STATUS.fail if Frontier empty
         * STATUS.init if agent hasn't invoked self.solve()
-    helping: Message
+    stored_message: Message
         Message if the agent has been assigned a request from other agent,
         `False` otherwise
     saved_solution: List
@@ -137,15 +131,16 @@ class Agent:
         if inbox:
             to_del = None
             for i, message in enumerate(inbox):
-                if message.receiver == self.name:
+                if int(message.receiver) == int(self.name):
                     recompute = self.consume_message(message)
-                    println(f"Agent({self.name}) received {message.header} message!")
+                    println(f"Agent({self.name}) received {message.header}{message.object_problem} message!")
                     to_del = i
                     break
             if to_del is not None:
                 del inbox[to_del]
         if not recompute and self.status != STATUS.init:
             # avoid recomputing solutions when not needed
+            println(f"Agent({self.name}) not recomputing")
             return [], self.broadcast()
         # execute intention
         searcher = self.strategy(self.task, self.heuristic)
@@ -154,6 +149,7 @@ class Agent:
             f"agents -> {self.task.agents}\nboxes -> {self.task.boxes}\n\n"
         )
         path = self.search(searcher)
+        println(path)
         if path is None and self.stored_message:
             # updating didn't work
             # that could be caused but yet another box, but c'mon...
@@ -183,7 +179,6 @@ class Agent:
         self.stored_message.object_problem = object_problem
         # TODO: not optimal...
         self.stored_message.index = index
-        self.stored_message.new_goal = pos
         return path
 
     def add_task(self, task: StateInit):
@@ -242,12 +237,21 @@ class Agent:
             recompute = False
         elif message.header == HEADER.replan:
             box = message.object_problem
-            concurrent = self.filter_concurrent(
-                message.time, box, message.index
-            )
+            concurrent = self.filter_concurrent(message.time, box, message.index)
+            if message.agent:
+                concurrent_agent = self.filter_concurrent(message.agent, "9", 0)
+                for t in concurrent_agent:
+                    if t in concurrent:
+                        concurrent[t] = {**concurrent[t], **concurrent_agent[t]}
             println(concurrent)
             self.task = StateConcurrent(self.task, concurrent)
-            self.task.addGoal(box.lower(), message.new_goal, message.color)
+            # last position of the concurrent box as goal
+            # for more flexibility
+            last_t = concurrent[max(concurrent)]
+            pos = [v[0] for k, v in last_t.items() if k == box and v[1] == message.index][0]
+            self.task.addGoal(box.lower(), pos, message.color)
+            self.task.keepJustGoal(box.lower())
+            self.task.keepJustBox(box)
         self.stored_message = message
         return recompute
 
@@ -316,7 +320,7 @@ class Agent:
                 receiver=self.stored_message.requester,
                 header=HEADER.replan,  # this is the important part
                 time=time_pos,
-                new_goal=self.stored_message.new_goal
+                new_goal=self.stored_message.new_goal,
             )
         else:
             message = False
@@ -357,7 +361,7 @@ class Agent:
             name, pos, color, index = box
             for agent_pos in agent_trace:
                 if self.task.Neighbour(pos, agent_pos):
-                    return name, color, index
+                    return "C", color, index
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.
@@ -368,6 +372,12 @@ class Agent:
 
         """
         iterations = 0
+        if self.stored_message:
+            if self.stored_message.header == HEADER.replan:
+                strategy.frontier = self.frontier
+                strategy.heuristic = GoAway()
+                strategy.leaf = strategy.leaf.advance()
+                # strategy = self.strategy(strategy.leaf, self.heuristic)
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
@@ -385,8 +395,7 @@ class Agent:
 
             if strategy.frontier_empty():
                 if (
-                    isinstance(self.task, StateConcurrent)
-                    and strategy.leaf.AdvancePrec()
+                    isinstance(strategy.leaf, StateConcurrent)
                 ):
                     # look for events in the future and search again
                     println("Advancing!")
@@ -407,6 +416,8 @@ class Agent:
                     f"Agent {self.name}: Solution found with "
                     f"{len(strategy.leaf.explored)} nodes explored"
                 )
+                println(strategy.heuristic)
+                self.frontier = strategy.frontier
                 self.task = strategy.leaf
                 return strategy.walk_best_path()
 

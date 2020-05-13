@@ -118,6 +118,12 @@ class Literals:
             if external_goal != external_key:
                 self.deleteGoal(external_goal)
 
+    def keepJustBox(self, external_key):
+        boxes = list(self.boxes.keys())
+        for external_agent in boxes:
+            if external_agent != external_key:
+                self.deleteBox(external_agent)
+
     def getPos(self, objtype, obj, i=0):
         # gets the position of an object getPos(objecttype, the key, the index (if multiple))
         # returns None if not in hashtable
@@ -365,7 +371,7 @@ class StateInit(Literals):
     def bestPath(self, format=0, index=0):
         # function returns the list of actions used to reach the state
         path = []
-        state = self
+        state = copy.deepcopy(self)
         if format == 1:
             # format used by actions
             while state.actionPerformed is not None:
@@ -493,7 +499,7 @@ class StateConcurrent(StateInit):
 
         Agent can stay at his position without doing anything.
         """
-        return self.__WaitPrec_t(self.t)
+        return self.__WaitPrec_t(self.t) and self.__WaitPrec_t(self.t+1)
 
     def __WaitPrec_t(self, t):
         if t in self.concurrent:
@@ -520,11 +526,16 @@ class StateConcurrent(StateInit):
         for obj_key in joint_concurrent:
             pos, index = list(joint_concurrent[obj_key])
             obj_group = "agents" if obj_key.isnumeric() else "boxes"
-            prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
-            self.setPos(getattr(self, obj_group), obj_key, pos, index)
-            # introduce a ghost box which will be removed on child nodes
-            self.map[prev_pos[0], prev_pos[1]] = "Ñ"
-            if pos is not None:
+            if obj_group == "boxes":
+                prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
+                self.setPos(getattr(self, obj_group), obj_key, pos, index)
+                # introduce a ghost box which will be removed on child nodes
+                self.map[prev_pos[0], prev_pos[1]] = "Ñ"
+                if pos is not None:
+                    self.map[pos[0], pos[1]] = obj_key
+            else:
+                # agents don't leave ghosts behind and are not in the StateInit
+                self.map[self.map == obj_key] = "Ñ"
                 self.map[pos[0], pos[1]] = obj_key
         return True
 

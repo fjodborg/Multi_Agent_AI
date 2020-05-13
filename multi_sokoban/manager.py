@@ -7,7 +7,7 @@ from .bdi import Agent, Message
 from .heuristics import EasyRule
 from .resultsharing import Resultsharing
 from .strategy import BestFirstSearch
-from .utils import STATUS, println
+from .utils import HEADER, STATUS, println
 
 
 class Manager:
@@ -24,9 +24,9 @@ class Manager:
         on demand; i.e., there can be idle agents in the map that won't have an
         associated Agent object (see multi_sokoban/bdi.py)
     heuristic: Callable
-        function to calculate the heuristic. This is usually an object of a child
-        class of Heuristics that implement __call__() but can be any function
-        that accepts a list of states. Default: EasyRule
+        function to calculate the heuristic. This is usually an object of a
+        child class of Heuristics that implement __call__() but can be any
+        function that accepts a list of states. Default: EasyRule
     solutions: List[List]
         the solutions of the different agents to their particular subproblems.
         `None` until there is a solution
@@ -51,14 +51,33 @@ class Manager:
         self.heuristic = heuristic if heuristic else EasyRule()
         self.solutions = None
         self.nodes_explored = 0
+        self.paths = {}
         self.inbox = []
 
     def run(self) -> List:
         """Perform the task sharing."""
         self.divide_problem()
-        self.solve_world()
 
-        self.solveCollision()
+        colliding = True
+        new_time = 0
+        while colliding is not None:
+            println("===================TASK SHARING!===================")
+            self.solve_world()
+            println(f"Solution: {self.join_tasks()}")
+
+            println("==================RESULT SHARING!==================")
+            colliding = self.solveCollision(new_time)
+            println(colliding)
+            if colliding is not None:
+                # we have all the information to do direct contracting
+                self.pack_collision(colliding)
+                time = self.inbox[0].time
+                curr_pos = time[0][1]
+                for event in time:
+                    pos = event[1]
+                    if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
+                        new_time = event[0]
+                        break
 
         return self.join_tasks()
 
@@ -120,7 +139,7 @@ class Manager:
         # WARNING: ths fails if there are more than 10 agents
         return sorted(self.agents)
 
-    def solveCollision(self):
+    def solveCollision(self, new_time):
         """Call the Result Sharing module: avoid deadlocks and collisions.
 
         -> multi_sokoban/resultsharing.py
@@ -128,12 +147,52 @@ class Manager:
         # TODO check for empty frontiers
         # check for traceback possibilities
         rs = Resultsharing(self, [])
-        rs.findAndResolveCollision()
+        return rs.findAndResolveCollision(new_time)
+
+    def pack_collision(self, colliding: List):
+        """Write a message to inbox from self.solveCollision results."""
+        receiver = str(colliding[0])
+        requester = str(colliding[1])
+        span = colliding[2]
+        println(span)
+        moving_task = self.agents[requester].task
+        # let's try with just one goal and one box
+        box = list(moving_task.goals)[0].upper()
+        index = 0
+        # clean up messages
+        for agent in self.agents.values():
+            agent.stored_message = False
+        self.inbox = []
+        time = moving_task.bestPath(
+            format=box, index=index,
+        )
+        time_agent = moving_task.bestPath(
+            format=requester, index=index,
+        )
+        # result sharing has introduced NoOps
+        for i in range(len(time)):
+            time[i][0] += span
+            time_agent[i][0] += span
+        # to get the right times, we need to trim artificial NoOps
+        while self.paths[receiver][-1] == "NoOp":
+            self.paths[receiver].pop()
+        self.inbox.append(
+            Message(
+                object_problem=box,
+                color=self.agents[receiver].color,
+                index=index,
+                receiver=receiver,  # will move away
+                requester=requester,  # is doing its stuff
+                header=HEADER.replan,
+                time=time,
+                agent=time_agent
+            )
+        )
 
     def solve_world(self):
         """Solve the top problem."""
-        paths = {}
-        while len(paths) != len(self.agents):
+        solved = set()
+        while len(solved) != len(self.agents):
             for name, agent in self.agents.items():
                 path, message = agent.solve(self.inbox)
                 self.nodes_explored += len(agent.task.explored)
@@ -143,11 +202,13 @@ class Manager:
                     println(f"Agent({name}) broadcasted {message.header} task!")
                     self.inbox.append(message)
                 if agent.status == STATUS.ok:
-                    if name in paths:
-                        paths[name] += path
+                    solved.add(name)
+                    if name in self.paths:
+                        self.paths[name] += path
                     else:
-                        paths[name] = path
-        self.solutions = [paths[agent_name] for agent_name in self.sort_agents()]
+                        self.paths[name] = path
+
+        self.solutions = [self.paths[agent_name] for agent_name in self.sort_agents()]
 
     def join_tasks(self) -> List:
         """Join all the task in one big path.
