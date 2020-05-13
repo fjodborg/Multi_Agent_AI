@@ -22,6 +22,7 @@ class Message:
         time: int = None,
         index: int = 0,
         new_goal: Tuple = None,
+        agent: int = None,
     ):
         """Fill message fields.
 
@@ -57,6 +58,7 @@ class Message:
         self.receiver = receiver
         self.header = header
         self.time = time
+        self.agent = agent
         if header in [HEADER.replan, HEADER.update] and time is None:
             raise IncorrectTask("Solutions to SOS messages require a time!")
 
@@ -236,6 +238,11 @@ class Agent:
         elif message.header == HEADER.replan:
             box = message.object_problem
             concurrent = self.filter_concurrent(message.time, box, message.index)
+            if message.agent:
+                concurrent_agent = self.filter_concurrent(message.agent, "9", 0)
+                for t in concurrent_agent:
+                    if t in concurrent:
+                        concurrent[t] = {**concurrent[t], **concurrent_agent[t]}
             println(concurrent)
             self.task = StateConcurrent(self.task, concurrent)
             # last position of the concurrent box as goal
@@ -367,7 +374,6 @@ class Agent:
         iterations = 0
         if self.stored_message:
             if self.stored_message.header == HEADER.replan:
-                strategy.frontier = self.frontier
                 strategy.leaf = strategy.leaf.advance()
                 # strategy = self.strategy(strategy.leaf, self.heuristic)
         if strategy.leaf.isGoalState():
@@ -387,8 +393,7 @@ class Agent:
 
             if strategy.frontier_empty():
                 if (
-                    isinstance(self.task, StateConcurrent)
-                    and strategy.leaf.AdvancePrec()
+                    isinstance(strategy.leaf, StateConcurrent)
                 ):
                     # look for events in the future and search again
                     println("Advancing!")

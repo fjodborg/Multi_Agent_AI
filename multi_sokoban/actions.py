@@ -526,12 +526,19 @@ class StateConcurrent(StateInit):
         for obj_key in joint_concurrent:
             pos, index = list(joint_concurrent[obj_key])
             obj_group = "agents" if obj_key.isnumeric() else "boxes"
-            prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
-            self.setPos(getattr(self, obj_group), obj_key, pos, index)
-            # introduce a ghost box which will be removed on child nodes
-            self.map[prev_pos[0], prev_pos[1]] = "Ñ"
-            if pos is not None:
+            if obj_group == "boxes":
+                prev_pos = self.getPos(getattr(self, obj_group), obj_key, index)
+                self.setPos(getattr(self, obj_group), obj_key, pos, index)
+                # introduce a ghost box which will be removed on child nodes
+                self.map[prev_pos[0], prev_pos[1]] = "Ñ"
+                if pos is not None:
+                    self.map[pos[0], pos[1]] = obj_key
+            else:
+                # agents don't leave ghosts behind and are not in the StateInit
+                println("Agent NoOp.")
+                self.map[self.map == obj_key] = "Ñ"
                 self.map[pos[0], pos[1]] = obj_key
+                println(self)
         return True
 
     def hunt_ghost(self):

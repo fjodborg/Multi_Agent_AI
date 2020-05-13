@@ -178,12 +178,16 @@ class Manager:
         for agent in self.agents.values():
             agent.stored_message = False
         self.inbox = []
-        time = self.agents[requester].task.bestPath(
+        time = moving_task.bestPath(
             format=box, index=index,
         )
-        println(time)
+        time_agent = moving_task.bestPath(
+            format=requester, index=index,
+        )
+        # result sharing has introduced NoOps
         for i in range(len(time)):
             time[i][0] += span
+            time_agent[i][0] += span
         # to get the right times, we need to trim artificial NoOps
         while self.paths[receiver][-1] == "NoOp":
             self.paths[receiver].pop()
@@ -196,6 +200,7 @@ class Manager:
                 requester=requester,  # is doing its stuff
                 header=HEADER.replan,
                 time=time,
+                agent=time_agent
             )
         )
 
