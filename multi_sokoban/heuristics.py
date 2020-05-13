@@ -143,7 +143,7 @@ class L1Clarkson(Heuristics):
 
     def __init__(self, state: np.array, weight: int = 1):
         """Initialize object by building the VIS(V,E) graph."""
-        self.graph = self.build_graph_discrete(state.map)
+        self.graph = self.build_graph(state.map)
         self.weight = weight
 
     def build_graph(self, map: np.array) -> List:
@@ -221,43 +221,75 @@ class L1Clarkson(Heuristics):
 
 
 class dGraph(Heuristics):
-    """L1 path finding heuristics.
-
-    Outside corners are calculated and a visual graph is built where the edges
-    are the manhattan distance from visual corner to visual corner.
-
-    The algorithm computes the distance to the object to the min visual corner
-    and then use the distances in the graph to calculate the heuristic.
-
-    Reference
-    ---------
-    https://dl.acm.org/doi/10.1145/41958.41985
-    """
-
     def __init__(self, state: np.array, weight: int = 1):
         """Initialize object by building the VIS(V,E) graph."""
-        self.graph = self.build_graph(state.map)
+        self.dirs = [np.array([0, 1]), np.array([1, 0]), np.array([0, -1]), np.array([-1, 0]), np.array([0, 1]), np.array([1, 0]), np.array([0, -1]), np.array([-1, 0])]
         self.weight = weight
+        self.graph = self.build_graph(state.map)
+        #self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
+
 
     def build_graph(self, map: np.array) -> List:
-        """Build VIS graph."""
+        exploredWalls = set()
+
+        # add boundry wall
         rows, cols = map.shape
-        polys = []
-        for row in range(1, rows):
-            lining = False
-            for col in range(1, cols-1):
-                if map[row, col] == "+" and not lining:
-                    lining = True
-                    left = vg.Point(row+1, col+1)
-                elif map[row, col] == " " and lining:
-                    lining = False
-                    polys.append([left, vg.Point(row, col-2)])
-                elif map[row, col] == "+" and col == cols-2 and lining:
-                    lining = False
-                    polys.append([left, vg.Point(row+1, col+1)])
-        g = vg.VisGraph()
-        g.build(polys)
+        for col in range(0, cols):
+            exploredWalls.add(str([0, col]))
+            exploredWalls.add(str([rows - 1, col]))
+        for row in range(0, rows):
+            exploredWalls.add(str([row, 0]))
+            exploredWalls.add(str([row, cols - 1]))
+
+        # find contours
+        for row in range(1, rows - 1):
+            for col in range(1, cols - 1):
+                pos = np.asarray([row, col])
+                if map[row, col] == "+" and str(pos) not in exploredWalls:
+                    self.findEdges(pos, map, exploredWalls)
+        
+        import sys;sys.exit()
+
         return g
+
+ 
+    def findEdges(self, initPos, map, exploredWalls):
+        # TODO look if the wall goes out of the real walls
+        # for self.dir[0]
+
+        dir = -1
+        prevDir = dir + 1
+
+        pos = initPos
+        newPos = np.array([-1, -1])
+
+        corners = []
+
+        while not np.array_equal(initPos, newPos):
+            #println("new iteration")
+            
+            for j in range(0, 4):
+                dir = (dir + 1)
+                #println(pos, dir)
+                #println(self.dirs[dir])
+                newPos = pos + self.dirs[dir]
+                if map[tuple(newPos)] == "+":
+                    exploredWalls.add(str(newPos))
+                    cornerType = dir - prevDir
+                    if cornerType == 2:
+                        println("here wo go2")
+                        corners.append(pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
+                        corners.append(pos + self.dirs[dir - 1] + self.dirs[prevDir - 0])
+                    elif cornerType == 1:
+                        corners.append(pos + self.dirs[dir - 1] + self.dirs[prevDir - 1])
+                        println("here wo go1")
+                    println("wall here:", (newPos, prevDir, dir, not np.array_equal(initPos, newPos)))
+                    prevDir = dir % 4  # 4 directions
+                    pos = newPos
+                    break
+            dir = (prevDir - 2) 
+
+        println(corners)
 
     def distance(self, pos1: List, pos2: List) -> List:
         """Distance from vertice to vertice."""
