@@ -58,6 +58,7 @@ class Resultsharing:
                         self.paths[agt].insert(i, "NoOp")
                     else:
                         self.paths[agt].append("NoOp")
+        return longest - shortest
 
     def extractFromHash(self, hash, agt):
         '''Not in use at the moment'''
@@ -121,14 +122,12 @@ class Resultsharing:
             poses2 = self.pos[agt2]
             time2 = time1 - traceback - 1
 
-            artificialFix = False
             for time2New in range(time2, time2 + limit + 1):
+                artificialFix = False
                 if time2New < 0:
                     time2New = 0
                 if time2New >= len(poses2):
-                    # if not artificialFix:
-                    #     self.pos[agt2].insert(0, self.pos[agt2][0])
-                    # artificialFix = True
+                    artificialFix = True
                     time2New = len(poses2) - 1
                 if len(poses2) <= time2New or time2New < 0:
                     println("time2 out of bounds", time2New)
@@ -137,7 +136,7 @@ class Resultsharing:
                     #println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
                     if pos2 == pos1:
                         isSwap = self.isSwap(agt1, agt2, time1, time2New, pos1)
-                        potentialCollisions.append((isSwap, agt2, time2New, artificialFix))
+                        potentialCollisions.append((isSwap, agt2, time2New, artificialFix, time1))
                         println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
         return potentialCollisions
 
@@ -146,7 +145,8 @@ class Resultsharing:
             agt2 = collisionData[0][1]
             #println(collisionData)
             if not collisionData[0][3]:
-                if collisionData[0][0]:
+                #println(f"added 1 noop to agt {agt2}")
+                if collisionData[0][0]:  # check if it is a swap
                     self.pos[agt2].insert(0, self.pos[agt2][0])
                 else:
                     self.pos[agt2].insert(0, self.pos[agt2][0])
@@ -163,8 +163,8 @@ class Resultsharing:
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
                 if collisionData:
-                    println(f"####################{collisionData}, {time1}, {otherAgents}")
-                    println(f"$$$$$$$$$$$$$$$$$$$#{agt1}, {collisionData[0][1]}")
+                    #println(f"####################{collisionData}, {time1}, {otherAgents}")
+                    #println(f"$$$$$$$$$$$$$$$$$$$#{agt1}, {collisionData[0][1]}")
                     return (agt1, collisionData[0][1])
         return False
 
@@ -172,14 +172,23 @@ class Resultsharing:
         otherAgents = copy.deepcopy(agentOrder)
         otherAgents.remove(agt1)
         time1 = 0
+        lastCollisionData = []
+        println("now solving path")
         while time1 < len(self.pos[agt1]):
             poses1 = self.pos[agt1][time1]
             #println(time1, agt1, otherAgents)
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
-                collision = self.solveAgt1(agt1, otherAgents, pos1, time1, collisionData)
-                if collision:
-                    time1 -= 1
+                if collisionData:
+                    if len(collisionData) != len(set(collisionData)):
+                        break
+                    collision = self.solveAgt1(agt1, otherAgents, pos1, time1, collisionData)
+                    if collision:
+                        if lastCollisionData == collisionData:
+                            break
+                        else:    
+                            lastCollisionData = copy.deepcopy(collisionData)
+                            time1 = -1
                 #try:
                 #isHandled = self.handleCollisionData(collisionData, agt1, agentOrder, time1)
                 # except Exception:
@@ -190,8 +199,9 @@ class Resultsharing:
                 #     println(agentOrder)
                 #     break
             time1 += 1
-
+        println("now checking solved pat")
         collidedAgents = self.isStillCollided(agt1)
+        println(collidedAgents)
         return collidedAgents
 
     def findAndResolveCollision(self):
@@ -213,26 +223,25 @@ class Resultsharing:
         solvedPos = copy.deepcopy(self.pos)
         println(solvedPos)
         couldntBeSolved = False
-        for _ in range(2):
-            for agt1 in agentOrder:
-                println(f"\nNewagent {agt1}")
-                collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
-                if collidedAgents:
-                    self.pos = copy.deepcopy(solvedPos)
-                    couldntBeSolved = True
-                    println(f"Something went wrong with agt {collidedAgents}")
-                    break
-                else:
-                    solvedPos = copy.deepcopy(self.pos)
-                    println("solved agt", agt1)
+        for agt1 in agentOrder:
+            println(f"\nNewagent {agt1}")
+            collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
+            if collidedAgents:
+                self.pos = copy.deepcopy(solvedPos)
+                couldntBeSolved = True
+                println(f"Something went wrong with agt {collidedAgents}")
+                break
+            else:
+                solvedPos = copy.deepcopy(self.pos)
+                println("solved agt", agt1)
 
         println(solvedPos)
         self.pos = solvedPos
-        self.fixLength()
+        addedActions = self.fixLength()
 
         if couldntBeSolved:
             println("agents colliding", (collidedAgents[1], collidedAgents[0]))
-            return (collidedAgents[1], collidedAgents[0])
+            return (collidedAgents[1], collidedAgents[0], addedActions)
         else:
             return None
 
