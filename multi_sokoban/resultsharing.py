@@ -204,7 +204,7 @@ class Resultsharing:
                     if collision:
                         if lastCollisionData == collisionData:
                             break
-                        else:    
+                        else:
                             lastCollisionData = copy.deepcopy(collisionData)
                             time1 = -1
                 #try:
