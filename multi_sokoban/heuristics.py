@@ -235,61 +235,114 @@ class dGraph(Heuristics):
         # add boundry wall
         rows, cols = map.shape
         for col in range(0, cols):
-            exploredWalls.add(str([0, col]))
-            exploredWalls.add(str([rows - 1, col]))
+            exploredWalls.add(str(np.array([0, col])))
+            exploredWalls.add(str(np.array([rows - 1, col])))
         for row in range(0, rows):
-            exploredWalls.add(str([row, 0]))
-            exploredWalls.add(str([row, cols - 1]))
+            exploredWalls.add(str(np.array([row, 0])))
+            exploredWalls.add(str(np.array([row, cols - 1])))
 
         # find contours
+        cornerSets = []
         for row in range(1, rows - 1):
             for col in range(1, cols - 1):
-                pos = np.asarray([row, col])
+                pos = np.array([row, col])
                 if map[row, col] == "+" and str(pos) not in exploredWalls:
-                    self.findEdges(pos, map, exploredWalls)
-        
-        import sys;sys.exit()
+                    corners = self.findEdges(pos, map, exploredWalls)
+                    if corners:
+                        cornerSets.append(corners)
+                    else:
+                        self.addSingleBlockCorners(map, cornerSets, pos)
+                    
+                    # just for the lols
+                    for corners in cornerSets:
+                        #println("corner set", corners)
+                        if type(corners) != list:
+                            corners = [corners]
+                        for corner in corners:
+                            println("corner", corner)
+                            map[tuple(corner)] = "O"
+                    println(map)
+
+
+        println("all corner sets", cornerSets)
+        raise Exception("Find shorest paths")
 
         return g
 
- 
+
+    def checkAndAddCorner(self, map, corners, cornerPos, ):
+        if map[tuple(cornerPos)] == "+":
+            return False
+        corners.append(tuple(cornerPos))
+        return True
+
+    def addCorner(self, map, newPos, pos, dir, prevDir, exploredWalls, tempExploredWalls, corners):
+                
+        if map[tuple(newPos)] == "+" and str(newPos) not in exploredWalls:
+            tempExploredWalls.add(str(newPos))
+            cornerType = dir - prevDir
+                    
+            if cornerType == 2:
+                self.checkAndAddCorner(map, corners, pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
+                self.checkAndAddCorner(map, corners, pos + self.dirs[dir - 1] + self.dirs[prevDir - 0])
+            elif cornerType == 1:
+                self.checkAndAddCorner(map, corners, pos + self.dirs[dir - 1] + self.dirs[prevDir - 1])
+                
+            println("wall here:", (newPos, prevDir, dir))
+            return True
+        return False
+
+    def addSingleBlockCorners(self, map, corners, pos):
+        self.checkAndAddCorner(map, corners, pos + np.array([1, 1]))
+        self.checkAndAddCorner(map, corners, pos + np.array([1, -1]))
+        self.checkAndAddCorner(map, corners, pos + np.array([-1, 1]))
+        self.checkAndAddCorner(map, corners, pos + np.array([-1, -1]))
+        # corners.append(pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
+        # corners.append(pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
+        # corners.append(pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
+        pass
+
     def findEdges(self, initPos, map, exploredWalls):
         # TODO look if the wall goes out of the real walls
         # for self.dir[0]
-
+        tempExploredWalls = set()
         dir = -1
         prevDir = dir + 1
-
         pos = initPos
-        newPos = np.array([-1, -1])
-
         corners = []
-
-        while not np.array_equal(initPos, newPos):
+        println("looking for new edges")      
+        initDir = -999
+        newPos = None
+        isDone = False
+        time = 0
+        while not isDone: # and time < 100:
+            time += 1
             #println("new iteration")
-            
             for j in range(0, 4):
                 dir = (dir + 1)
-                #println(pos, dir)
+                # println(pos, [dir])
                 #println(self.dirs[dir])
                 newPos = pos + self.dirs[dir]
-                if map[tuple(newPos)] == "+":
-                    exploredWalls.add(str(newPos))
-                    cornerType = dir - prevDir
-                    if cornerType == 2:
-                        println("here wo go2")
-                        corners.append(pos + self.dirs[dir - 2] + self.dirs[prevDir - 1])
-                        corners.append(pos + self.dirs[dir - 1] + self.dirs[prevDir - 0])
-                    elif cornerType == 1:
-                        corners.append(pos + self.dirs[dir - 1] + self.dirs[prevDir - 1])
-                        println("here wo go1")
-                    println("wall here:", (newPos, prevDir, dir, not np.array_equal(initPos, newPos)))
+                if self.addCorner(map, newPos, pos, dir, prevDir, exploredWalls, tempExploredWalls, corners):
                     prevDir = dir % 4  # 4 directions
+                    if np.array_equal(initPos, pos) and prevDir == initDir:
+                        isDone = True
                     pos = newPos
+                    if initDir == -999:
+                        initDir = prevDir
                     break
+                if j == 3:
+                    println("single block")
+                    isDone = True
+                    return None
             dir = (prevDir - 2) 
-        corners.append(pos + self.dirs[dir - 1] + self.dirs[initdir - 1])
-        println(corners)
+        
+        println(exploredWalls)
+                    
+        for explored in tempExploredWalls:
+            exploredWalls.add(explored) 
+
+        return corners
 
     def distance(self, pos1: List, pos2: List) -> List:
         """Distance from vertice to vertice."""
