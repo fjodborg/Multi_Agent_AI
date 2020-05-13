@@ -56,10 +56,15 @@ class Resultsharing:
         for agt in range(len(self.pos)):
             for i in range(len(self.pos[agt]) - 1):
                 if self.pos[agt][i] == self.pos[agt][i + 1]:
-                    if len(self.paths[agt]) > 0:
-                        self.paths[agt].insert(i, "NoOp")
+                    if len(self.paths[agt]) > i:
+                        if self.paths[agt][i] != "NoOp":
+                            self.paths[agt].insert(i, "NoOp")
                     else:
                         self.paths[agt].append("NoOp")
+                    # if len(self.paths[agt]) > 0:
+                    #     self.paths[agt].insert(i, "NoOp")
+                    # else:
+                    #     self.paths[agt].append("NoOp")
         return longest - shortest
 
     def extractFromHash(self, hash, agt):
@@ -139,7 +144,7 @@ class Resultsharing:
                     if pos2 == pos1:
                         isSwap = self.isSwap(agt1, agt2, time1, time2New, pos1)
                         potentialCollisions.append((isSwap, agt2, time2New, artificialFix, time1))
-                        println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
+                        println(f"collision occured {agt1, agt2, pos1, pos2, time1}, {time2} bounded to {time2New}")
         return potentialCollisions
 
     def solveAgt1(self, agt1, agentOrder, pos1, time1, collisionData):
@@ -152,9 +157,9 @@ class Resultsharing:
                 else:
                     appendTime = 0
                 
-                #println(f"added 1 noop to agt {agt2}")
+                #  println(f"added 1 noop to agt {agt2} at time {appendTime}")
                 if collisionData[0][0]:  # check if it is a swap
-                    self.pos[agt2].insert(appendTime0, self.pos[agt2][appendTime])
+                    self.pos[agt2].insert(appendTime, self.pos[agt2][appendTime])
                 else:
                     self.pos[agt2].insert(appendTime, self.pos[agt2][appendTime])
                 return True
@@ -180,9 +185,11 @@ class Resultsharing:
         otherAgents.remove(agt1)
         time1 = 0
         lastCollisionData = []
-        println("now solving path")
+        #println("now solving path")
+        
         while time1 < len(self.pos[agt1]):
             if time1 >= self.appendTime - 1:
+                #println(time1)
                 self.appendAtNewTime = True
             else:
                 self.appendAtNewTime = False
@@ -210,9 +217,9 @@ class Resultsharing:
                 #     println(agentOrder)
                 #     break
             time1 += 1
-        println("now checking solved pat")
+        #println("now checking solved pat")
         collidedAgents = self.isStillCollided(agt1)
-        println(collidedAgents)
+        #println(collidedAgents)
         return collidedAgents
 
     def findAndResolveCollision(self, newTime):
@@ -220,24 +227,26 @@ class Resultsharing:
 
         sorted_agents = self.manager.sort_agents()
         self.paths = self.manager.solutions
-        println(self.manager.solutions)
-
+        #println(self.manager.solutions)
+        
         initpos = [[[self.manager.agents[agent].init_pos]] for agent in sorted_agents]
         self.pos = convert2pos(self.manager, initpos, self.paths)
-
-        println(self.pos)
+        
+        #self.fixLength()
+        #println(self.pos)
+        #println(self.paths)
 
         self.generateTimeTable()
-        println(self.timeTable)
+        #println(self.timeTable)
         self.unsolvableReason = None
 
         agentOrder = self.prioritiedAgents()
         otherAgents = copy.copy(agentOrder)
         solvedPos = copy.deepcopy(self.pos)
-        println(solvedPos)
+        #  println(solvedPos)
         couldntBeSolved = False
         for agt1 in agentOrder:
-            println(f"\nNewagent {agt1}")
+            println(f"\nNewagent {agt1}, poses: {len(self.pos[agt1])}")
             collidedAgents = self.findAndSolveAgt1(agt1, otherAgents)
             if collidedAgents:
                 self.pos = copy.deepcopy(solvedPos)
@@ -248,7 +257,7 @@ class Resultsharing:
                 solvedPos = copy.deepcopy(self.pos)
                 println("solved agt", agt1)
 
-        println(solvedPos)
+        # println(solvedPos)
         self.pos = solvedPos
         addedActions = self.fixLength()
 
