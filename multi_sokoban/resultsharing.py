@@ -114,6 +114,7 @@ class Resultsharing:
 
     def findCollisionsNew(self, agt1, agentsOrder, pos1, time1, traceback=0):
         limit = 2
+        
 
         potentialCollisions = []
         for agt2 in reversed(agentsOrder):
@@ -121,18 +122,20 @@ class Resultsharing:
             time2 = time1 - traceback - 1
             
             for time2New in range(time2, time2 + limit + 1):
+                artificialFix = False
                 if time2New < 0:
                     time2New = 0
                 if time2New >= len(poses2):
+                    artificialFix = True
                     time2New = len(poses2) - 1
                 if len(poses2) <= time2New or time2New < 0:
-                    #println("time2 out of bounds", time2New)
+                    println("time2 out of bounds", time2New)
                     break
                 for pos2 in poses2[time2New]:
                     #println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
                     if pos2 == pos1:
                         isSwap = self.isSwap(agt1, agt2, time1, time2New, pos1)
-                        potentialCollisions.append((isSwap, agt2, time2New))
+                        potentialCollisions.append((isSwap, agt2, time2New, artificialFix))
                         println(f"collision occured {agt1, agt2, pos1, pos2, time1, time2New}")
         return potentialCollisions
 
@@ -140,11 +143,12 @@ class Resultsharing:
         if collisionData:
             agt2 = collisionData[0][1]
             #println(collisionData)
-            if collisionData[0][0]:
-                self.pos[agt2].insert(0, self.pos[agt2][0])
-            else:
-                self.pos[agt2].insert(0, self.pos[agt2][0])
-            return True
+            if not collisionData[0][3]:
+                if collisionData[0][0]:
+                    self.pos[agt2].insert(0, self.pos[agt2][0])
+                else:
+                    self.pos[agt2].insert(0, self.pos[agt2][0])
+                return True
         return False
 
     def isStillCollided(self, agt1):
@@ -157,6 +161,7 @@ class Resultsharing:
             for pos1 in poses1:
                 collisionData = self.findCollisionsNew(agt1, otherAgents, pos1, time1)
                 if collisionData:
+                    #println(collisionData, time1)
                     return (agt1, agt2)
         return False
 
@@ -222,6 +227,7 @@ class Resultsharing:
         self.fixLength()
 
         if couldntBeSolved:
+            println("agents colliding", (collidedAgents[1], collidedAgents[0]))
             return (collidedAgents[1], collidedAgents[0])
         else:
             return None
