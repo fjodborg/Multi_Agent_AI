@@ -245,7 +245,6 @@ class Agent:
             self.task.addGoal(box.lower(), pos, message.color)
             self.task.keepJustGoal(box.lower())
             self.task.keepJustBox(box)
-            self.task.advance()
         self.stored_message = message
         return recompute
 
@@ -366,6 +365,11 @@ class Agent:
 
         """
         iterations = 0
+        if self.stored_message:
+            if self.stored_message.header == HEADER.replan:
+                strategy.frontier = self.frontier
+                strategy.leaf = strategy.leaf.advance()
+                # strategy = self.strategy(strategy.leaf, self.heuristic)
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
@@ -405,6 +409,7 @@ class Agent:
                     f"Agent {self.name}: Solution found with "
                     f"{len(strategy.leaf.explored)} nodes explored"
                 )
+                self.frontier = strategy.frontier
                 self.task = strategy.leaf
                 return strategy.walk_best_path()
 
