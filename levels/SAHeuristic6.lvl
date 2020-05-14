@@ -1,0 +1,33 @@
+#domain
+hospital
+#levelname
+MAAiAiCap
+#colors
+red: 0, A
+green: 1, B
+cyan: Z
+#initial
+++++++++++++++++++
++0ZA  Z     Z    +
++ Z Z    ZZZZ ZZZ+
++ Z   Z   Z Z    +
++ Z ZZZ Z Z ZZZZZ+
++ Z   Z   Z      +
++ ZZZ ZZ ZZZZZZZ +
++ Z          1ZZ +
++ Z    ZZZZZZZ   +
++ Z    ZZZZZZZ   +
+++++++++++++++++++
+#goal
+++++++++++++++++++
++               A+
++                +
++                +
++                +
++                +
++                +
++                +
++                +
++B               +
+++++++++++++++++++
+#end

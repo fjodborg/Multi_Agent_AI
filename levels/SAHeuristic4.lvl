@@ -3,23 +3,23 @@ hospital
 #levelname
 MAExample
 #colors
-red: 0, B, A
+blue: 0, A, B, C, D
 #initial
 ++++++++
-+  0+B +
-+   ++ +
-+   +  +
++0+    +
++ A+   +
++ +B+  +
++  DC+ +
 + ++++ +
-+   ++ +
 +      +
 ++++++++
 #goal
 ++++++++
-+   +  +
-+   ++ +
-+   +  +
++ +  CB+
++  + AD+
++ + +  +
++    + +
 + ++++ +
-+   ++ +
-+   B  +
++      +
 ++++++++
 #end

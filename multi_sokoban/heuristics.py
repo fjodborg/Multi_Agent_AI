@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 import pyvisgraph as vg
 from utils import println
+import networkx as nx
 
 def manha_dist(a, b):
     """Measure Manhattan distance."""
@@ -235,11 +236,11 @@ class dGraph(Heuristics):
         # add boundry wall
         rows, cols = map.shape
         for col in range(0, cols):
-            explored.add(str(np.array([0, col])))
-            explored.add(str(np.array([rows - 1, col])))
+            explored.add(tuple([0, col]))
+            explored.add(tuple([rows - 1, col]))
         for row in range(0, rows):
-            explored.add(str(np.array([row, 0])))
-            #explored.add(str(np.array([row, cols - 1])))
+            explored.add(tuple([row, 0]))
+            #explored.add(tuple(np.array([row, cols - 1])))
 
         # find contours
         cornerSets = []
@@ -249,40 +250,90 @@ class dGraph(Heuristics):
                 pos = np.array([row, col])
                 if map[row, col] == "+":
                     freePos = np.array([row, col - 1])
-                    #println(freePos, str(freePos) in explored)
-                    if map[row, col - 1] != "+" and str(pos) not in explored:
-                        println("first spot", freePos)
+                    #println(freePos, tuple(freePos) in explored)
+                    if map[row, col - 1] != "+" and tuple(pos) not in explored:
+                        #println("first spot", freePos)
                         corners = self.findEdges(freePos, map, explored)
                         if corners:
                             cornerSets.append(corners)
 
-        # just for the lols
+        G = self.generateGraph(cornerSets, map)
+
+        return G
+
+    def draw(self, G):
+        import matplotlib.pyplot as plt
+        elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] > 0.5]
+        esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] <= 0.5]
+        pos = nx.spring_layout(G)
+        nx.draw_networkx_nodes(G, pos, node_size=700)
+        nx.draw_networkx_edges(G, pos, edgelist=elarge, width=6)
+        nx.draw_networkx_edges(G, pos, edgelist=esmall, width=6, alpha=0.5, edge_color='b', style='dashed')
+
+        nx.draw_networkx_labels(G, pos, font_size=20, font_family='sans-serif')
+        
+        plt.show()
+
+    def generateGraph(self, cornerSets, map):
+        # TODO remove this smal section below, it's just for the lols
         for corners in cornerSets:
             println("corner set", corners)
             if type(corners) != list:
                 corners = [corners]
             for corner in corners:
                 #println("corner", corner)
-                map[tuple(corner)] = "O"
+                map[corner] = "O"
         println(map)
 
 
-        #println("all corner sets", cornerSets)
-        raise Exception("Find shorest paths")
+        # TODO fix order of corners
+        cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:] 
+        println(cornerSets)
+        
+        #G = nx.DiGraph()
 
-        return g
+
+        G = nx.DiGraph()
+        
+        for corners in cornerSets:
+            for i in range(len(corners) - 1):
+                if not np.array_equal(corners[i], corners[i + 1]):
+                    corner1 = corners[i]
+                    corner2 = corners[i+1]
+                    dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[0]))
+                    println(corner1, corner2, dist)
+                    G.add_edge(corner1, corner2, weight=dist)
+                    G.add_edge(corner2, corner1, weight=dist)
+                    pass
+
+        #self.draw(G)
+        
+        return G
+
+        # uniqueCorners = set()
+        # for corners in cornerSets:
+        #     if type(corners) != list:
+        #         uniqueCorners.add(corners)
+        #         continue
+        #     for corner in corners:
+        #         uniqueCorners.add(corner)
+
+        # done = False 
+        # while not done:
+        #     for corners in uniqueCorners:
+        #         pass
+        # println(uniqueCorners)
 
 
-    def checkAndAddCorner(self, map, corners, cornerPos, ):
+    def checkAndAddCorner(self, map, corners, cornerPos):
         if map[tuple(cornerPos)] == "+":
             return False
         corners.append(tuple(cornerPos))
         return True
 
-    def addCorner(self, map, newPos, pos, dir, prevDir, explored, corners):
-                
-        if map[tuple(newPos)] != "+" and str(newPos) not in explored:
-            #tempExplored.add(str(newPos))
+    def addCorner(self, map, newPos, pos, dir, prevDir, explored, corners): 
+        if map[tuple(newPos)] != "+" and tuple(newPos) not in explored:
+            #tempExplored.add(tuple(newPos))
             cornerType = dir - prevDir
             if cornerType == -1:
                 #println(pos, cornerType)
@@ -291,31 +342,22 @@ class dGraph(Heuristics):
             #println("moving here:", (newPos, prevDir, dir))
             return True
         elif map[tuple(newPos)] == "+":
-            #println("wall added", str(newPos))
-            explored.add(str(newPos))
+            #println("wall added", tuple(newPos))
+            explored.add(tuple(newPos))
         return False
 
     def findEdges(self, initPos, map, explored):
-        # TODO look if the wall goes out of the real walls
-        # for self.dir[0]
         dir = -1
         prevDir = dir + 1
         pos = initPos
-        corners = []
-        #println("looking for new edges")      
+        corners = []     
         initDir = -999
         newPos = None
         isDone = False
-        time = 0
-        #println(explored)
-        while not isDone and time < 100:
-            time += 1
-            #println("new iteration")
+        while not isDone:
             for j in range(0, 4):
                 dir = (dir + 1)
-                #println(self.dirs[dir])
                 newPos = pos + self.dirs[dir]
-                #println(pos, newPos, [dir])
                 if self.addCorner(map, newPos, pos, dir, prevDir, explored, corners):
                     prevDir = dir % 4  # 4 directions
                     if np.array_equal(initPos, pos) and prevDir == initDir:
@@ -326,11 +368,6 @@ class dGraph(Heuristics):
                     break
             dir = (prevDir - 2) 
         
-        #println(explored)
-        println(corners)            
-        # for exploredPos in tempExplored:
-        #     explored.add(exploredPos) 
-
         return corners
 
     def distance(self, pos1: List, pos2: List) -> List:
@@ -344,6 +381,7 @@ class dGraph(Heuristics):
         return dist
 
     def __call__(self, states: List):
+        raise Exception("Nope")
         """Calculate heuristic for states in place."""
         if type(states) is not list:
             states = [states]
