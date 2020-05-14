@@ -360,7 +360,7 @@ class dGraph(Heuristics):
                     break
             
             if validKp:
-                println("best keypoint for pos", pos,"is:", kp)
+                #println("best keypoint for pos", pos,"is:", kp)
                 break
         
         #import sys; sys.exit()
@@ -378,7 +378,7 @@ class dGraph(Heuristics):
         agtKp = self.closestValidNode(np.asarray(agtPos))
         boxKp = self.closestValidNode(np.asarray(boxPos))
         goalKp = self.closestValidNode(np.asarray(goalPos))
-        println(self.uniqueCorners, agtKp, boxKp, goalKp)
+        #println(self.uniqueCorners, agtKp, boxKp, goalKp)
 
         # println(self.uniqueCorners)
         return agtKp, boxKp, goalKp  # tuple([3, 1]), None, tuple([1, 6])
@@ -390,8 +390,6 @@ class dGraph(Heuristics):
         if len(states) == 0:
             return None
 
-        agtKp = tuple([9, 1])
-        goalKp = tuple([1, 34])
 
         length = None
         G = self.graph
@@ -403,41 +401,94 @@ class dGraph(Heuristics):
             # TODO make it work for more boxes and goals
             # TODO test performace difference between deepcopy and copy
             GTemp = copy.deepcopy(G)
+            #println(agtPos,boxPos,goalPos, state.currentPath)
             if state.currentPath:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
                 # TODO don't re calculate the path
                 # TODO do the same at the endPoint
-                dist = manha_dist(agtPos, state.currentPath[0])
-                GTemp.add_edge(agtPos, state.currentPath[0], weight=dist)
-                dist = manha_dist(agtPos, state.currentPath[1])
-                GTemp.add_edge(agtPos, state.currentPath[1], weight=dist)
-                dist = manha_dist(state.currentPath[-2], goalPos)
-                GTemp.add_edge(state.currentPath[-2], goalPos, weight=dist)
+                agtKp, boxKp, goalKp = state.prevKeypoints
 
+                #println(state.currentPath)
+                #println(agtKp, boxKp, goalKp)
+                #println(state.currentPath.index(agtKp), boxKp, goalKp)
+
+                if state.currentPath[0] == agtPos and len(state.currentPath) > 1:
+                    agtKp = state.currentPath[1]
+                # dist = manha_dist(agtPos, state.currentPath[0])
+                # GTemp.add_edge(agtPos, state.currentPath[0], weight=dist)
+                # dist = manha_dist(agtPos, state.currentPath[1])
+                # GTemp.add_edge(agtPos, state.currentPath[1], weight=dist)
+
+                dist = manha_dist(agtPos, agtKp)
+                GTemp.add_edge(agtPos, agtKp, weight=dist)
+                GTemp.add_edge(agtKp, agtPos, weight=dist)
+                #println(agtKp, agtPos)
+
+                dist = manha_dist(boxPos, boxKp)
+                GTemp.add_edge(boxPos, boxKp, weight=dist)
+                GTemp.add_edge(boxKp, boxPos, weight=dist)
+
+                if len(state.currentPath) > 1:
+                    dist = manha_dist(state.currentPath[-2], goalPos)
+                    GTemp.add_edge(state.currentPath[-2], goalPos, weight=dist)
+                else:
+                    dist = manha_dist(state.currentPath[0], goalPos)
+                    GTemp.add_edge(state.currentPath[0], goalPos, weight=dist)
+                # dist = manha_dist(agtPos, boxPos)
+                # GTemp.add_edge(agtPos, boxPos, weight=dist)
+
+                #self.draw(GTemp)
                 # TODO do some magic for endPos
-                length, path = nx.bidirectional_dijkstra(GTemp, agtPos, goalPos)
+                #println("is neighbor", agtPos, agtKp, boxPos, boxKp, goalPos, goalKp)
+                if abs(agtPos[0] - boxPos[0]) + abs(agtPos[1] - boxPos[1]) == 1:
+                    #println("is neighbor")
+                    lengthBox, pathBox = 0, []
+                    
+                    # TODO try and fix this
+                    boxKp = agtKp
+                    GTemp.add_edge(boxPos, boxKp, weight=dist)
+                else:
+                    pass
+                lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, agtPos, boxKp)
+                lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, boxPos, goalPos)
+                #println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
+                #println(agtKp, agtPos, boxKp, boxPos, goalKp, goalPos)
+                
+                state.prevKeypoints = [agtKp, boxKp, goalKp]
+                
+                # println(lengthBox,lengthGoal, pathBox, pathGoal)
+                length = lengthBox + lengthGoal
+                path = pathBox[1::] + pathGoal[2::]
             else:
                 
                 #println(agtPos, endPos)
                 agtKp, boxKp, goalKp = self.findBestKeyPoint(agtPos, boxPos, goalPos)
-                #println(agtPos, state.currentPath)
+                state.prevKeypoints = [agtKp, boxKp, goalKp]
+
                 dist = manha_dist(agtPos, agtKp)
-                #println(corner1, corner2, dist)
                 GTemp.add_edge(agtPos, agtKp, weight=dist)
+
                 dist = manha_dist(goalKp, goalPos)
-                #println(corner1, corner2, dist)
                 GTemp.add_edge(goalKp, goalPos, weight=dist)
 
-                length, path = nx.bidirectional_dijkstra(GTemp, agtPos, goalPos)
+                dist = manha_dist(boxKp, boxPos)
+                GTemp.add_edge(boxKp, boxPos, weight=dist)
+                GTemp.add_edge(boxPos, boxKp, weight=dist)
+                
+                lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, agtPos, boxKp)
+                lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, boxPos, goalPos)
+                length = lengthBox + lengthGoal
+                path = pathBox[1::] + pathGoal[2::]
             # TODO Maybe check if initpos is in keypoint, if it is, keep first path element, 
             # otherwise remove it
             
             #println(state)
-            # println(length, path)
+            
             
             state.currentPath = path
             state.h = length
             state.f = state.h*2 + state.g
-            #self.draw(GTemp)
+            #println(state, state.h, state.g, state.f)
+            
             del GTemp
             #println(state.h, state.f, state.g)
 

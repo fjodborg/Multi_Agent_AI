@@ -21,7 +21,9 @@ class BestFirstSearch(ABC):
 
     def get_and_remove_leaf(self):
         """Depend on the heuristic method."""
+
         self.leaf = self.frontier.get()[2]
+        # println(self.leaf, self.leaf.h, self.leaf.g, self.leaf.f)
 
     @abstractmethod
     def explore_and_add(self):
