@@ -6,7 +6,7 @@ from typing import Callable
 from heuristics import EasyRule
 from multi_sokoban import actions
 
-# from utils import println
+from utils import println
 
 
 class BestFirstSearch(ABC):
@@ -22,6 +22,8 @@ class BestFirstSearch(ABC):
     def get_and_remove_leaf(self):
         """Depend on the heuristic method."""
         self.leaf = self.frontier.get()[2]
+        println(self.leaf)
+        println("leaf ", self.leaf.f, self.leaf.h, self.leaf.g)
 
     @abstractmethod
     def explore_and_add(self):
@@ -61,9 +63,10 @@ class aStarSearch(BestFirstSearch):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         self.heuristic(explored_states)
-
+        #println(" ")
         for state in explored_states:
             self.count += 1
+            #println(self.count, state.f, state.h, state.g)
             self.frontier.put((state.f, self.count, state))
 
     def __str__(self):
