@@ -25,3 +25,4 @@ def enum(**named_values):
 
 
 STATUS = enum(ok="Ok", fail="Failed", init="Initialized")
+HEADER = enum(share="SHARE", update="UPDATE", replan="REPLAN", corrupt="CORRUPT")
