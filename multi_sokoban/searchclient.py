@@ -31,7 +31,7 @@ class SearchClient:
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
         self._strategy = None
-        self.heuristic =  dGraph(self.initial_state)
+        self.heuristic = dGraph(self.initial_state)
         self.add_strategy(strategy)
 
     @property
