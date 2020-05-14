@@ -18,7 +18,6 @@ class BestFirstSearch(ABC):
         self.leaf = init_state
         self.count = 0
         self.heuristic = heuristic if heuristic else EasyRule()
-        self.heuristic(self.leaf)
 
     def get_and_remove_leaf(self):
         """Depend on the heuristic method."""
