@@ -4,7 +4,7 @@ from typing import Callable, List
 
 from .actions import StateInit
 from .bdi import Agent, Message
-from .heuristics import EasyRule, dGraph
+from .heuristics import dGraph
 from .resultsharing import Resultsharing
 from .strategy import BestFirstSearch
 from .utils import HEADER, STATUS, println
@@ -48,12 +48,12 @@ class Manager:
         self.top_problem = top_problem
         self.strategy = strategy
         self.agents = {}
-        self.heuristic = heuristic if heuristic else EasyRule()
+        self.heuristic = heuristic if heuristic else dGraph(top_problem)
         self.solutions = None
         self.nodes_explored = 0
         self.paths = {}
         self.inbox = []
-        
+
 
     def run(self) -> List:
         """Perform the task sharing."""

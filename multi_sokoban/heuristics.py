@@ -496,19 +496,40 @@ class dGraph(Heuristics):
 
         length = None
         for state in states:
-            # TODO make it work for multiple boxes and goals, not just the first one
-            agtPos = list(state.agents.values())[0][0][0]
-            boxPos = list(state.boxes.values())[0][0][0]
-            goalPos = list(state.goals.values())[0][0][0]
+            # Subproblems just have one agent
+            agt_pos, color = list(state.agents.values())[0][0]
+            length_boxes = 0
+            length_goals = 0
+            for goal, v in state.goals.items():
+                goal_pos, goal_color = v[0]
 
-            # (State, partsToSolve)
-            self.initializeGraphAttributes(state, [[agtPos, boxPos], [boxPos, goalPos]])
+                if color != goal_color:
+                    continue
 
-            # (State, partIndex)
-            lengthBox = self.findPathPart(state, 0)
-            lengthGoal = self.findPathPart(state, 1)
+                box_poses = [
+                    p_c[0][0]
+                    for box, p_c in state.boxes.items()
+                    if box.lower() == goal
+                ]
 
-            length = lengthBox + lengthGoal*1.5
+                if any(goal_pos == box_pos for box_pos in box_poses):
+                    continue
+
+                # (State, partsToSolve)
+                this_boxes = []
+                this_goals = []
+                for box_pos in box_poses:
+                    self.initializeGraphAttributes(
+                        state, [[agt_pos, box_pos], [box_pos, goal_pos]]
+                    )
+
+                    # (State, partIndex)
+                    this_boxes.append(self.findPathPart(state, 0))
+                    this_goals.append(self.findPathPart(state, 1))
+                length_boxes += min(this_boxes)
+                length_goals += min(this_goals)
+
+            length = length_boxes*10 + length_goals
             state.h = length
             state.f = state.h * 2 + state.g
             # println(state, state.h, state.g, state.f)
