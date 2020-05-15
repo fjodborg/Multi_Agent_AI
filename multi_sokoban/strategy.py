@@ -23,7 +23,7 @@ class BestFirstSearch(ABC):
         """Depend on the heuristic method."""
 
         self.leaf = self.frontier.get()[2]
-        # println(self.leaf, self.leaf.h, self.leaf.g, self.leaf.f)
+        println(self.leaf, self.leaf.h, self.leaf.g, self.leaf.f)
 
     @abstractmethod
     def explore_and_add(self):
