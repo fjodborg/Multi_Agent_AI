@@ -32,6 +32,7 @@ class Literals:
             self.f = None
             self.currentPath = None
             self.prevKeypoints = None
+            self.poses = []
             self.explored = set()
         else:
             # if a parent is present!
@@ -51,6 +52,7 @@ class Literals:
             self.t = parent.t + 1
             self.prevKeypoints = copy.deepcopy(parent.prevKeypoints)
             self.currentPath = copy.deepcopy(parent.currentPath)
+            self.poses = []
             self.explored = parent.explored
         super().__init__()
 
