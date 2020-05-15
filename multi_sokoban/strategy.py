@@ -63,10 +63,10 @@ class aStarSearch(BestFirstSearch):
         """Apply the heuristic and update the frontier."""
         explored_states = self.leaf.explore()
         self.heuristic(explored_states)
-        #println(" ")
+        # println(" ")
         for state in explored_states:
             self.count += 1
-            #println(self.count, state.f, state.h, state.g)
+            # println(self.count, state.f, state.h, state.g)
             self.frontier.put((state.f, self.count, state))
 
     def __str__(self):

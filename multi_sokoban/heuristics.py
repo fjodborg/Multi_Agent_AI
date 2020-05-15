@@ -167,7 +167,7 @@ class GoAway(Heuristics):
 
                         for agent_key in agent_keys:
                             agentPos = state.getAgentsByKey(agent_key)[0][0]
-                            agt_box_costs.append(-10*manha_dist(agentPos, box_pos))
+                            agt_box_costs.append(-10 * manha_dist(agentPos, box_pos))
 
                         box_goal_costs.append(manha_dist(box_pos, goal_pos))
 
@@ -182,15 +182,24 @@ class GoAway(Heuristics):
 class dGraph(Heuristics):
     def __init__(self, state: np.array):
         """Initialize object by building the VIS(V,E) graph."""
-        self.dirs = [np.array([0, 1]), np.array([1, 0]), np.array([0, -1]), np.array([-1, 0]), np.array([0, 1]), np.array([1, 0]), np.array([0, -1]), np.array([-1, 0])]
-        #self.weight = weight
+        self.dirs = [
+            np.array([0, 1]),
+            np.array([1, 0]),
+            np.array([0, -1]),
+            np.array([-1, 0]),
+            np.array([0, 1]),
+            np.array([1, 0]),
+            np.array([0, -1]),
+            np.array([-1, 0]),
+        ]
+        # self.weight = weight
         self.cornerSet = []
         self.map = state.map
         self.uniqueCorners = set()
         self.poses = []
         self.graph = self.build_graph(state.map)
-        
-        #self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
+
+        # self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 
     def build_graph(self, map: np.array) -> List:
         explored = set()
@@ -202,7 +211,7 @@ class dGraph(Heuristics):
             explored.add(tuple([rows - 1, col]))
         for row in range(0, rows):
             explored.add(tuple([row, 0]))
-            #explored.add(tuple(np.array([row, cols - 1])))
+            # explored.add(tuple(np.array([row, cols - 1])))
 
         # find contours
         self.cornerSets = []
@@ -212,9 +221,9 @@ class dGraph(Heuristics):
                 pos = np.array([row, col])
                 if map[row, col] == "+":
                     freePos = np.array([row, col - 1])
-                    #println(freePos, tuple(freePos) in explored)
+                    # println(freePos, tuple(freePos) in explored)
                     if map[row, col - 1] != "+" and tuple(pos) not in explored:
-                        #println("first spot", freePos)
+                        # println("first spot", freePos)
                         corners = self.findEdges(freePos, map, explored)
                         if corners:
                             self.cornerSets.append(corners)
@@ -225,15 +234,18 @@ class dGraph(Heuristics):
 
     def draw(self, G):
         import matplotlib.pyplot as plt
-        elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] > 0.5]
-        esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] <= 0.5]
+
+        elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] > 0.5]
+        esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] <= 0.5]
         pos = nx.spring_layout(G)
         nx.draw_networkx_nodes(G, pos, node_size=700)
         nx.draw_networkx_edges(G, pos, edgelist=elarge, width=6)
-        nx.draw_networkx_edges(G, pos, edgelist=esmall, width=6, alpha=0.5, edge_color='b', style='dashed')
+        nx.draw_networkx_edges(
+            G, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
+        )
 
-        nx.draw_networkx_labels(G, pos, font_size=20, font_family='sans-serif')
-        
+        nx.draw_networkx_labels(G, pos, font_size=20, font_family="sans-serif")
+
         plt.show()
 
     def generateGraph(self, map):
@@ -249,22 +261,22 @@ class dGraph(Heuristics):
 
         self.uniqueCorners = list(self.uniqueCorners)
 
-
         # TODO fix order of corners
-        cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:] 
+        cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:]
         println(cornerSets)
 
-        #G = nx.DiGraph()
-
+        # G = nx.DiGraph()
 
         G = nx.DiGraph()
-        
+
         for corners in cornerSets:
             for i in range(len(corners) - 1):
                 if not np.array_equal(corners[i], corners[i + 1]):
                     corner1 = corners[i]
-                    corner2 = corners[i+1]
-                    dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
+                    corner2 = corners[i + 1]
+                    dist = manha_dist(
+                        (corner1[0], corner1[1]), (corner2[0], corner2[1])
+                    )
                     println(corner1, corner2, dist)
                     G.add_edge(corner1, corner2, weight=dist)
                     G.add_edge(corner2, corner1, weight=dist)
@@ -278,18 +290,18 @@ class dGraph(Heuristics):
         corners.append(tuple(cornerPos))
         return True
 
-    def addCorner(self, map, newPos, pos, dir, prevDir, explored, corners): 
+    def addCorner(self, map, newPos, pos, dir, prevDir, explored, corners):
         if map[tuple(newPos)] != "+" and tuple(newPos) not in explored:
-            #tempExplored.add(tuple(newPos))
+            # tempExplored.add(tuple(newPos))
             cornerType = dir - prevDir
             if cornerType == -1:
-                #println(pos, cornerType)
+                # println(pos, cornerType)
                 self.checkAndAddCorner(map, corners, pos)
-            
-            #println("moving here:", (newPos, prevDir, dir))
+
+            # println("moving here:", (newPos, prevDir, dir))
             return True
         elif map[tuple(newPos)] == "+":
-            #println("wall added", tuple(newPos))
+            # println("wall added", tuple(newPos))
             explored.add(tuple(newPos))
         return False
 
@@ -297,14 +309,14 @@ class dGraph(Heuristics):
         dir = -1
         prevDir = dir + 1
         pos = initPos
-        corners = []     
+        corners = []
         initDir = -999
         newPos = None
         isDone = False
         # TODO add a new corner here probably
         while not isDone:
             for j in range(0, 4):
-                dir = (dir + 1)
+                dir = dir + 1
                 newPos = pos + self.dirs[dir]
                 if self.addCorner(map, newPos, pos, dir, prevDir, explored, corners):
                     prevDir = dir % 4  # 4 directions
@@ -314,40 +326,44 @@ class dGraph(Heuristics):
                     if initDir == -999:
                         initDir = prevDir
                     break
-            dir = (prevDir - 2) 
-        
+            dir = prevDir - 2
+
         return corners
 
     def getValidKeypoint(self, map, pos, kp, validKps):
-        
+
         tempPos = np.array(pos)
-        #println("keypoint:", kp, pos)
-        diff = (np.array(tempPos) - kp)
+        # println("keypoint:", kp, pos)
+        diff = np.array(tempPos) - kp
         dir = [0, 0]
-        if diff[0] < 0: dir[0] = 1
-        else: dir[0] = -1
+        if diff[0] < 0:
+            dir[0] = 1
+        else:
+            dir[0] = -1
 
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
             if map[tuple(tempPos)] == "+":
                 return None
 
-        if diff[1] < 0: dir[1] = 1
-        else: dir[1] = -1
+        if diff[1] < 0:
+            dir[1] = 1
+        else:
+            dir[1] = -1
 
         while tempPos[1] != kp[1]:
             tempPos[1] += dir[1]
-            #println(tempPos)
+            # println(tempPos)
             if map[tuple(tempPos)] == "+":
                 validKp = False
                 return None
 
         # TODO, if it passes a corner point skip to next
 
-        #println("best keypoint for pos", pos,"is:", kp)
+        # println("best keypoint for pos", pos,"is:", kp)
         validKps.append(tuple(kp))
         # return kp
-        
+
     def findBestKeyPoint(self, pos):
         # TODO optimize this!
         # By nature of how the corners are generated the nearst point, if reachable
@@ -355,18 +371,18 @@ class dGraph(Heuristics):
         # between the pos and keypoint
         map = self.map
         corners = np.asarray(self.uniqueCorners)
-        #println(list([np.linalg.norm(pos - kp, 1), kp] for kp in corners))
+        # println(list([np.linalg.norm(pos - kp, 1), kp] for kp in corners))
         sortedKp = sorted(corners, key=lambda kp: np.linalg.norm(pos - kp, 1))
-        #println(pos)
+        # println(pos)
         validKps = []
         for kp in sortedKp:
             self.getValidKeypoint(map, pos, kp, validKps)
             if len(validKps) >= 4:
                 break
-                
-        #println(validKps)
-        
-        #import sys; sys.exit()
+
+        # println(validKps)
+
+        # import sys; sys.exit()
 
         # TODO make a hash of each position but only once?
         # TODO Check if is valid by go E to see if wall
@@ -374,10 +390,10 @@ class dGraph(Heuristics):
         # if wall, go W until wall or Keypoint
         # if wall, go N until wall or Keypoint
         # if wall, go E and if same position as first, use other heuristic
-        
+
         return list(validKps)  # sort by age
-        
-        #return sorted(corners, key=lambda p: p)
+
+        # return sorted(corners, key=lambda p: p)
 
     def findPathPart(self, state, pathId):
         # (State, pathIndex)
@@ -393,19 +409,24 @@ class dGraph(Heuristics):
         GTemp = copy.deepcopy(self.graph)
         startPos, endPos = self.poses[pathId]
         #  println(" start", startPos,endPos, state.currentPath, startId, endId)
-        if state.currentPath[pathId] is not None:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
+        if (
+            state.currentPath[pathId] is not None
+        ):  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
             # TODO don't re calculate the path
             # TODO do the same at the endPoint
             startKps, endKps = state.prevKeypoints[pathId]
             # println(endKps, startKps)
             # println(state.currentPath)
-            #println(startKp, boxKp, goalKp)
-            #println(state.currentPath.index(startKp), boxKp, goalKp)
+            # println(startKp, boxKp, goalKp)
+            # println(state.currentPath.index(startKp), boxKp, goalKp)
 
-            if len(state.currentPath[pathId]) > 2 and state.currentPath[pathId][1] == startPos:
+            if (
+                len(state.currentPath[pathId]) > 2
+                and state.currentPath[pathId][1] == startPos
+            ):
                 startKps = [state.currentPath[pathId][1], state.currentPath[pathId][2]]
             if len(state.currentPath[pathId]) == 2:
-                #println(endPos, startKps)
+                # println(endPos, startKps)
                 startKps.append(endPos)
 
             # dist = manha_dist(startPos, state.currentPath[0])
@@ -416,8 +437,8 @@ class dGraph(Heuristics):
             for kp in startKps:
                 dist = manha_dist(startPos, kp)
                 GTemp.add_edge(startPos, kp, weight=dist)
-            #GTemp.add_edge(startKp, startPos, weight=dist)
-            #println(startKp, startPos)
+            # GTemp.add_edge(startKp, startPos, weight=dist)
+            # println(startKp, startPos)
 
             for kp in endKps:
                 dist = manha_dist(endPos, kp)
@@ -426,17 +447,17 @@ class dGraph(Heuristics):
             # TODO do some magic for endPos
             # println("is neighbor", startPos, startKp, endPos, boxKp, goalPos, goalKp)
             # println("if", startPos, startKps, endPos, endKps)
-            #self.draw(GTemp)
+            # self.draw(GTemp)
             length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
-            
-            #println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
-            #println(startKp, startPos, boxKp, endPos, goalKp, goalPos)
+
+            # println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
+            # println(startKp, startPos, boxKp, endPos, goalKp, goalPos)
             state.prevKeypoints[pathId] = [startKps, endKps]
-            
+
             # println(lengthBox,lengthGoal, pathBox, pathGoal)
         else:
-            
-            #println(startPos, endPos)
+
+            # println(startPos, endPos)
             startKps = self.findBestKeyPoint(startPos)
             endKps = self.findBestKeyPoint(endPos)
             # println(startKps, endKps)
@@ -450,12 +471,12 @@ class dGraph(Heuristics):
             for kp in endKps:
                 dist = manha_dist(kp, endPos)
                 GTemp.add_edge(kp, endPos, weight=dist)
-            #GTemp.add_edge(endPos, endKp, weight=dist)
-            
+            # GTemp.add_edge(endPos, endKp, weight=dist)
+
             # self.draw(GTemp)
-            #println("else", startPos, startKps, endPos, endKps)
+            # println("else", startPos, startKps, endPos, endKps)
             length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
-            
+
         del GTemp
         state.currentPath[pathId] = path
         return length  # path[1:-1]
@@ -489,5 +510,5 @@ class dGraph(Heuristics):
 
             length = lengthBox + lengthGoal
             state.h = length
-            state.f = state.h*2 + state.g
-            #println(state, state.h, state.g, state.f)
+            state.f = state.h * 2 + state.g
+            # println(state, state.h, state.g, state.f)
