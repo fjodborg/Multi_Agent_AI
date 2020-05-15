@@ -187,6 +187,7 @@ class dGraph(Heuristics):
         self.cornerSet = []
         self.map = state.map
         self.uniqueCorners = set()
+        self.poses = []
         self.graph = self.build_graph(state.map)
         
         #self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
@@ -272,8 +273,6 @@ class dGraph(Heuristics):
 
         return G
 
-
-
     def checkAndAddCorner(self, map, corners, cornerPos):
         if map[tuple(cornerPos)] == "+":
             return False
@@ -320,7 +319,7 @@ class dGraph(Heuristics):
         
         return corners
 
-    def closestValidNode(self, pos):
+    def findBestKeyPoint(self, pos):
         # TODO optimize this!
         # By nature of how the corners are generated the nearst point, if reachable
         # will always be reachable from all directions minimizing the distance
@@ -331,7 +330,6 @@ class dGraph(Heuristics):
         sortedKp = sorted(corners, key=lambda kp: np.linalg.norm(pos - kp, 1))
         println(pos)
         
-
         for kp in sortedKp:
             validKp = True
             tempPos = copy.copy(pos)
@@ -364,24 +362,100 @@ class dGraph(Heuristics):
                 break
         
         #import sys; sys.exit()
-        return tuple(kp)  # sort by age
-        
-        #return sorted(corners, key=lambda p: p)
 
-    def findBestKeyPoint(self, agtPos, boxPos, goalPos):
         # TODO make a hash of each position but only once?
         # TODO Check if is valid by go E to see if wall
         # if wall, go S until wall or Keypoint
         # if wall, go W until wall or Keypoint
         # if wall, go N until wall or Keypoint
         # if wall, go E and if same position as first, use other heuristic
-        agtKp = self.closestValidNode(np.asarray(agtPos))
-        boxKp = self.closestValidNode(np.asarray(boxPos))
-        goalKp = self.closestValidNode(np.asarray(goalPos))
-        #println(self.uniqueCorners, agtKp, boxKp, goalKp)
+        
 
-        # println(self.uniqueCorners)
-        return agtKp, boxKp, goalKp  # tuple([3, 1]), None, tuple([1, 6])
+        return tuple(kp)  # sort by age
+        
+        #return sorted(corners, key=lambda p: p)
+
+    def findPathPart(self, state, startPos, endPos, kpSet):
+        # TODO when calculating new dijkstras maybe just look at the changing parts
+        # TODO make it work for more boxes and goals
+        # TODO test performace difference between deepcopy and copy
+        GTemp = copy.deepcopy(self.graph)
+        #println(startPos,endPos,goalPos, state.currentPath)
+        if state.currentPath:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
+            # TODO don't re calculate the path
+            # TODO do the same at the endPoint
+            startKp, boxKp, goalKp = state.prevKeypoints[kpSet]
+
+            println(state.currentPath)
+            #println(startKp, boxKp, goalKp)
+            #println(state.currentPath.index(startKp), boxKp, goalKp)
+
+            if state.currentPath[0] == startPos and len(state.currentPath) > 1:
+                startKp = state.currentPath[1]
+            # dist = manha_dist(startPos, state.currentPath[0])
+            # GTemp.add_edge(startPos, state.currentPath[0], weight=dist)
+            # dist = manha_dist(startPos, state.currentPath[1])
+            # GTemp.add_edge(startPos, state.currentPath[1], weight=dist)
+
+            dist = manha_dist(startPos, startKp)
+            GTemp.add_edge(startPos, startKp, weight=dist)
+            GTemp.add_edge(startKp, startPos, weight=dist)
+            #println(startKp, startPos)
+
+            dist = manha_dist(endPos, boxKp)
+            GTemp.add_edge(endPos, boxKp, weight=dist)
+            GTemp.add_edge(boxKp, endPos, weight=dist)
+
+            if len(state.currentPath) > 1:
+                dist = manha_dist(state.currentPath[-2], goalPos)
+                GTemp.add_edge(state.currentPath[-2], goalPos, weight=dist)
+            else:
+                dist = manha_dist(state.currentPath[0], goalPos)
+                GTemp.add_edge(state.currentPath[0], goalPos, weight=dist)
+            # dist = manha_dist(startPos, endPos)
+            # GTemp.add_edge(startPos, endPos, weight=dist)
+
+            # TODO do some magic for endPos
+            println("is neighbor", startPos, startKp, endPos, boxKp, goalPos, goalKp)
+            if abs(startPos[0] - endPos[0]) + abs(startPos[1] - endPos[1]) == 1:
+                #println("is neighbor")
+                lengthBox, pathBox = 0, []
+                
+                # TODO try and fix this
+                boxKp = startKp
+                GTemp.add_edge(endPos, boxKp, weight=dist)
+            lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, startPos, boxKp)
+            lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, endPos, goalPos)
+            println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
+            #self.draw(GTemp)
+            #println(startKp, startPos, boxKp, endPos, goalKp, goalPos)
+            
+            state.prevKeypoints = [startKp, boxKp, goalKp]
+            
+            # println(lengthBox,lengthGoal, pathBox, pathGoal)
+        else:
+            
+            #println(startPos, endPos)
+            startKp = self.findBestKeyPoint(startPos)
+            endKp = self.findBestKeyPoint(endPos)
+            state.prevKeypoints = [startKp, boxKp, goalKp]
+
+            dist = manha_dist(startPos, startKp)
+            GTemp.add_edge(startPos, startKp, weight=dist)
+
+            dist = manha_dist(goalKp, goalPos)
+            GTemp.add_edge(goalKp, goalPos, weight=dist)
+
+            dist = manha_dist(boxKp, endPos)
+            GTemp.add_edge(boxKp, endPos, weight=dist)
+            GTemp.add_edge(endPos, boxKp, weight=dist)
+            
+            lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, startPos, boxKp)
+            lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, endPos, goalPos)
+        
+        del GTemp
+        return lengthBox, lengthGoal, pathBox[1::], pathGoal[2::]
+
 
     def findPaths(self, state, agtPos, boxPos, goalPos):
         # TODO when calculating new dijkstras maybe just look at the changing parts
@@ -444,7 +518,9 @@ class dGraph(Heuristics):
         else:
             
             #println(agtPos, endPos)
-            agtKp, boxKp, goalKp = self.findBestKeyPoint(agtPos, boxPos, goalPos)
+            agtKp = self.findBestKeyPoint(agtPos)
+            boxKp = self.findBestKeyPoint(boxPos)
+            goalKp = self.findBestKeyPoint(goalPos)
             state.prevKeypoints = [agtKp, boxKp, goalKp]
 
             dist = manha_dist(agtPos, agtKp)
@@ -470,16 +546,20 @@ class dGraph(Heuristics):
         if len(states) == 0:
             return None
 
+        self.poses = []
 
         length = None
         G = self.graph
         for state in states:
-            agtPos = (list(state.agents.values())[0][0][0])
-            boxPos = (list(state.boxes.values())[0][0][0])
-            goalPos = (list(state.goals.values())[0][0][0])
+            self.poses.append(list(state.agents.values())[0][0][0])
+            self.poses.append(list(state.boxes.values())[0][0][0])
+            self.poses.append(list(state.goals.values())[0][0][0])
             
             lengthBox, lengthGoal, pathBox, pathGoal = self.findPaths(state, agtPos, boxPos, goalPos)
-            
+            #lengthBox, pathBox = self.findPathPart(state, [0, 1]])
+            #lengthGoal, pathGoal = self.findPathPart(state, [1, 2])
+
+
             length = lengthBox + lengthGoal
             path = pathBox + pathGoal
             
