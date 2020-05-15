@@ -508,7 +508,7 @@ class dGraph(Heuristics):
             lengthBox = self.findPathPart(state, 0)
             lengthGoal = self.findPathPart(state, 1)
 
-            length = lengthBox + lengthGoal
+            length = lengthBox + lengthGoal*1.5
             state.h = length
             state.f = state.h * 2 + state.g
             # println(state, state.h, state.g, state.f)
