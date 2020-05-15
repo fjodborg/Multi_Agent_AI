@@ -261,6 +261,8 @@ class Agent:
         concurrent = {}
         for event in time:
             pos = event[1]
+            if pos is None:
+                concurrent[event[0]] = {box: [None, index]}
             if curr_pos[0] != pos[0] or curr_pos[1] != pos[1]:
                 curr_pos = pos
                 concurrent[event[0]] = {box: [pos, index]}
@@ -361,7 +363,7 @@ class Agent:
             name, pos, color, index = box
             for agent_pos in agent_trace:
                 if self.task.Neighbour(pos, agent_pos):
-                    return "C", color, index
+                    return name, color, index
 
     def search(self, strategy: BestFirstSearch) -> List:
         """Search function.
