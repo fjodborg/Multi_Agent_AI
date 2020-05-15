@@ -192,7 +192,6 @@ class dGraph(Heuristics):
         
         #self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 
-
     def build_graph(self, map: np.array) -> List:
         explored = set()
 
@@ -349,7 +348,6 @@ class dGraph(Heuristics):
         validKps.append(tuple(kp))
         # return kp
         
-
     def findBestKeyPoint(self, pos):
         # TODO optimize this!
         # By nature of how the corners are generated the nearst point, if reachable
@@ -382,7 +380,7 @@ class dGraph(Heuristics):
         #return sorted(corners, key=lambda p: p)
 
     def findPathPart(self, state, pathId):
-        # (State, startIndex, endIndex, pathIndex)
+        # (State, pathIndex)
         # TODO when calculating new dijkstras maybe just look at the changing parts
         # TODO make it work for more boxes and goals
         # TODO test performace difference between deepcopy and copy
@@ -462,6 +460,12 @@ class dGraph(Heuristics):
         state.currentPath[pathId] = path
         return length  # path[1:-1]
 
+    def initializeGraphAttributes(self, state, parts):
+        self.poses = parts
+        if state.currentPath is None:
+            state.currentPath = [None] * len(self.poses)
+            state.prevKeypoints = [None] * len(self.poses)
+
     def __call__(self, states: List):
         """Calculate heuristic for states in place."""
         if type(states) is not list:
@@ -469,66 +473,21 @@ class dGraph(Heuristics):
         if len(states) == 0:
             return None
 
-
         length = None
-        G = self.graph
         for state in states:
             # TODO make it work for multiple boxes and goals, not just the first one
             agtPos = list(state.agents.values())[0][0][0]
             boxPos = list(state.boxes.values())[0][0][0]
             goalPos = list(state.goals.values())[0][0][0]
-            self.poses = [[agtPos, boxPos], [boxPos, goalPos]]
-            if state.currentPath is None:
-                state.currentPath = [None] * len(self.poses)
-                state.prevKeypoints = [None] * len(self.poses)
 
-            # (State, startIndex, endIndex, pathIndex)
+            # (State, partsToSolve)
+            initializeGraphAttributes(state, [[agtPos, boxPos], [boxPos, goalPos]])
+
+            # (State, partIndex)
             lengthBox = self.findPathPart(state, 0)
             lengthGoal = self.findPathPart(state, 1)
-
-            # println(lengthBox, lengthGoal, state.currentPath)
-            
 
             length = lengthBox + lengthGoal
             state.h = length
             state.f = state.h*2 + state.g
             #println(state, state.h, state.g, state.f)
-            
-            
-            #println(state.h, state.f, state.g)
-
-        # import sys; sys.exit()
-
-        # for state in states:
-        #     box_goal_cost = 0
-        #     agt_box_cost = 0
-        #     agt_box_costs = []
-        #     for key in state.getGoalKeys():
-        #         goal_params = state.getGoalsByKey(key)
-        #         box_params = state.getBoxesByKey(key)
-        #         # maybe add some temporary costs here for each key
-
-        #         # find every position of goals and boxes with the given key
-        #         for goal_pos, goal_color in goal_params:
-        #             box_goal_costs = []
-        #             for box_pos, _ in box_params:
-        #                 # only take agents with the same color as goalColor
-        #                 if goal_color in state.agentColor:
-        #                     agent_keys = state.getAgentsByColor(goal_color)
-
-        #                     if manha_dist(goal_pos, box_pos) == 0:
-        #                         continue
-
-        #                     for agent_key in agent_keys:
-        #                         agentPos = state.getAgentsByKey(agent_key)[0][0]
-        #                         agt_box_costs.append(manha_dist(agentPos, box_pos))
-
-        #                 box_goal_costs.append(manha_dist(box_pos, goal_pos))
-
-        #             if len(box_goal_costs) > 0:
-        #                 box_goal_cost += min(box_goal_costs)
-        #         if len(agt_box_costs) > 0:
-        #             agt_box_cost += sum(agt_box_costs)
-
-        #     state.h = box_goal_cost + agt_box_cost
-        #     state.f = state.h * 5 + state.g
