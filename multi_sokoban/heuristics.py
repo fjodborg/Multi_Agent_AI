@@ -502,7 +502,7 @@ class dGraph(Heuristics):
             goalPos = list(state.goals.values())[0][0][0]
 
             # (State, partsToSolve)
-            initializeGraphAttributes(state, [[agtPos, boxPos], [boxPos, goalPos]])
+            self.initializeGraphAttributes(state, [[agtPos, boxPos], [boxPos, goalPos]])
 
             # (State, partIndex)
             lengthBox = self.findPathPart(state, 0)
