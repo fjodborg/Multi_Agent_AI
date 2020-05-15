@@ -187,6 +187,7 @@ class dGraph(Heuristics):
         self.cornerSet = []
         self.map = state.map
         self.uniqueCorners = set()
+        self.poses = []
         self.graph = self.build_graph(state.map)
         
         #self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
@@ -365,7 +366,7 @@ class dGraph(Heuristics):
             if len(validKps) >= 4:
                 break
                 
-        println(validKps)
+        #println(validKps)
         
         #import sys; sys.exit()
 
@@ -376,28 +377,39 @@ class dGraph(Heuristics):
         # if wall, go N until wall or Keypoint
         # if wall, go E and if same position as first, use other heuristic
         
-        return tuple(validKps)  # sort by age
+        return list(validKps)  # sort by age
         
         #return sorted(corners, key=lambda p: p)
 
-    def findPathPart(self, state, startId, endId):
+    def findPathPart(self, state, pathId):
+        # (State, startIndex, endIndex, pathIndex)
         # TODO when calculating new dijkstras maybe just look at the changing parts
         # TODO make it work for more boxes and goals
         # TODO test performace difference between deepcopy and copy
+
+        # TODO TODO TODO only recalculate new parts of the shorest path. e.g.
+        # calculate the distance from pos to Kp, and then simply calculate the distance from
+        # Kp to Kp and add them together
+        # maybe precalculate every keypoint?
+
         GTemp = copy.deepcopy(self.graph)
-        startPos, endPos = state.poses[startId], state.poses[endId]
-        #println(startPos,endPos,goalPos, state.currentPath)
-        if state.currentPath:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
+        startPos, endPos = self.poses[pathId]
+        #  println(" start", startPos,endPos, state.currentPath, startId, endId)
+        if state.currentPath[pathId] is not None:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
             # TODO don't re calculate the path
             # TODO do the same at the endPoint
-            startKps, endKps = state.prevKeypoints[startId], state.prevKeypoints[endId]
-
-            #println(state.currentPath)
+            startKps, endKps = state.prevKeypoints[pathId]
+            # println(endKps, startKps)
+            # println(state.currentPath)
             #println(startKp, boxKp, goalKp)
             #println(state.currentPath.index(startKp), boxKp, goalKp)
 
-            if len(state.currentPath) > 2 and state.currentPath[1] == startPos:
-                startKps = state.currentPath[1], state.currentPath[2]
+            if len(state.currentPath[pathId]) > 2 and state.currentPath[pathId][1] == startPos:
+                startKps = [state.currentPath[pathId][1], state.currentPath[pathId][2]]
+            if len(state.currentPath[pathId]) == 2:
+                #println(endPos, startKps)
+                startKps.append(endPos)
+
             # dist = manha_dist(startPos, state.currentPath[0])
             # GTemp.add_edge(startPos, state.currentPath[0], weight=dist)
             # dist = manha_dist(startPos, state.currentPath[1])
@@ -409,27 +421,19 @@ class dGraph(Heuristics):
             #GTemp.add_edge(startKp, startPos, weight=dist)
             #println(startKp, startPos)
 
-            
-
             for kp in endKps:
                 dist = manha_dist(endPos, kp)
                 GTemp.add_edge(kp, endPos, weight=dist)
 
             # TODO do some magic for endPos
             # println("is neighbor", startPos, startKp, endPos, boxKp, goalPos, goalKp)
-            #println("if", startPos, startKps, endPos, endKps)
+            # println("if", startPos, startKps, endPos, endKps)
             #self.draw(GTemp)
-            if len(startKps) > 1 and startKps[0] == startKps[1]:
-                length = 0
-                path = []
-            else:
-                length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
+            length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
             
             #println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
             #println(startKp, startPos, boxKp, endPos, goalKp, goalPos)
-            
-            state.prevKeypoints[startId] = startKps
-            state.prevKeypoints[endId] = endKps
+            state.prevKeypoints[pathId] = [startKps, endKps]
             
             # println(lengthBox,lengthGoal, pathBox, pathGoal)
         else:
@@ -437,9 +441,10 @@ class dGraph(Heuristics):
             #println(startPos, endPos)
             startKps = self.findBestKeyPoint(startPos)
             endKps = self.findBestKeyPoint(endPos)
-            state.prevKeypoints[startId] = startKps
-            state.prevKeypoints[endId] = endKps
-            
+            # println(startKps, endKps)
+            state.prevKeypoints[pathId] = [startKps, endKps]
+            # println(state.prevKeypoints, endKps)
+
             for kp in startKps:
                 dist = manha_dist(startPos, kp)
                 GTemp.add_edge(startPos, kp, weight=dist)
@@ -454,90 +459,8 @@ class dGraph(Heuristics):
             length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
             
         del GTemp
-        return length, path  # path[1:-1]
-
-
-    def findPaths(self, state, agtPos, boxPos, goalPos):
-        # TODO when calculating new dijkstras maybe just look at the changing parts
-        # TODO make it work for more boxes and goals
-        # TODO test performace difference between deepcopy and copy
-        GTemp = copy.deepcopy(self.graph)
-        #println(agtPos,boxPos,goalPos, state.currentPath)
-        if state.currentPath:  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
-            # TODO don't re calculate the path
-            # TODO do the same at the endPoint
-            agtKp, boxKp, goalKp = state.prevKeypoints
-
-            println(state.currentPath)
-            #println(agtKp, boxKp, goalKp)
-            #println(state.currentPath.index(agtKp), boxKp, goalKp)
-
-            if state.currentPath[0] == agtPos and len(state.currentPath) > 1:
-                agtKp = state.currentPath[1]
-            # dist = manha_dist(agtPos, state.currentPath[0])
-            # GTemp.add_edge(agtPos, state.currentPath[0], weight=dist)
-            # dist = manha_dist(agtPos, state.currentPath[1])
-            # GTemp.add_edge(agtPos, state.currentPath[1], weight=dist)
-
-            dist = manha_dist(agtPos, agtKp)
-            GTemp.add_edge(agtPos, agtKp, weight=dist)
-            GTemp.add_edge(agtKp, agtPos, weight=dist)
-            #println(agtKp, agtPos)
-
-            dist = manha_dist(boxPos, boxKp)
-            GTemp.add_edge(boxPos, boxKp, weight=dist)
-            GTemp.add_edge(boxKp, boxPos, weight=dist)
-
-            if len(state.currentPath) > 1:
-                dist = manha_dist(state.currentPath[-2], goalPos)
-                GTemp.add_edge(state.currentPath[-2], goalPos, weight=dist)
-            else:
-                dist = manha_dist(state.currentPath[0], goalPos)
-                GTemp.add_edge(state.currentPath[0], goalPos, weight=dist)
-            # dist = manha_dist(agtPos, boxPos)
-            # GTemp.add_edge(agtPos, boxPos, weight=dist)
-
-            # TODO do some magic for endPos
-            println("is neighbor", agtPos, agtKp, boxPos, boxKp, goalPos, goalKp)
-            if abs(agtPos[0] - boxPos[0]) + abs(agtPos[1] - boxPos[1]) == 1:
-                #println("is neighbor")
-                lengthBox, pathBox = 0, []
-                
-                # TODO try and fix this
-                boxKp = agtKp
-                GTemp.add_edge(boxPos, boxKp, weight=dist)
-            lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, agtPos, boxKp)
-            lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, boxPos, goalPos)
-            println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
-            #self.draw(GTemp)
-            #println(agtKp, agtPos, boxKp, boxPos, goalKp, goalPos)
-            
-            state.prevKeypoints = [agtKp, boxKp, goalKp]
-            
-            # println(lengthBox,lengthGoal, pathBox, pathGoal)
-        else:
-            
-            #println(agtPos, endPos)
-            agtKp = self.findBestKeyPoint(agtPos)
-            boxKp = self.findBestKeyPoint(boxPos)
-            goalKp = self.findBestKeyPoint(goalPos)
-            state.prevKeypoints = [agtKp, boxKp, goalKp]
-
-            dist = manha_dist(agtPos, agtKp)
-            GTemp.add_edge(agtPos, agtKp, weight=dist)
-
-            dist = manha_dist(goalKp, goalPos)
-            GTemp.add_edge(goalKp, goalPos, weight=dist)
-
-            dist = manha_dist(boxKp, boxPos)
-            GTemp.add_edge(boxKp, boxPos, weight=dist)
-            GTemp.add_edge(boxPos, boxKp, weight=dist)
-            
-            lengthBox, pathBox = nx.bidirectional_dijkstra(GTemp, agtPos, boxKp)
-            lengthGoal, pathGoal = nx.bidirectional_dijkstra(GTemp, boxPos, goalPos)
-        
-        del GTemp
-        return lengthBox, lengthGoal, pathBox[1::], pathGoal[2::]
+        state.currentPath[pathId] = path
+        return length  # path[1:-1]
 
     def __call__(self, states: List):
         """Calculate heuristic for states in place."""
@@ -551,24 +474,22 @@ class dGraph(Heuristics):
         G = self.graph
         for state in states:
             # TODO make it work for multiple boxes and goals, not just the first one
-            state.poses.append(list(state.agents.values())[0][0][0])
-            state.poses.append(list(state.boxes.values())[0][0][0])
-            state.poses.append(list(state.goals.values())[0][0][0])
-            #println(state.poses)
-            if state.prevKeypoints is None:
-                state.prevKeypoints = [None] * len(state.poses)
+            agtPos = list(state.agents.values())[0][0][0]
+            boxPos = list(state.boxes.values())[0][0][0]
+            goalPos = list(state.goals.values())[0][0][0]
+            self.poses = [[agtPos, boxPos], [boxPos, goalPos]]
+            if state.currentPath is None:
+                state.currentPath = [None] * len(self.poses)
+                state.prevKeypoints = [None] * len(self.poses)
 
-            #lengthBox, lengthGoal, pathBox, pathGoal = self.findPaths(state, self.poses[0], self.poses[1], self.poses[2])
-            #println("looking for path of agt->box")
-            lengthBox, pathBox = self.findPathPart(state, 0, 1)
-            #println("looking for path of box->goal")
-            lengthGoal, pathGoal = self.findPathPart(state, 1, 2)
-            #println(lengthBox, pathBox,"\n", lengthGoal, pathGoal)
+            # (State, startIndex, endIndex, pathIndex)
+            lengthBox = self.findPathPart(state, 0)
+            lengthGoal = self.findPathPart(state, 1)
+
+            # println(lengthBox, lengthGoal, state.currentPath)
+            
 
             length = lengthBox + lengthGoal
-            path = pathBox + pathGoal
-            
-            state.currentPath = path
             state.h = length
             state.f = state.h*2 + state.g
             #println(state, state.h, state.g, state.f)
