@@ -262,25 +262,48 @@ class dGraph(Heuristics):
         self.uniqueCorners = list(self.uniqueCorners)
 
         # TODO fix order of corners
-        cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:]
-        println(cornerSets)
-
-        # G = nx.DiGraph()
+        #cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:]
 
         G = nx.DiGraph()
 
+        println(cornerSets)
+
         for corners in cornerSets:
-            for i in range(len(corners) - 1):
-                if not np.array_equal(corners[i], corners[i + 1]):
-                    corner1 = corners[i]
-                    corner2 = corners[i + 1]
-                    dist = manha_dist(
-                        (corner1[0], corner1[1]), (corner2[0], corner2[1])
-                    )
-                    println(corner1, corner2, dist)
-                    G.add_edge(corner1, corner2, weight=dist)
-                    G.add_edge(corner2, corner1, weight=dist)
-                    pass
+            # First position is always at the end
+            for i in range(len(corners)):
+                #println(corners[i - 1], corners[i])
+                if not np.array_equal(corners[i - 1], corners[i]):
+                    if self.getValidKeypoint(map, corners[i - 1], corners[i], []):
+                
+                        corner1 = corners[i - 1]
+                        corner2 = corners[i]
+                        dist = manha_dist(
+                            (corner1[0], corner1[1]), (corner2[0], corner2[1])
+                        )
+                        println(corner1, corner2, dist)
+                        G.add_edge(corner1, corner2, weight=dist)
+                        G.add_edge(corner2, corner1, weight=dist)
+
+        if len(cornerSets) > 2:
+            raise Exception("no edge fusion implemented yet")
+
+        println(cornerSets)
+        # self.draw(G)
+
+        #import sys; sys.exit()
+
+        # for corners in cornerSets:
+        #     for i in range(len(corners) - 1):
+        #         if not np.array_equal(corners[i], corners[i + 1]):
+        #             corner1 = corners[i]
+        #             corner2 = corners[i + 1]
+        #             dist = manha_dist(
+        #                 (corner1[0], corner1[1]), (corner2[0], corner2[1])
+        #             )
+        #             println(corner1, corner2, dist)
+        #             G.add_edge(corner1, corner2, weight=dist)
+        #             G.add_edge(corner2, corner1, weight=dist)
+        #             pass
 
         return G
 
@@ -343,6 +366,7 @@ class dGraph(Heuristics):
 
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
+            #print(tempPos)
             if map[tuple(tempPos)] == "+":
                 return None
 
@@ -353,18 +377,18 @@ class dGraph(Heuristics):
 
         while tempPos[1] != kp[1]:
             tempPos[1] += dir[1]
-            # println(tempPos)
+            #println(tempPos)
             if map[tuple(tempPos)] == "+":
-                validKp = False
                 return None
 
         # TODO, if it passes a corner point skip to next
 
-        # println("best keypoint for pos", pos,"is:", kp)
+        #println("best keypoint for pos", pos,"is:", kp)
         validKps.append(tuple(kp))
+        return True
         # return kp
 
-    def findBestKeyPoint(self, pos):
+    def findBestKeyPoint(self, pos, pos2):
         # TODO optimize this!
         # By nature of how the corners are generated the nearst point, if reachable
         # will always be reachable from all directions minimizing the distance
@@ -379,17 +403,13 @@ class dGraph(Heuristics):
             self.getValidKeypoint(map, pos, kp, validKps)
             if len(validKps) >= 4:
                 break
-
+        
+        if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(np.asarray(pos) - np.asarray(pos2)):
+            self.getValidKeypoint(map, pos, pos2, validKps)
         # println(validKps)
 
         # import sys; sys.exit()
 
-        # TODO make a hash of each position but only once?
-        # TODO Check if is valid by go E to see if wall
-        # if wall, go S until wall or Keypoint
-        # if wall, go W until wall or Keypoint
-        # if wall, go N until wall or Keypoint
-        # if wall, go E and if same position as first, use other heuristic
 
         return list(validKps)  # sort by age
 
@@ -458,8 +478,8 @@ class dGraph(Heuristics):
         else:
 
             # println(startPos, endPos)
-            startKps = self.findBestKeyPoint(startPos)
-            endKps = self.findBestKeyPoint(endPos)
+            startKps = self.findBestKeyPoint(startPos, endPos)
+            endKps = self.findBestKeyPoint(endPos, startPos)
             # println(startKps, endKps)
             state.prevKeypoints[pathId] = [startKps, endKps]
             # println(state.prevKeypoints, endKps)
