@@ -284,8 +284,8 @@ class dGraph(Heuristics):
                         G.add_edge(corner1, corner2, weight=dist)
                         G.add_edge(corner2, corner1, weight=dist)
 
-        if len(cornerSets) > 2:
-            raise Exception("no edge fusion implemented yet")
+        if len(cornerSets) > 1:
+            raise Exception("####### No edge fusion implemented yet")
 
         println(cornerSets)
         # self.draw(G)
@@ -356,7 +356,7 @@ class dGraph(Heuristics):
     def getValidKeypoint(self, map, pos, kp, validKps):
 
         tempPos = np.array(pos)
-        # println("keypoint:", kp, pos)
+        #println("keypoint:", kp, pos)
         diff = np.array(tempPos) - kp
         dir = [0, 0]
         if diff[0] < 0:
@@ -367,8 +367,8 @@ class dGraph(Heuristics):
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
             #print(tempPos)
-            if map[tuple(tempPos)] == "+":
-                return None
+            if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
+                return False
 
         if diff[1] < 0:
             dir[1] = 1
@@ -378,8 +378,8 @@ class dGraph(Heuristics):
         while tempPos[1] != kp[1]:
             tempPos[1] += dir[1]
             #println(tempPos)
-            if map[tuple(tempPos)] == "+":
-                return None
+            if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
+                return False
 
         # TODO, if it passes a corner point skip to next
 
@@ -400,22 +400,23 @@ class dGraph(Heuristics):
         # println(pos)
         validKps = []
         for kp in sortedKp:
+
             self.getValidKeypoint(map, pos, kp, validKps)
             if len(validKps) >= 4:
                 break
         
+        #println(validKps)
         if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(np.asarray(pos) - np.asarray(pos2)):
             self.getValidKeypoint(map, pos, pos2, validKps)
         # println(validKps)
 
-        # import sys; sys.exit()
 
 
         return list(validKps)  # sort by age
 
         # return sorted(corners, key=lambda p: p)
 
-    def findPathPart(self, state, pathId):
+    def findPathPart(self, state, pathId, combId):
         # (State, pathIndex)
         # TODO when calculating new dijkstras maybe just look at the changing parts
         # TODO make it work for more boxes and goals
@@ -427,25 +428,27 @@ class dGraph(Heuristics):
         # maybe precalculate every keypoint?
 
         GTemp = copy.deepcopy(self.graph)
-        startPos, endPos = self.poses[pathId]
+        #println(self.poses, self.poses[combId][pathId])
+        startPos, endPos = self.poses[combId][pathId]
+        currentPath = state.currentPath[combId][pathId]
+        prevKeypoints = state.prevKeypoints[combId][pathId]
         #  println(" start", startPos,endPos, state.currentPath, startId, endId)
         if (
-            state.currentPath[pathId] is not None
+            currentPath is not None
         ):  # and #TODO find if inbetween two points! #G.has_node(state.currentPath[0]):
             # TODO don't re calculate the path
             # TODO do the same at the endPoint
-            startKps, endKps = state.prevKeypoints[pathId]
+            startKps, endKps = prevKeypoints
             # println(endKps, startKps)
             # println(state.currentPath)
             # println(startKp, boxKp, goalKp)
             # println(state.currentPath.index(startKp), boxKp, goalKp)
 
             if (
-                len(state.currentPath[pathId]) > 2
-                and state.currentPath[pathId][1] == startPos
+                len(currentPath) > 2 and currentPath[1] == startPos
             ):
-                startKps = [state.currentPath[pathId][1], state.currentPath[pathId][2]]
-            if len(state.currentPath[pathId]) == 2:
+                startKps = [currentPath[1], currentPath[2]]
+            if len(currentPath) == 2:
                 # println(endPos, startKps)
                 startKps.append(endPos)
 
@@ -466,22 +469,22 @@ class dGraph(Heuristics):
 
             # TODO do some magic for endPos
             # println("is neighbor", startPos, startKp, endPos, boxKp, goalPos, goalKp)
-            # println("if", startPos, startKps, endPos, endKps)
-            # self.draw(GTemp)
-            length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
+            println("if", startPos, startKps, endPos, endKps)
+            self.draw(GTemp)
+            length, newPath = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
 
             # println(lengthBox, pathBox[1::], lengthGoal, pathGoal[2::])
             # println(startKp, startPos, boxKp, endPos, goalKp, goalPos)
-            state.prevKeypoints[pathId] = [startKps, endKps]
+            prevKeypoints = [startKps, endKps]
 
             # println(lengthBox,lengthGoal, pathBox, pathGoal)
         else:
 
-            # println(startPos, endPos)
+            #println(startPos, endPos)
             startKps = self.findBestKeyPoint(startPos, endPos)
             endKps = self.findBestKeyPoint(endPos, startPos)
             # println(startKps, endKps)
-            state.prevKeypoints[pathId] = [startKps, endKps]
+            prevKeypoints = [startKps, endKps]
             # println(state.prevKeypoints, endKps)
 
             for kp in startKps:
@@ -493,20 +496,25 @@ class dGraph(Heuristics):
                 GTemp.add_edge(kp, endPos, weight=dist)
             # GTemp.add_edge(endPos, endKp, weight=dist)
 
-            # self.draw(GTemp)
-            # println("else", startPos, startKps, endPos, endKps)
-            length, path = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
+            println("else", startPos, startKps, endPos, endKps)
+            self.draw(GTemp)
+            length, newPath = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
 
         del GTemp
-        state.currentPath[pathId] = path
+        currentPath = newPath
         return length  # path[1:-1]
 
-    def initializeGraphAttributes(self, state, parts):
-        self.poses = parts
-        if state.currentPath is None:
-            state.currentPath = [None] * len(self.poses)
-            state.prevKeypoints = [None] * len(self.poses)
+    def initializeGraphAttributes(self, state, subGoal, i):
+        self.poses[i] = subGoal
+        if state.currentPath[i] is None:
+            state.currentPath[i] = [None] * len(subGoal)
+            state.prevKeypoints[i] = [None] * len(subGoal)
 
+    def initializeGraphSizes(self, state, size):
+        self.poses = [None] * size
+        state.currentPath = [None] * size
+        state.prevKeypoints = [None] * size
+        
     def __call__(self, states: List):
         """Calculate heuristic for states in place."""
         if type(states) is not list:
@@ -538,18 +546,21 @@ class dGraph(Heuristics):
                 # (State, partsToSolve)
                 this_boxes = []
                 this_goals = []
-                for box_pos in box_poses:
+
+                self.initializeGraphSizes(state, len(box_poses))
+
+                for i, box_pos in enumerate(box_poses):
                     self.initializeGraphAttributes(
-                        state, [[agt_pos, box_pos], [box_pos, goal_pos]]
+                        state, [[agt_pos, box_pos], [box_pos, goal_pos]], i
                     )
 
                     # (State, partIndex)
-                    this_boxes.append(self.findPathPart(state, 0))
-                    this_goals.append(self.findPathPart(state, 1))
+                    this_boxes.append(self.findPathPart(state, 0, i))
+                    this_goals.append(self.findPathPart(state, 1, i))
                 length_boxes += min(this_boxes)
                 length_goals += min(this_goals)
 
             length = length_boxes*10 + length_goals
             state.h = length
-            state.f = state.h * 2 + state.g
+            state.f = state.h * 1.1 + state.g
             # println(state, state.h, state.g, state.f)
