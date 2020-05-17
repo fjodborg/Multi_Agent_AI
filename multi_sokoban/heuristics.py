@@ -274,7 +274,7 @@ class dGraph(Heuristics):
                 #println(corners[i - 1], corners[i])
                 if not np.array_equal(corners[i - 1], corners[i]):
                     if self.getValidKeypoint(map, corners[i - 1], corners[i], []):
-                
+
                         corner1 = corners[i - 1]
                         corner2 = corners[i]
                         dist = manha_dist(
@@ -404,7 +404,7 @@ class dGraph(Heuristics):
             self.getValidKeypoint(map, pos, kp, validKps)
             if len(validKps) >= 4:
                 break
-        
+
         #println(validKps)
         if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(np.asarray(pos) - np.asarray(pos2)):
             self.getValidKeypoint(map, pos, pos2, validKps)
@@ -496,8 +496,8 @@ class dGraph(Heuristics):
                 GTemp.add_edge(kp, endPos, weight=dist)
             # GTemp.add_edge(endPos, endKp, weight=dist)
 
-            println("else", startPos, startKps, endPos, endKps)
-            self.draw(GTemp)
+            # println("else", startPos, startKps, endPos, endKps)
+            # self.draw(GTemp)
             length, newPath = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
 
         del GTemp
@@ -514,7 +514,7 @@ class dGraph(Heuristics):
         self.poses = [None] * size
         state.currentPath = [None] * size
         state.prevKeypoints = [None] * size
-        
+
     def __call__(self, states: List):
         """Calculate heuristic for states in place."""
         if type(states) is not list:
@@ -528,37 +528,37 @@ class dGraph(Heuristics):
             agt_pos, color = list(state.agents.values())[0][0]
             length_boxes = 0
             length_goals = 0
-            for goal, v in state.goals.items():
-                goal_pos, goal_color = v[0]
+            for goal, vals in state.goals.items():
+                for v in vals:
+                    goal_pos, goal_color = v
 
-                if color != goal_color:
-                    continue
+                    if color != goal_color:
+                        continue
 
-                box_poses = [
-                    p_c[0][0]
-                    for box, p_c in state.boxes.items()
-                    if box.lower() == goal
-                ]
+                    box_poses = [
+                        p_c[0][0]
+                        for box, p_c in state.boxes.items()
+                        if box.lower() == goal.lower()
+                    ]
+                    if any(goal_pos == box_pos for box_pos in box_poses):
+                        continue
 
-                if any(goal_pos == box_pos for box_pos in box_poses):
-                    continue
+                    # (State, partsToSolve)
+                    this_boxes = []
+                    this_goals = []
 
-                # (State, partsToSolve)
-                this_boxes = []
-                this_goals = []
+                    self.initializeGraphSizes(state, len(box_poses))
 
-                self.initializeGraphSizes(state, len(box_poses))
+                    for i, box_pos in enumerate(box_poses):
+                        self.initializeGraphAttributes(
+                            state, [[agt_pos, box_pos], [box_pos, goal_pos]], i
+                        )
 
-                for i, box_pos in enumerate(box_poses):
-                    self.initializeGraphAttributes(
-                        state, [[agt_pos, box_pos], [box_pos, goal_pos]], i
-                    )
-
-                    # (State, partIndex)
-                    this_boxes.append(self.findPathPart(state, 0, i))
-                    this_goals.append(self.findPathPart(state, 1, i))
-                length_boxes += min(this_boxes)
-                length_goals += min(this_goals)
+                        # (State, partIndex)
+                        this_boxes.append(self.findPathPart(state, 0, i))
+                        this_goals.append(self.findPathPart(state, 1, i))
+                    length_boxes += min(this_boxes)
+                    length_goals += min(this_goals)
 
             length = length_boxes*10 + length_goals
             state.h = length

@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Callable, Dict, List, Tuple
 
 from .actions import StateConcurrent, StateInit
-from .heuristics import EasyRule, GoAway, dGraph
+from .heuristics import EasyRule, GoAway
 from .memory import MAX_USAGE, get_usage
 from .strategy import BestFirstSearch
 from .utils import STATUS, HEADER, IncorrectTask, ResourceLimit, println
@@ -100,7 +100,7 @@ class Agent:
         self.task = task
         self.init_task = deepcopy(task)
         self.strategy = strategy
-        self.heuristic = heuristic if heuristic else EasyRule()
+        self.heuristic = heuristic if heuristic else dGraph()
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
