@@ -12,6 +12,7 @@ from multi_sokoban.actions import StateInit
 from multi_sokoban.strategy import BestFirstSearch, aStarSearch, greedySearch
 from multi_sokoban.manager import Manager
 from multi_sokoban.utils import println
+from heuristics import dGraph, EasyRule
 
 
 class ParseError(Exception):
@@ -30,6 +31,7 @@ class SearchClient:
         self.colors = {}
         self.initial_state = self.parse_map(server_messages)
         self._strategy = None
+        self.heuristic = dGraph(self.initial_state)
         self.add_strategy(strategy)
 
     @property
@@ -130,8 +132,7 @@ class SearchClient:
     def search(self) -> List:
         """Apply search algorithm."""
         println(f"Starting search with strategy {self.strategy}.")
-
-        boss = Manager(self.initial_state, self.strategy)
+        boss = Manager(self.initial_state, self.strategy, self.heuristic)
         paths = boss.run()
         nodes_explored = boss.nodes_explored
         return paths, nodes_explored

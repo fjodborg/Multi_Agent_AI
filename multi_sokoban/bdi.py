@@ -100,7 +100,7 @@ class Agent:
         self.task = task
         self.init_task = deepcopy(task)
         self.strategy = strategy
-        self.heuristic = heuristic if heuristic else EasyRule()
+        self.heuristic = heuristic if heuristic else dGraph()
         self.color = list(task.goals.values())[0][0][1]
         self.name = list(task.agents.keys())[0]
         self.init_pos = list(task.agents.values())[0][0][0]
@@ -383,7 +383,6 @@ class Agent:
         if strategy.leaf.isGoalState():
             println(f"Agent {self.name}: state is Goal state (0 nodes explored)!")
             return []
-
         while not strategy.leaf.isGoalState():
             if iterations == 1000:
                 println(f"{strategy.count} nodes explored")

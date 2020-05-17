@@ -30,6 +30,8 @@ class Literals:
             self.t = 0
             self.h = None
             self.f = None
+            self.currentPath = None
+            self.prevKeypoints = None
             self.explored = set()
         else:
             # if a parent is present!
@@ -37,6 +39,7 @@ class Literals:
             self.deltaPos = parent.deltaPos  # rigid
             self.goals = parent.goals  # rigid
             self.agentColor = parent.agentColor  # rigid
+            # TODO avoid deepcopies
             self.agents = copy.deepcopy(parent.agents)
             self.boxes = copy.deepcopy(parent.boxes)
             self.map = copy.deepcopy(parent.map)
@@ -46,6 +49,8 @@ class Literals:
             self.h = None
             self.f = None
             self.t = parent.t + 1
+            self.prevKeypoints = copy.deepcopy(parent.prevKeypoints)
+            self.currentPath = copy.deepcopy(parent.currentPath)
             self.explored = parent.explored
         super().__init__()
 
