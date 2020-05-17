@@ -198,6 +198,7 @@ class dGraph(Heuristics):
         self.uniqueCorners = set()
         self.poses = []
         self.graph = self.build_graph(state.map)
+        self.boxes = {}
 
         # self.dir = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 
@@ -262,7 +263,7 @@ class dGraph(Heuristics):
         self.uniqueCorners = list(self.uniqueCorners)
 
         # TODO fix order of corners
-        #cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:]
+        # cornerSets[0] = cornerSets[0][-1::] + cornerSets[0][:-1:]
 
         G = nx.DiGraph()
 
@@ -271,7 +272,7 @@ class dGraph(Heuristics):
         for corners in cornerSets:
             # First position is always at the end
             for i in range(len(corners)):
-                #println(corners[i - 1], corners[i])
+                # println(corners[i - 1], corners[i])
                 if not np.array_equal(corners[i - 1], corners[i]):
                     if self.getValidKeypoint(map, corners[i - 1], corners[i], []):
 
@@ -290,7 +291,7 @@ class dGraph(Heuristics):
         println(cornerSets)
         # self.draw(G)
 
-        #import sys; sys.exit()
+        # import sys; sys.exit()
 
         # for corners in cornerSets:
         #     for i in range(len(corners) - 1):
@@ -356,7 +357,7 @@ class dGraph(Heuristics):
     def getValidKeypoint(self, map, pos, kp, validKps):
 
         tempPos = np.array(pos)
-        #println("keypoint:", kp, pos)
+        # println("keypoint:", kp, pos)
         diff = np.array(tempPos) - kp
         dir = [0, 0]
         if diff[0] < 0:
@@ -366,7 +367,7 @@ class dGraph(Heuristics):
 
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
-            #print(tempPos)
+            # print(tempPos)
             if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
                 return False
 
@@ -377,13 +378,13 @@ class dGraph(Heuristics):
 
         while tempPos[1] != kp[1]:
             tempPos[1] += dir[1]
-            #println(tempPos)
+            # println(tempPos)
             if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
                 return False
 
         # TODO, if it passes a corner point skip to next
 
-        #println("best keypoint for pos", pos,"is:", kp)
+        # println("best keypoint for pos", pos,"is:", kp)
         validKps.append(tuple(kp))
         return True
         # return kp
@@ -405,12 +406,12 @@ class dGraph(Heuristics):
             if len(validKps) >= 4:
                 break
 
-        #println(validKps)
-        if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(np.asarray(pos) - np.asarray(pos2)):
+        # println(validKps)
+        if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(
+            np.asarray(pos) - np.asarray(pos2)
+        ):
             self.getValidKeypoint(map, pos, pos2, validKps)
         # println(validKps)
-
-
 
         return list(validKps)  # sort by age
 
@@ -428,7 +429,7 @@ class dGraph(Heuristics):
         # maybe precalculate every keypoint?
 
         GTemp = copy.deepcopy(self.graph)
-        #println(self.poses, self.poses[combId][pathId])
+        # println(self.poses, self.poses[combId][pathId])
         startPos, endPos = self.poses[combId][pathId]
         currentPath = state.currentPath[combId][pathId]
         prevKeypoints = state.prevKeypoints[combId][pathId]
@@ -444,9 +445,7 @@ class dGraph(Heuristics):
             # println(startKp, boxKp, goalKp)
             # println(state.currentPath.index(startKp), boxKp, goalKp)
 
-            if (
-                len(currentPath) > 2 and currentPath[1] == startPos
-            ):
+            if len(currentPath) > 2 and currentPath[1] == startPos:
                 startKps = [currentPath[1], currentPath[2]]
             if len(currentPath) == 2:
                 # println(endPos, startKps)
@@ -480,7 +479,7 @@ class dGraph(Heuristics):
             # println(lengthBox,lengthGoal, pathBox, pathGoal)
         else:
 
-            #println(startPos, endPos)
+            # println(startPos, endPos)
             startKps = self.findBestKeyPoint(startPos, endPos)
             endKps = self.findBestKeyPoint(endPos, startPos)
             # println(startKps, endKps)
@@ -550,17 +549,25 @@ class dGraph(Heuristics):
                     self.initializeGraphSizes(state, len(box_poses))
 
                     for i, box_pos in enumerate(box_poses):
-                        self.initializeGraphAttributes(
-                            state, [[agt_pos, box_pos], [box_pos, goal_pos]], i
-                        )
+                        if (goal, box_pos) in self.boxes:
+                            this_goal = self.boxes[(goal, box_pos)]
+                            h_box = this_goal[0]
+                            h_goal = this_goal[1]
+                        else:
+                            self.initializeGraphAttributes(
+                                state, [[agt_pos, box_pos], [box_pos, goal_pos]], i
+                            )
+                            h_box = self.findPathPart(state, 0, i)
+                            h_goal = self.findPathPart(state, 1, i)
+                            self.boxes[(goal, box_pos)] = h_box, h_goal
 
                         # (State, partIndex)
-                        this_boxes.append(self.findPathPart(state, 0, i))
-                        this_goals.append(self.findPathPart(state, 1, i))
+                        this_boxes.append(h_box)
+                        this_goals.append(h_goal)
                     length_boxes += min(this_boxes)
                     length_goals += min(this_goals)
 
-            length = length_boxes*10 + length_goals
+            length = length_boxes * 10 + length_goals
             state.h = length
             state.f = state.h * 1.1 + state.g
             # println(state, state.h, state.g, state.f)
