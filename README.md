@@ -3,6 +3,13 @@
 Multi-agent AI system to solve different Sokoban-like levels written in Python (client side).  
 Repository developed for the DTU course _Artificial Intelligence and Multi Agent Systems_.
 
+## Proposed levels
+
+* [SAKaren.lvl](./levels/SAKaren.lvl)
+![Link level Single Agent](./report/SAKaren.png)
+* [MAKaren.lvl](./levels/MAKaren.lvl)
+<!-- ![Pika level Single Agent](./report/MAKaren.png) -->
+
 ## Run a level
 
 The server-side environment, provided during the course, runs in **Java**. In a Unix shell:
@@ -26,7 +33,7 @@ exe_serve.sh SAD1.lvl -astar
 ## Objectives
 
 - [x] Run _lvl1_ without getting an error.
-- [ ] Create required maps.
+- [x] Create required maps.
 - [x] Choose a theoretical framework -> PPDL | BDI | POP | HTL.
 - [x] Choose a method of communication -> online-planing, deadlocks avoidance.
 - [x] Find paper for Sokoban-like with the chosen framework and multiagent.
