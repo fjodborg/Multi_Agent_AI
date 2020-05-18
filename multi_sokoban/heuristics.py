@@ -529,8 +529,10 @@ class dGraph(Heuristics):
 
             # println("else", startPos, startKps, endPos, endKps)
             # self.draw(GTemp)
-            length, newPath = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
-
+            if nx.has_path(GTemp, startPos, endPos):
+                length, newPath = nx.bidirectional_dijkstra(GTemp, startPos, endPos)
+            else:
+                return None
         del GTemp
         currentPath = newPath
         return length  # path[1:-1]
@@ -591,13 +593,16 @@ class dGraph(Heuristics):
                             )
                             h_box = self.findPathPart(state, 0, i)
                             h_goal = self.findPathPart(state, 1, i)
-                            self.boxes[(goal, box_pos, agt_pos)] = h_box, h_goal
+                            if h_box and h_goal:
+                                self.boxes[(goal, box_pos, agt_pos)] = h_box, h_goal
 
                         # (State, partIndex)
-                        this_boxes.append(h_box)
-                        this_goals.append(h_goal)
-                    length_boxes += min(this_boxes)
-                    length_goals += sum(this_goals)
+                        if h_box and h_goal:
+                            this_boxes.append(h_box)
+                            this_goals.append(h_goal)
+                    if this_boxes and this_goals:
+                        length_boxes += min(this_boxes)
+                        length_goals += sum(this_goals)
 
             length = length_boxes + length_goals * 2
             state.h = length
