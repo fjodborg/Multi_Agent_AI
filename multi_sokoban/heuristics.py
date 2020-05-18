@@ -600,5 +600,5 @@ class dGraph(Heuristics):
 
             length = length_boxes + length_goals * 2
             state.h = length
-            state.f = state.h * 1.1 + state.g
+            state.f = state.h * 2 + state.g
             # println(state, state.h, state.g, state.f)
