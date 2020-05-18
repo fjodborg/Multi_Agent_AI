@@ -289,7 +289,7 @@ class dGraph(Heuristics):
 
         for corner1 in self.uniqueCorners:
             #G.add_node(tuple(corner), pos=corner)
-            closestCorners = self.connectCornerSets(corner1, 4)
+            closestCorners = self.connectCornerSets(corner1, 4, 0.5)
             #println(corner1, closestCorners)
             for corner2 in closestCorners:
                 dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
@@ -339,16 +339,18 @@ class dGraph(Heuristics):
             explored.add(tuple(newPos))
         return False
 
-    def connectCornerSets(self, pos, points):
+    def connectCornerSets(self, pos, points, percent=1):
         map = self.map
         corners = np.asarray(self.uniqueCorners)
         sortedKp = sorted(corners, key=lambda kp: np.linalg.norm(pos - kp, 1))
         validKps = []
-        for kp in sortedKp:
+        for i, kp in enumerate(sortedKp):
             if kp[0] != pos[0] or kp[1] != pos[1]:
                 self.getValidKeypoint(map, pos, kp, validKps)
                 if len(validKps) >= points:
                     break
+            if i > percent * len(sortedKp):
+                break
         return list(validKps)  # sort by age
 
         # return sorted(corners, key=lambda p: p)
