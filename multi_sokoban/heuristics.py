@@ -229,8 +229,7 @@ class dGraph(Heuristics):
                         if corners:
                             self.cornerSets.append(corners)
 
-        G = self.generateGraph(copy.copy(map))
-
+        G = self.generateGraph(copy.deepcopy(map))
         return G
 
     def draw(self, G):
@@ -315,7 +314,7 @@ class dGraph(Heuristics):
         #             G.add_edge(corner1, corner2, weight=dist)
         #             G.add_edge(corner2, corner1, weight=dist)
         #             pass
-
+        del map
         return G
 
     def checkAndAddCorner(self, map, corners, cornerPos):
