@@ -549,8 +549,8 @@ class dGraph(Heuristics):
                     self.initializeGraphSizes(state, len(box_poses))
 
                     for i, box_pos in enumerate(box_poses):
-                        if (goal, box_pos) in self.boxes:
-                            this_goal = self.boxes[(goal, box_pos)]
+                        if (goal, box_pos, agt_pos) in self.boxes:
+                            this_goal = self.boxes[(goal, box_pos, agt_pos)]
                             h_box = this_goal[0]
                             h_goal = this_goal[1]
                         else:
@@ -559,15 +559,15 @@ class dGraph(Heuristics):
                             )
                             h_box = self.findPathPart(state, 0, i)
                             h_goal = self.findPathPart(state, 1, i)
-                            self.boxes[(goal, box_pos)] = h_box, h_goal
+                            self.boxes[(goal, box_pos, agt_pos)] = h_box, h_goal
 
                         # (State, partIndex)
                         this_boxes.append(h_box)
                         this_goals.append(h_goal)
                     length_boxes += min(this_boxes)
-                    length_goals += min(this_goals)
+                    length_goals += sum(this_goals)
 
-            length = length_boxes * 10 + length_goals
+            length = length_boxes + length_goals
             state.h = length
             state.f = state.h * 1.1 + state.g
             # println(state, state.h, state.g, state.f)
