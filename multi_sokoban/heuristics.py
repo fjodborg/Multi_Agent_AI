@@ -268,13 +268,15 @@ class dGraph(Heuristics):
         G = nx.DiGraph()
 
         println(cornerSets)
+        # for corner in self.uniqueCorners:
+        #     G.add_node(tuple(corner), pos=corner)
 
         for corners in cornerSets:
             # First position is always at the end
             for i in range(len(corners)):
                 # println(corners[i - 1], corners[i])
                 if not np.array_equal(corners[i - 1], corners[i]):
-                    if self.getValidKeypoint(map, corners[i - 1], corners[i], []):
+                    if self.getValidKeypoint(map, corners[i - 1], corners[i], []) is True:
 
                         corner1 = corners[i - 1]
                         corner2 = corners[i]
@@ -285,11 +287,19 @@ class dGraph(Heuristics):
                         G.add_edge(corner1, corner2, weight=dist)
                         G.add_edge(corner2, corner1, weight=dist)
 
-        if len(cornerSets) > 1:
-            raise Exception("####### No edge fusion implemented yet")
+        for corner1 in self.uniqueCorners:
+            #G.add_node(tuple(corner), pos=corner)
+            closestCorners = self.connectCornerSets(corner1, 2)
+            println(corner1, closestCorners)
+            for corner2 in closestCorners:
+                dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
+                G.add_edge(corner1, corner2, weight=dist)
+        
+        # if len(cornerSets) > 1:
+        #     raise Exception("####### No edge fusion implemented yet")
 
         println(cornerSets)
-        # self.draw(G)
+        self.draw(G)
 
         # import sys; sys.exit()
 
@@ -328,6 +338,21 @@ class dGraph(Heuristics):
             # println("wall added", tuple(newPos))
             explored.add(tuple(newPos))
         return False
+
+    def connectCornerSets(self, pos, points):
+        map = self.map
+        corners = np.asarray(self.uniqueCorners)
+        sortedKp = sorted(corners, key=lambda kp: np.linalg.norm(pos - kp, 1))
+        validKps = []
+        for kp in sortedKp:
+            if kp[0] != pos[0] or kp[1] != pos[1]:
+                self.getValidKeypoint(map, pos, kp, validKps)
+                if len(validKps) >= points:
+                    break
+        return list(validKps)  # sort by age
+
+        # return sorted(corners, key=lambda p: p)
+
 
     def findEdges(self, initPos, map, explored):
         dir = -1
@@ -368,8 +393,11 @@ class dGraph(Heuristics):
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
             # print(tempPos)
-            if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
-                return False
+            if map[tuple(tempPos)] == "+":
+                return None
+            elif tuple(tempPos) in validKps:
+                return tempPos
+                
 
         if diff[1] < 0:
             dir[1] = 1
@@ -380,7 +408,9 @@ class dGraph(Heuristics):
             tempPos[1] += dir[1]
             # println(tempPos)
             if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
-                return False
+                return None
+            elif tuple(tempPos) in validKps:
+                return tempPos
 
         # TODO, if it passes a corner point skip to next
 
