@@ -268,13 +268,15 @@ class dGraph(Heuristics):
         G = nx.DiGraph()
 
         println(cornerSets)
+        # for corner in self.uniqueCorners:
+        #     G.add_node(tuple(corner), pos=corner)
 
         for corners in cornerSets:
             # First position is always at the end
             for i in range(len(corners)):
                 # println(corners[i - 1], corners[i])
                 if not np.array_equal(corners[i - 1], corners[i]):
-                    if self.getValidKeypoint(map, corners[i - 1], corners[i], []):
+                    if self.getValidKeypoint(map, corners[i - 1], corners[i], []) is True:
 
                         corner1 = corners[i - 1]
                         corner2 = corners[i]
@@ -285,10 +287,18 @@ class dGraph(Heuristics):
                         G.add_edge(corner1, corner2, weight=dist)
                         G.add_edge(corner2, corner1, weight=dist)
 
-        if len(cornerSets) > 1:
-            raise Exception("####### No edge fusion implemented yet")
+        for corner1 in self.uniqueCorners:
+            #G.add_node(tuple(corner), pos=corner)
+            closestCorners = self.connectCornerSets(corner1, 4, 0.5)
+            #println(corner1, closestCorners)
+            for corner2 in closestCorners:
+                dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
+                G.add_edge(corner1, corner2, weight=dist)
+        
+        # if len(cornerSets) > 1:
+        #     raise Exception("####### No edge fusion implemented yet")
 
-        println(cornerSets)
+        # println(cornerSets)
         # self.draw(G)
 
         # import sys; sys.exit()
@@ -329,6 +339,23 @@ class dGraph(Heuristics):
             explored.add(tuple(newPos))
         return False
 
+    def connectCornerSets(self, pos, points, percent=1):
+        map = self.map
+        corners = np.asarray(self.uniqueCorners)
+        sortedKp = sorted(corners, key=lambda kp: np.linalg.norm(pos - kp, 1))
+        validKps = []
+        for i, kp in enumerate(sortedKp):
+            if kp[0] != pos[0] or kp[1] != pos[1]:
+                self.getValidKeypoint(map, pos, kp, validKps)
+                if len(validKps) >= points:
+                    break
+            if i > percent * len(sortedKp):
+                break
+        return list(validKps)  # sort by age
+
+        # return sorted(corners, key=lambda p: p)
+
+
     def findEdges(self, initPos, map, explored):
         dir = -1
         prevDir = dir + 1
@@ -368,8 +395,11 @@ class dGraph(Heuristics):
         while tempPos[0] != kp[0]:
             tempPos[0] += dir[0]
             # print(tempPos)
-            if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
-                return False
+            if map[tuple(tempPos)] == "+":
+                return None
+            elif tuple(tempPos) in validKps:
+                return tempPos
+                
 
         if diff[1] < 0:
             dir[1] = 1
@@ -380,7 +410,9 @@ class dGraph(Heuristics):
             tempPos[1] += dir[1]
             # println(tempPos)
             if map[tuple(tempPos)] == "+" or tuple(tempPos) in validKps:
-                return False
+                return None
+            elif tuple(tempPos) in validKps:
+                return tempPos
 
         # TODO, if it passes a corner point skip to next
 
@@ -549,8 +581,8 @@ class dGraph(Heuristics):
                     self.initializeGraphSizes(state, len(box_poses))
 
                     for i, box_pos in enumerate(box_poses):
-                        if (goal, box_pos) in self.boxes:
-                            this_goal = self.boxes[(goal, box_pos)]
+                        if (goal, box_pos, agt_pos) in self.boxes:
+                            this_goal = self.boxes[(goal, box_pos, agt_pos)]
                             h_box = this_goal[0]
                             h_goal = this_goal[1]
                         else:
@@ -559,15 +591,15 @@ class dGraph(Heuristics):
                             )
                             h_box = self.findPathPart(state, 0, i)
                             h_goal = self.findPathPart(state, 1, i)
-                            self.boxes[(goal, box_pos)] = h_box, h_goal
+                            self.boxes[(goal, box_pos, agt_pos)] = h_box, h_goal
 
                         # (State, partIndex)
                         this_boxes.append(h_box)
                         this_goals.append(h_goal)
                     length_boxes += min(this_boxes)
-                    length_goals += min(this_goals)
+                    length_goals += sum(this_goals)
 
-            length = length_boxes * 10 + length_goals
+            length = length_boxes + length_goals
             state.h = length
             state.f = state.h * 1.1 + state.g
             # println(state, state.h, state.g, state.f)
