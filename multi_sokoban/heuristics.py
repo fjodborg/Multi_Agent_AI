@@ -437,7 +437,7 @@ class dGraph(Heuristics):
             if len(validKps) >= 4:
                 break
         if not validKps:
-            return []
+            return [pos2]
         # println(validKps)
         if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(
             np.asarray(pos) - np.asarray(pos2)
