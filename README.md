@@ -5,10 +5,10 @@ Repository developed for the DTU course _Artificial Intelligence and Multi Agent
 
 ## Proposed levels
 
-* [SAKaren.lvl](./levels/SAKaren.lvl)
+* [SAKaren.lvl](./levels/SAKaren.lvl)  
 ![Link level Single Agent](./report/SAKaren.png)
-* [MAKaren.lvl](./levels/MAKaren.lvl)
-<!-- ![Pika level Single Agent](./report/MAKaren.png) -->
+* [MAKaren.lvl](./levels/MAKaren.lvl)  
+![Pika level Single Agent](./report/MAKaren.png)
 
 ## Run a level
 
