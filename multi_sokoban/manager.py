@@ -90,6 +90,8 @@ class Manager:
             task.keepJustGoal(goal)
             # select best agent and remove other agents
             agent = self.broadcast_task(task)
+            if agent is None:
+                continue
             task.keepJustAgent(agent)
             if agent in self.agents:
                 self.agents[agent].add_task(task)
@@ -123,9 +125,11 @@ class Manager:
         ok_agents = [k for k, v in task.agents.items() if color_of == v[0][1]]
         if len(ok_agents) > 1:
             selected_agent = self.bidding(task, ok_agents)
-        else:
+        elif ok_agents:
             # direct contract, the usual case
             selected_agent = ok_agents[0]
+        else:
+            selected_agent = None
         return selected_agent
 
     def broadcast_message(self, message: Message) -> str:
