@@ -293,7 +293,7 @@ class dGraph(Heuristics):
             for corner2 in closestCorners:
                 dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
                 G.add_edge(corner1, corner2, weight=dist)
-        
+
         # if len(cornerSets) > 1:
         #     raise Exception("####### No edge fusion implemented yet")
 
@@ -398,7 +398,7 @@ class dGraph(Heuristics):
                 return None
             elif tuple(tempPos) in validKps:
                 return tempPos
-                
+
 
         if diff[1] < 0:
             dir[1] = 1
@@ -436,7 +436,8 @@ class dGraph(Heuristics):
             self.getValidKeypoint(map, pos, kp, validKps)
             if len(validKps) >= 4:
                 break
-
+        if not validKps:
+            return []
         # println(validKps)
         if np.linalg.norm(np.asarray(validKps[0]) - np.asarray(pos)) >= np.linalg.norm(
             np.asarray(pos) - np.asarray(pos2)
