@@ -33,6 +33,7 @@ class SearchClient:
         self._strategy = None
         self.heuristic = dGraph(self.initial_state)
         self.add_strategy(strategy)
+        sys.setrecursionlimit(1000000000)
 
     @property
     def strategy(self) -> BestFirstSearch:
@@ -98,6 +99,7 @@ class SearchClient:
         all_objects = []
         agent_n_boxes = string.digits + string.ascii_uppercase
         possible_colors = set(self.colors.values())
+        println(possible_colors)
         all_objects = self._locate_objects(np.array(map), agent_n_boxes)
         # it is required to add the map first and then the rest level objects
         state.addMap(map)
@@ -115,6 +117,7 @@ class SearchClient:
         for obj, pos, color in all_objects:
             row, col = pos
             state.addGoal(obj, (row, col), color)
+        println(state)
         return state
 
     def _locate_objects(self, map: np.array, possible_objects: str) -> List:
