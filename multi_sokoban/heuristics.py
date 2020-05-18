@@ -289,8 +289,8 @@ class dGraph(Heuristics):
 
         for corner1 in self.uniqueCorners:
             #G.add_node(tuple(corner), pos=corner)
-            closestCorners = self.connectCornerSets(corner1, 2)
-            println(corner1, closestCorners)
+            closestCorners = self.connectCornerSets(corner1, 4)
+            #println(corner1, closestCorners)
             for corner2 in closestCorners:
                 dist = manha_dist((corner1[0], corner1[1]), (corner2[0], corner2[1]))
                 G.add_edge(corner1, corner2, weight=dist)
@@ -298,8 +298,8 @@ class dGraph(Heuristics):
         # if len(cornerSets) > 1:
         #     raise Exception("####### No edge fusion implemented yet")
 
-        println(cornerSets)
-        self.draw(G)
+        # println(cornerSets)
+        # self.draw(G)
 
         # import sys; sys.exit()
 
