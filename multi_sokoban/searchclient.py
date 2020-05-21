@@ -69,13 +69,18 @@ class SearchClient:
         while line:
             if goal:
                 if line.find("#end") != -1:
+                    len_line = max(len(l) for l in map)
+                    for i in range(len(map)):
+                        map[i] += "+" * (len_line - len(map[i]))
+                        goal_state[i] += "+" * (len_line - len(goal_state[i]))
+                    println("\n".join(["".join(line) for line in map]))
                     return self.build_map(map, goal_state)
-                goal_state.append(list(line))
+                goal_state.append(list(self._formatl(line)))
             elif initial:
                 if line.find("#goal") != -1:
                     goal = True
                 else:
-                    map.append(list(line))
+                    map.append(list(self._formatl(line)))
             else:
                 if line.find("#initial") != -1:
                     initial = True
@@ -87,7 +92,14 @@ class SearchClient:
                         self.colors[color_matched[2]] = color
                         for obj in line[len(color) + 5 :].split(", "):
                             self.colors[obj] = color
-            line = server_messages.readline()[:-1]  # chop last
+            line = server_messages.readline().replace("\r", "")[:-1]  # chop last
+
+    def _formatl(self, line: str):
+        prev = len(line)
+        new_line = re.sub(r'^.*?\+', '+', line)
+        while len(new_line) < prev:
+            new_line = "+" + new_line
+        return new_line
 
     def build_map(self, map: List, goal_state: List) -> StateInit:
         """Build the StateInit from the parsed map.
