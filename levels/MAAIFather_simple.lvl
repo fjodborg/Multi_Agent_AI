@@ -1,0 +1,20 @@
+#domain
+hospital
+#levelname
+MAAIFather
+#colors
+blue: 0, A
+red: 1, C
+#initial
+++++++++++++
++++++  C  A+
++++++ ++++++
+++     1  0+
+++++++++++++
+#goal
+++++++++++++
++++++      +
++++++ ++++++
+++CA       +
+++++++++++++
+#end
