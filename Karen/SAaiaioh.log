@@ -1,0 +1,47 @@
+#domain
+hospital
+#levelname
+SAaiaioh
+#colors
+blue: 0, A
+#initial
++++++++++
++A      +
++       +
++       +
++    ++++
++0   +A +
++       +
++++++++++
+#goal
++++++++++
++       +
++       +
++      A+
++    ++++
++    +  +
++       +
++++++++++
+#end
+#clientname
+MAI client
+#actions
+184467518:Move(N)
+184693558:Move(N)
+184782542:Move(N)
+184926012:Pull(E,N)
+185021963:Pull(N,W)
+185116402:Push(S,E)
+185220848:Push(E,E)
+185342575:Push(E,E)
+185442733:Push(E,E)
+185555767:Push(E,E)
+185689507:Push(E,S)
+#end
+#solved
+true
+#numactions
+11
+#time
+185689507
+#end

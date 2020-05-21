@@ -1,0 +1,120 @@
+#domain
+hospital
+#levelname
+MAThreePO
+#colors
+red: 0, A, E, H
+green: 1, B, F
+cyan: 2, C, G
+#initial
++++++++++++++++++++++++++++++++++
++     +       2  C              +
++++++++ +++++++++++++++++++++++++
++     +             +           +
++ + + + +++++++++++++++++ + + + +
++ A            F                +
++ 0 +++++++++++++++++++++++++   +
+++              E              ++
++++ +++++++++++++++++++++++++ +++
++               G               +
+++              H              ++
++++ +++++++++++++++++++++++++ +++
+++           1           B     ++
++++++++++++++++++++++++++++++++++
+#goal
++++++++++++++++++++++++++++++++++
++     +                         +
++++++++ +++++++++++++++++++++++++
++ A   +         C   +   B       +
++ + + + +++++++++++++++++ + + + +
++                               +
++   +++++++++++++++++++++++++   +
+++              E              ++
++++ +++++++++++++++++++++++++ +++
++               G               +
+++              H              ++
++++ +++++++++++++++++++++++++ +++
+++            F                ++
++++++++++++++++++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+1759747000:Push(N,E);Move(E);Move(E)
+1759819200:Push(E,N);Move(E);Move(E)
+1759884400:Push(N,N);Move(E);Pull(W,E)
+1759925000:Push(N,W);Move(E);Pull(W,E)
+1759951300:NoOp;Move(E);Pull(W,E)
+1759974300:NoOp;Move(E);Pull(W,E)
+1760022100:NoOp;Move(E);Pull(W,E)
+1760060200:NoOp;Move(E);Pull(W,E)
+1760102700:NoOp;Move(E);Pull(W,E)
+1760131000:NoOp;Move(E);Pull(W,E)
+1760157400:NoOp;Move(E);Pull(W,E)
+1760221300:NoOp;Push(E,E);Pull(S,E)
+1760269400:NoOp;Push(E,E);Pull(S,N)
+1760305500:NoOp;Push(E,E);Pull(E,N)
+1760333700:NoOp;Push(E,E);Pull(E,W)
+1760358100:NoOp;Push(E,N);Pull(E,W)
+1760384900:NoOp;Push(N,N);Pull(E,W)
+1760422200:NoOp;Push(N,N);Pull(E,W)
+1760458500:NoOp;Push(N,N);Pull(E,W)
+1760483200:NoOp;Push(N,N);Pull(E,W)
+1760507700:NoOp;Push(N,N);Pull(E,W)
+1760532300:NoOp;Push(N,N);Pull(E,W)
+1760555800:NoOp;Push(N,N);Pull(E,W)
+1760580000:NoOp;Push(N,N);NoOp
+1760603700:NoOp;Push(N,W);NoOp
+1760627300:NoOp;Push(W,W);NoOp
+1760650400:NoOp;Push(W,W);NoOp
+1760673200:NoOp;Push(W,W);NoOp
+1760696500:NoOp;Push(W,W);NoOp
+1760719700:NoOp;Move(S);NoOp
+1760743000:NoOp;Move(S);NoOp
+1760766100:NoOp;Move(W);NoOp
+1760790900:NoOp;Move(W);NoOp
+1760814000:NoOp;Move(W);NoOp
+1760836700:NoOp;Move(W);NoOp
+1760859500:NoOp;Move(W);NoOp
+1760882100:NoOp;Move(W);NoOp
+1760906200:NoOp;Move(W);NoOp
+1760929200:NoOp;Move(W);NoOp
+1760951900:NoOp;Move(W);NoOp
+1760977300:NoOp;Push(W,W);NoOp
+1761003000:NoOp;Push(W,W);NoOp
+1761026200:NoOp;Push(W,W);NoOp
+1761049500:NoOp;Push(W,W);NoOp
+1761072700:NoOp;Push(W,W);NoOp
+1761095900:NoOp;Push(W,W);NoOp
+1761118800:NoOp;Push(W,W);NoOp
+1761147500:NoOp;Push(W,W);NoOp
+1761170700:NoOp;Push(W,W);NoOp
+1761193700:NoOp;Push(W,W);NoOp
+1761216500:NoOp;Push(W,W);NoOp
+1761239400:NoOp;Push(W,W);NoOp
+1761262200:NoOp;Push(W,S);NoOp
+1761285400:NoOp;Push(S,S);NoOp
+1761308700:NoOp;Push(S,S);NoOp
+1761331800:NoOp;Push(S,S);NoOp
+1761354800:NoOp;Push(S,S);NoOp
+1761378100:NoOp;Push(S,S);NoOp
+1761401100:NoOp;Push(S,S);NoOp
+1761424200:NoOp;Push(S,E);NoOp
+1761447100:NoOp;Push(E,E);NoOp
+1761470200:NoOp;Push(E,E);NoOp
+1761493300:NoOp;Push(E,E);NoOp
+1761516300:NoOp;Push(E,E);NoOp
+1761539200:NoOp;Push(E,E);NoOp
+1761563100:NoOp;Push(E,E);NoOp
+1761586700:NoOp;Push(E,E);NoOp
+1761609900:NoOp;Push(E,E);NoOp
+1761632800:NoOp;Push(E,E);NoOp
+1761655700:NoOp;Push(E,E);NoOp
+#end
+#solved
+true
+#numactions
+70
+#time
+1761655700
+#end

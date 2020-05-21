@@ -1,0 +1,43 @@
+#domain
+hospital
+#levelname
+MAaiaioh
+#colors
+red: 0, A
+blue: 1, B
+#initial
++++++++++
++   +   +
++0 A+   +
++       +
++1 B+   +
++++++++++
+#goal
++++++++++
++   +  A+
++   +   +
++       +
++   +  B+
++++++++++
+#end
+#clientname
+MAI client
+#actions
+74502100:Move(E);NoOp
+74863700:Push(E,S);NoOp
+74930600:Push(S,E);NoOp
+74994200:Push(E,E);Move(E)
+75066600:Push(E,N);Push(E,N)
+75133500:Push(N,N);Push(N,E)
+75202100:Push(N,E);Push(E,E)
+75268600:Push(E,E);Push(E,E)
+75331300:NoOp;Push(E,E)
+75391500:NoOp;Push(E,S)
+#end
+#solved
+true
+#numactions
+10
+#time
+75391500
+#end

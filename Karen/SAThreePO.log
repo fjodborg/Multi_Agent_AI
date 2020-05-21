@@ -1,0 +1,44 @@
+#domain
+hospital
+#levelname
+SAThreePO
+#colors
+blue: 0, A, B, C, D, E, F, G, H
+#initial
++++++++++++
++0ABCDEFGH+
++         +
++         +
++         +
++     +++++
++         +
++     +++++
++         +
++     +++++
++         +
++++++++++++
+#goal
++++++++++++
++         +
++         +
++         +
++         +
++     +++++
++      GDA+
++     +++++
++      HEB+
++     +++++
++       FC+
++++++++++++
+#end
+#clientname
+MAI client
+#actions
+#end
+#solved
+false
+#numactions
+0
+#time
+0
+#end

@@ -1,0 +1,72 @@
+#domain
+hospital
+#levelname
+MADeepMinds
+#colors
+red: 0, A
+blue: 1, B
+green: 2, C
+#initial
+++++++++
++      +
++0+ +  +
++1+ +AC+
++++ ++++
++ 2  B +
+++++++++
+#goal
+++++++++
++A   B +
++ + +  +
++ + +  +
++++ ++++
++C     +
+++++++++
+#end
+#clientname
+MAI client
+#actions
+5779044900:Move(N);NoOp;NoOp
+5779102800:Move(E);NoOp;NoOp
+5779133400:Move(E);NoOp;NoOp
+5779157800:Move(E);NoOp;NoOp
+5779181700:Move(E);NoOp;NoOp
+5779205600:Move(S);NoOp;NoOp
+5779229900:Pull(N,S);NoOp;NoOp
+5779256400:Pull(E,S);NoOp;NoOp
+5779280700:Push(W,W);NoOp;Move(E)
+5779305300:Push(W,W);NoOp;Move(N)
+5779329300:Push(W,W);NoOp;Move(N)
+5779353300:Push(W,W);NoOp;Move(N)
+5779377600:NoOp;NoOp;Move(N)
+5779401300:NoOp;NoOp;Move(E)
+5779427500:NoOp;NoOp;Move(E)
+5779474500:NoOp;NoOp;Move(E)
+5779582200:NoOp;NoOp;Move(S)
+5779646400:NoOp;NoOp;Pull(N,S)
+5779703200:NoOp;NoOp;Pull(W,S)
+5779738100:NoOp;NoOp;Pull(S,E)
+5779767700:NoOp;NoOp;Push(N,W)
+5779798000:NoOp;NoOp;Push(W,W)
+5779838700:NoOp;NoOp;Push(W,S)
+5779882100:NoOp;NoOp;Push(S,S)
+5779908800:NoOp;NoOp;Push(S,S)
+5779934200:NoOp;NoOp;Push(S,S)
+5779963300:NoOp;NoOp;Push(S,W)
+5779988100:NoOp;NoOp;Push(W,W)
+5780012700:NoOp;NoOp;NoOp
+5780046700:NoOp;NoOp;NoOp
+5780076700:NoOp;NoOp;NoOp
+5780100600:NoOp;NoOp;NoOp
+5780133000:NoOp;NoOp;NoOp
+5780161200:NoOp;NoOp;NoOp
+5780203900:NoOp;Move(N);NoOp
+5780259400:Move(E);Move(N);NoOp
+#end
+#solved
+false
+#numactions
+36
+#time
+5780259400
+#end

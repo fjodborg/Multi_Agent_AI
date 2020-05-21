@@ -1,0 +1,476 @@
+#domain
+hospital
+#levelname
+MABaguettes
+#colors
+red: 0, 1, A
+cyan: B
+#initial
+++++++++++++++++++++++++++++++++++++++++
++                                  +   +
++ + +++BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+                          + + + +
++ + +A+                          + + + +
++ + +A+      A   A AAA AAA AAA   + + + +
++ + +A+      AA  A  A  A   A     + + + +
++ + +A+      A A A  A  A   AA    + + + +
++ +++++      A  AA  A  A   A     + + + +
++0+ A        A   A AAA AAA AAA   +   +1+
+++++++++++++++++++++++++++++++++++++++++
+#goal
+++++++++++++++++++++++++++++++++++++++++
++                                  +   +
++ + +++BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+ BBBBBBBBBBBBBBBBBBBBBBBBBBB+ + +
++ + +A+                            + + +
++ + +A+BBBBBBBBBBBBBBBBBBBBBBBBBBB + + +
++ + +A+                            + + +
++ + +A+                          + + + +
++ + +A+                          + + + +
++ + +A+      A   A AAA AAA AAA   + + + +
++ + +A+      AA  A  A  A   A     + + + +
++ + +A+      A A A  A  A   AA    + + + +
++ +++++      A  AA  A  A   A     + + + +
++0+A         A   A AAA AAA AAA   +   +1+
+++++++++++++++++++++++++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+6066362900:Move(N);NoOp
+6066475700:Move(N);NoOp
+6066525600:Move(N);NoOp
+6066580700:Move(N);NoOp
+6066628900:Move(N);NoOp
+6066679700:Move(N);NoOp
+6066730600:Move(N);NoOp
+6066784800:Move(N);NoOp
+6066834800:Move(N);NoOp
+6066886000:Move(N);NoOp
+6066936900:Move(N);NoOp
+6066986200:Move(N);NoOp
+6067040700:Move(N);NoOp
+6067107100:Move(N);NoOp
+6067155200:Move(N);NoOp
+6067202200:Move(N);NoOp
+6067264200:Move(N);NoOp
+6067313000:Move(N);NoOp
+6067362200:Move(N);NoOp
+6067408600:Move(N);NoOp
+6067462800:Move(N);NoOp
+6067510300:Move(N);NoOp
+6067557100:Move(N);NoOp
+6067605500:Move(N);NoOp
+6067651000:Move(N);NoOp
+6067701100:Move(N);NoOp
+6067748500:Move(N);NoOp
+6067795300:Move(N);NoOp
+6067843600:Move(N);NoOp
+6067896300:Move(E);NoOp
+6067944200:Move(E);NoOp
+6067989500:Move(E);NoOp
+6068037400:Move(E);NoOp
+6068084200:Move(E);NoOp
+6068129800:Move(E);NoOp
+6068176100:Move(E);NoOp
+6068221900:Move(E);NoOp
+6068269100:Move(E);NoOp
+6068316900:Move(E);NoOp
+6068363400:Move(E);NoOp
+6068410600:Move(E);NoOp
+6068457300:Move(E);NoOp
+6068507700:Move(E);NoOp
+6068554900:Move(E);NoOp
+6068602100:Move(E);NoOp
+6068648500:Move(E);NoOp
+6068705400:Move(E);NoOp
+6068751400:Move(E);NoOp
+6068798500:Move(E);NoOp
+6068844800:Move(E);NoOp
+6068896400:Move(E);NoOp
+6068952100:Move(E);NoOp
+6068998900:Move(E);NoOp
+6069045000:Move(E);NoOp
+6069090400:Move(E);NoOp
+6069137100:Move(E);NoOp
+6069183100:Move(E);NoOp
+6069229000:Move(E);NoOp
+6069273400:Move(E);NoOp
+6069322500:Move(E);NoOp
+6069368700:Move(E);NoOp
+6069412900:Move(E);NoOp
+6069464500:Move(S);NoOp
+6069510300:Move(S);NoOp
+6069556900:Move(W);NoOp
+6069601000:Move(W);NoOp
+6069646000:Move(W);NoOp
+6069691900:Move(W);NoOp
+6069736900:Move(W);NoOp
+6069782300:Move(W);NoOp
+6069825900:Move(W);NoOp
+6069874200:Move(W);NoOp
+6069918800:Move(W);NoOp
+6069966800:Move(W);NoOp
+6070012000:Move(W);NoOp
+6070056100:Move(W);NoOp
+6070103200:Move(W);NoOp
+6070149900:Move(W);NoOp
+6070198400:Move(W);NoOp
+6070243400:Move(W);NoOp
+6070292200:Move(W);NoOp
+6070339000:Move(W);NoOp
+6070386500:Move(W);NoOp
+6070433200:Move(W);NoOp
+6070533500:Move(W);NoOp
+6070576600:Move(W);NoOp
+6070648500:Move(W);NoOp
+6070694700:Move(W);NoOp
+6070741400:Move(W);NoOp
+6070785300:Move(W);NoOp
+6070839400:Move(W);NoOp
+6070885800:Move(S);NoOp
+6070925700:Move(S);NoOp
+6070978800:Move(E);NoOp
+6071026600:Move(E);NoOp
+6071070500:Move(E);NoOp
+6071111800:Move(E);NoOp
+6071158400:Move(E);NoOp
+6071213600:Move(E);NoOp
+6071253000:Move(E);NoOp
+6071294400:Move(E);NoOp
+6071337500:Move(E);NoOp
+6071377600:Move(E);NoOp
+6071425200:Move(E);NoOp
+6071466000:Move(E);NoOp
+6071506500:Move(E);NoOp
+6071545800:Move(E);NoOp
+6071595800:Move(E);NoOp
+6071634100:Move(E);NoOp
+6071674900:Move(E);NoOp
+6071715300:Move(E);NoOp
+6071778100:Move(E);NoOp
+6071817600:Move(E);NoOp
+6071856400:Move(E);NoOp
+6071929100:Move(E);NoOp
+6072023200:Move(E);NoOp
+6072061900:Move(E);NoOp
+6072099000:Move(E);NoOp
+6072138300:Move(E);NoOp
+6072175600:Move(E);NoOp
+6072223500:Move(S);NoOp
+6072262200:Move(S);NoOp
+6072302300:Move(W);NoOp
+6072343300:Move(W);NoOp
+6072383800:Move(W);NoOp
+6072429900:Move(W);NoOp
+6072468400:Move(W);NoOp
+6072507300:Move(W);NoOp
+6072547300:Move(W);NoOp
+6072591600:Move(W);NoOp
+6072630000:Move(W);NoOp
+6072673200:Move(W);NoOp
+6072714200:Move(W);NoOp
+6072752300:Move(W);NoOp
+6072788500:Move(W);NoOp
+6072825600:Move(W);NoOp
+6072862300:Move(W);NoOp
+6072916700:Move(W);NoOp
+6072964600:Move(W);NoOp
+6073016700:Move(W);NoOp
+6073064400:Move(W);NoOp
+6073106000:Move(W);NoOp
+6073168200:Move(W);NoOp
+6073212000:Move(W);NoOp
+6073249700:Move(W);NoOp
+6073292200:Move(W);NoOp
+6073355700:Move(W);NoOp
+6073393500:Move(W);NoOp
+6073428800:Move(W);NoOp
+6073465000:Move(S);NoOp
+6073502400:Move(S);NoOp
+6073537400:Move(E);NoOp
+6073573000:Move(E);NoOp
+6073607600:Move(E);NoOp
+6073646900:Move(E);NoOp
+6073683200:Move(E);NoOp
+6073718600:Move(E);NoOp
+6073775000:Move(E);NoOp
+6073819500:Move(E);NoOp
+6073855800:Move(E);NoOp
+6073895000:Move(E);NoOp
+6073932100:Move(E);NoOp
+6073967600:Move(E);NoOp
+6074015200:Move(E);NoOp
+6074052800:Move(E);NoOp
+6074086700:Move(E);NoOp
+6074121800:Move(E);NoOp
+6074158800:Move(E);NoOp
+6074192400:Move(E);NoOp
+6074228200:Move(E);NoOp
+6074269100:Move(E);NoOp
+6074304400:Move(E);NoOp
+6074339000:Move(E);NoOp
+6074371300:Move(E);NoOp
+6074414600:Move(E);NoOp
+6074448900:Move(E);NoOp
+6074486900:Move(E);NoOp
+6074522600:Move(E);NoOp
+6074561700:Move(S);NoOp
+6074596700:Move(S);NoOp
+6074641300:Move(W);NoOp
+6074680000:Move(W);NoOp
+6074714000:Move(W);NoOp
+6074748100:Move(W);NoOp
+6074799500:Move(W);NoOp
+6074832400:Move(W);NoOp
+6074887000:Move(W);NoOp
+6074924200:Move(W);NoOp
+6074959700:Move(W);NoOp
+6074991500:Move(W);NoOp
+6075028500:Move(W);NoOp
+6075060700:Move(W);NoOp
+6075094600:Move(W);NoOp
+6075129000:Move(W);NoOp
+6075160500:Move(W);NoOp
+6075208100:Move(W);NoOp
+6075241300:Move(W);NoOp
+6075276800:Move(W);NoOp
+6075309700:Move(W);NoOp
+6075345800:Move(W);NoOp
+6075376600:Move(W);NoOp
+6075411700:Move(W);NoOp
+6075442000:Move(W);NoOp
+6075495400:Move(W);NoOp
+6075547700:Move(W);NoOp
+6075582900:Move(W);NoOp
+6075618900:Move(W);NoOp
+6075649000:Move(S);NoOp
+6075682400:Move(S);NoOp
+6075713000:Move(E);NoOp
+6075746800:Move(E);NoOp
+6075778400:Move(E);NoOp
+6075823900:Move(E);NoOp
+6075866900:Move(E);NoOp
+6075933500:Move(E);NoOp
+6075987100:Move(E);NoOp
+6076042900:Move(E);NoOp
+6076078900:Move(E);NoOp
+6076108600:Move(E);NoOp
+6076137500:Move(E);NoOp
+6076169500:Move(E);NoOp
+6076198200:Move(E);NoOp
+6076230800:Move(E);NoOp
+6076263700:Move(E);NoOp
+6076300500:Move(E);NoOp
+6076330700:Move(E);NoOp
+6076364900:Move(E);NoOp
+6076394800:Move(E);NoOp
+6076424100:Move(E);NoOp
+6076458900:Move(E);NoOp
+6076492300:Move(E);NoOp
+6076526000:Move(E);NoOp
+6076555600:Move(E);NoOp
+6076584300:Move(E);NoOp
+6076613900:Move(E);NoOp
+6076654400:Move(E);NoOp
+6076685000:Move(S);NoOp
+6076715200:Move(S);NoOp
+6076747400:Move(W);NoOp
+6076779600:Move(W);NoOp
+6076808600:Move(W);NoOp
+6076837100:Move(W);NoOp
+6076866200:Move(W);NoOp
+6076897900:Move(W);NoOp
+6076954900:Move(W);NoOp
+6077008400:Move(W);NoOp
+6077058600:Move(W);NoOp
+6077128100:Move(W);NoOp
+6077177500:Move(W);NoOp
+6077218700:Move(W);NoOp
+6077257400:Move(W);NoOp
+6077298100:Move(W);NoOp
+6077331300:Move(W);NoOp
+6077370400:Move(W);NoOp
+6077413500:Move(W);NoOp
+6077451300:Move(W);NoOp
+6077504800:Move(W);NoOp
+6077559200:Move(W);NoOp
+6077597000:Move(W);NoOp
+6077632200:Move(W);NoOp
+6077668000:Move(W);NoOp
+6077701500:Move(W);NoOp
+6077753600:Move(W);NoOp
+6077802400:Move(W);NoOp
+6077838900:Move(W);NoOp
+6077896200:Move(S);NoOp
+6077932400:Move(S);NoOp
+6077978000:Move(E);NoOp
+6078012600:Move(E);NoOp
+6078047500:Move(E);NoOp
+6078081000:Move(E);NoOp
+6078116900:Move(E);NoOp
+6078151400:Move(E);NoOp
+6078192600:Move(E);NoOp
+6078227300:Move(E);NoOp
+6078260500:Move(E);NoOp
+6078295800:Move(E);NoOp
+6078329200:Move(E);NoOp
+6078366200:Move(E);NoOp
+6078401200:Move(E);NoOp
+6078501000:Move(E);NoOp
+6078585000:Move(E);NoOp
+6078631800:Move(E);NoOp
+6078682800:Move(E);NoOp
+6078752700:Move(E);NoOp
+6078791700:Move(E);NoOp
+6078829700:Move(E);NoOp
+6078880300:Move(E);NoOp
+6080236500:Move(E);NoOp
+6080304300:Move(E);NoOp
+6080339700:Move(E);NoOp
+6080374700:Move(E);NoOp
+6080407200:Move(E);NoOp
+6080440100:Move(E);NoOp
+6080471300:Move(S);NoOp
+6080505000:Move(S);NoOp
+6080536600:Move(W);NoOp
+6080568900:Move(W);NoOp
+6080601900:Move(W);NoOp
+6080633100:Move(W);NoOp
+6080665900:Move(W);NoOp
+6080697400:Move(W);NoOp
+6080728200:Move(W);NoOp
+6080761100:Move(W);NoOp
+6080791900:Move(W);NoOp
+6080824100:Move(W);NoOp
+6080855000:Move(W);NoOp
+6080889600:Move(W);NoOp
+6080923100:Move(W);NoOp
+6080972200:Move(W);NoOp
+6081006700:Move(W);NoOp
+6081042300:Move(W);NoOp
+6081077900:Move(W);NoOp
+6081115000:Move(W);NoOp
+6081170200:Move(W);NoOp
+6081203600:Move(W);NoOp
+6081236500:Move(W);NoOp
+6081269000:Move(W);NoOp
+6081301700:Move(W);NoOp
+6081334700:Move(W);NoOp
+6081366700:Move(W);NoOp
+6081400000:Move(W);NoOp
+6081432000:Move(W);NoOp
+6081469300:Move(S);NoOp
+6081516500:Move(S);NoOp
+6081569000:Move(E);NoOp
+6081606300:Move(E);NoOp
+6081655700:Move(E);NoOp
+6081696500:Move(E);NoOp
+6081742800:Move(E);NoOp
+6081778000:Move(E);NoOp
+6081811900:Move(E);NoOp
+6081839800:Move(E);NoOp
+6081872500:Move(E);NoOp
+6081922700:Move(E);NoOp
+6081956400:Move(E);NoOp
+6081981900:Move(E);NoOp
+6082011200:Move(E);NoOp
+6082040600:Move(E);NoOp
+6082064300:Move(E);NoOp
+6082096000:Move(E);NoOp
+6082124800:Move(E);NoOp
+6082150700:Move(E);NoOp
+6082180700:Move(E);NoOp
+6082208500:Move(E);NoOp
+6082237700:Move(E);NoOp
+6082265000:Move(E);NoOp
+6082294000:Move(E);NoOp
+6082322400:Move(E);NoOp
+6082349700:Move(E);NoOp
+6082392300:Move(E);NoOp
+6082421500:Move(E);NoOp
+6082452500:Move(S);NoOp
+6082481000:Move(S);NoOp
+6082506300:Move(W);NoOp
+6082536500:Move(W);NoOp
+6082564500:Move(W);NoOp
+6082593900:Move(W);NoOp
+6082618400:Move(W);NoOp
+6082647600:Move(W);NoOp
+6082675600:Move(W);NoOp
+6082704400:Move(W);NoOp
+6082733800:Move(W);NoOp
+6082773200:Move(W);NoOp
+6082808000:Move(W);NoOp
+6082831800:Move(W);NoOp
+6082859000:Move(W);NoOp
+6082892400:Move(W);NoOp
+6082956200:Move(W);NoOp
+6083014800:Move(W);NoOp
+6083056100:Move(W);NoOp
+6083098800:Move(W);NoOp
+6083144900:Move(W);NoOp
+6083194500:Move(W);NoOp
+6083238300:Move(W);NoOp
+6083289500:Move(W);NoOp
+6083321000:Move(W);NoOp
+6083379000:Move(W);NoOp
+6083413200:Move(W);NoOp
+6083450600:Move(W);NoOp
+6083498100:Move(W);NoOp
+6083562200:Move(S);NoOp
+6083593800:Move(S);NoOp
+6083617500:Move(S);NoOp
+6083645200:Move(S);NoOp
+6083670000:Move(S);NoOp
+6083697600:Move(S);NoOp
+6083726600:Move(S);NoOp
+6083753900:Move(W);NoOp
+6083781600:Move(W);NoOp
+6083813900:Push(W,W);NoOp
+#end
+#solved
+false
+#numactions
+391
+#time
+6083813900
+#end

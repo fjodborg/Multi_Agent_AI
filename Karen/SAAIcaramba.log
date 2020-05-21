@@ -1,0 +1,90 @@
+#domain
+hospital
+#levelname
+SAAIcaramba
+#colors
+red: 0, A, B, C
+#initial
+++++++++++
++0C    BA+
++++++ ++++
+    + +
+    + +
+    +++
+#goal
+++++++++++
++        +
++++++B++++
+    +C+
+    +A+
+    +++
+#end
+#clientname
+MAI client
+#actions
+1397519612:Push(E,E)
+1397576994:Push(E,E)
+1397603655:Push(E,E)
+1397627664:Push(E,S)
+1397656895:Pull(E,S)
+1397680197:Push(W,W)
+1397728205:Move(E)
+1397759856:Pull(W,E)
+1397783478:Push(W,W)
+1397805781:Move(E)
+1397828035:Pull(W,E)
+1397850184:Push(E,S)
+1397873157:Move(W)
+1397895457:Pull(E,W)
+1397923366:Pull(E,W)
+1397945667:Move(E)
+1397967367:Pull(W,E)
+1397989331:Push(W,W)
+1398011464:Push(W,W)
+1398033635:Push(W,W)
+1398055785:Move(E)
+1398077487:Move(E)
+1398099333:Pull(E,S)
+1398121582:Push(W,W)
+1398143742:Move(E)
+1398165531:Pull(W,E)
+1398187831:Push(W,W)
+1398210050:Move(E)
+1398231650:Pull(W,E)
+1398253655:Push(E,S)
+1398276002:Move(W)
+1398297895:Pull(E,W)
+1398320344:Push(S,S)
+1398342808:Move(N)
+1398372111:Pull(S,W)
+1398395175:Push(S,S)
+1398417602:Move(N)
+1398445492:Push(N,E)
+1398468707:Pull(W,E)
+1398491133:Push(E,S)
+1398513605:Move(W)
+1398535605:Move(W)
+1398557389:Pull(E,W)
+1398579908:Move(E)
+1398607861:Pull(W,S)
+1398631061:Push(E,E)
+1398653737:Move(W)
+1398675820:Pull(E,W)
+1398698111:Push(E,E)
+1398720265:Move(W)
+1398744885:Pull(E,W)
+1398767486:Push(W,S)
+1398789933:Push(S,S)
+1398812141:Move(N)
+1398834076:Move(E)
+1398855594:Pull(W,E)
+1398877819:Pull(W,E)
+1398899882:Push(E,S)
+#end
+#solved
+true
+#numactions
+58
+#time
+1398899882
+#end

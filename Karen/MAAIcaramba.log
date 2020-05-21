@@ -1,0 +1,60 @@
+#domain
+hospital
+#levelname
+MAOptimalSolution
+#colors
+red: 0, D
+blue: 1, 2, O
+green: 3, T
+purple: 4, R
+grey: 5, P
+pink: 6, U
+#initial
++++++++++++++++++
++ D   O         +
++ 0   1   2 U 3 +
++             T +
++               +
++         O     +
++   4   5   6   +
++   R   P       +
++++++++++++++++++
+#goal
++++++++++++++++++
++               +
++               +
++               +
++ D R O P O U T +
++               +
++               +
++               +
++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+413825900:Pull(E,N);Pull(S,N);NoOp;Push(S,S);Pull(N,S);NoOp;Move(N)
+413961300:Push(W,S);Pull(S,N);NoOp;NoOp;Pull(N,S);NoOp;Move(N)
+414036100:Push(S,S);Pull(E,N);NoOp;NoOp;Pull(N,S);NoOp;Move(N)
+414137300:NoOp;Pull(E,W);NoOp;NoOp;NoOp;NoOp;Pull(E,N)
+414230500:NoOp;Move(E);NoOp;NoOp;NoOp;NoOp;Push(W,S)
+414305100:NoOp;Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+414384600:NoOp;Pull(W,S);NoOp;NoOp;NoOp;NoOp;NoOp
+414451200:NoOp;Move(W);NoOp;NoOp;NoOp;NoOp;NoOp
+414518000:NoOp;Push(W,W);NoOp;NoOp;NoOp;Pull(N,S);NoOp
+414586900:NoOp;NoOp;NoOp;NoOp;Move(N);Pull(N,S);NoOp
+414651000:NoOp;NoOp;NoOp;NoOp;NoOp;Pull(N,S);NoOp
+414716700:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+414770500:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+414825400:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+414881900:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+414942700:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+414995900:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+#end
+#solved
+true
+#numactions
+17
+#time
+414995900
+#end

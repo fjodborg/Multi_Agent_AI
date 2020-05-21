@@ -1,0 +1,63 @@
+#domain
+hospital
+#levelname
+MANeverAI
+#colors
+blue: 0, A, B
+red: 1, C, D
+#initial
+          ++
+         +  +
+        +    +
+       +      +
+      ++B+++++++
+     ++        ++
+    +  +         +
+   +    +    +    +
+  +      C  +      +
+ +        ++        +
++++++++++A+++++++++ ++
+ +        ++        +
+  +      +  +      +
+   +    +    +    +
+    +0 +         +
+     +++++++++D++
+      +1       +
+       +      +
+        +    +
+         +  +
+          ++
+#goal
+          ++
+         + C+
+        +    +
+       +      +
+      ++ +++++++
+     ++        ++
+    +  +         +
+   +    +    +    +
+  +         +      +
+ +        ++        +
++++++++++ +++++++++ ++
+ +        ++B       +
+  +      +  +      +
+   +    +    +    +
+    + D+         +
+     +++++++++ ++
+      +        +
+       +      +
+        +    +
+         +A +
+          ++
+#end
+#clientname
+MAI client
+#actions
+#end
+#solved
+false
+#numactions
+0
+#time
+0
+#end

@@ -1,0 +1,62 @@
+#domain
+hospital
+#levelname
+SANeverAI
+#colors
+green: 0, A, B
+#initial
+          ++
+         +  +
+        +    +
+       +      +
+      ++ +++++++
+     ++        ++
+    +  +         +
+   +    +    +    +
+  +         +      +
+ +        ++        +
++++++++++ +++++++++ ++
+ +        ++        +
+  +      +  +      +
+   +    +    +    +
+    +0 +         +
+     +++++++++ ++
+      +        +
+       +      +
+        +AAAA+
+         +BB+
+          ++
+#goal
+          ++
+         +BA+
+        +    +
+       +      +
+      ++ +++++++
+     ++        ++
+    +  +         +
+   +    +    +    +
+  +         +      +
+ +B       ++A       +
++++++++++ +++++++++ ++
+ +        ++        +
+  +      +  +      +
+   +    +    +    +
+    + A+A        +
+     +++++++++ ++
+      +        +
+       +      +
+        +    +
+         +  +
+          ++
+#end
+#clientname
+MAI client
+#actions
+#end
+#solved
+false
+#numactions
+0
+#time
+0
+#end

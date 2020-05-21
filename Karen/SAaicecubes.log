@@ -1,0 +1,61 @@
+#domain
+hospital
+#levelname
+SAaicecubes
+#colors
+red: 0, A
+#initial
+++++++++++++
++0+     +  +
++  +  +  + +
++   +A + + +
++    + + + +
++      +   +
+++++++++++++
+#goal
+++++++++++++
++ +     +A +
++  +  +  + +
++   +  + + +
++    + + + +
++      +   +
+++++++++++++
+#end
+#clientname
+MAI client
+#actions
+216295004:Move(S)
+216376437:Move(E)
+216412500:Move(S)
+216442135:Move(E)
+216471428:Move(S)
+216498950:Move(E)
+216525371:Move(S)
+216550979:Move(E)
+216577625:Move(E)
+216606840:Move(N)
+216634660:Move(N)
+216661630:Push(W,N)
+216693635:Push(N,N)
+216716835:Push(N,E)
+216743970:Push(E,E)
+216770371:Push(E,S)
+216800167:Push(S,E)
+216827156:Push(E,S)
+216856206:Push(S,S)
+216883651:Push(S,S)
+216910067:Push(S,E)
+216938230:Push(E,E)
+216964321:Push(E,N)
+216992266:Push(N,N)
+217019396:Push(N,N)
+217042286:Push(N,N)
+217069446:Push(N,W)
+#end
+#solved
+true
+#numactions
+27
+#time
+217069446
+#end

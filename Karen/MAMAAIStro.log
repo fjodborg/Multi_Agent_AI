@@ -1,0 +1,39 @@
+#domain
+hospital
+#levelname
+MAMAAIStro
+#colors
+blue: 0, A
+red: 1, B
+#initial
+++++++++++++++++
++0          A  +
++++ ++++++ + + +
++++ + B 1+ + + +
++++ + ++++ + + +
++++ +      + + +
++++ ++++++++ + +
++++            +
+++++++++++++++++
+#goal
+++++++++++++++++
++              +
++++ ++++++ + + +
++++ +    + + + +
++++ + ++++ + + +
++++ +      + + +
++++ ++++++++ + +
++++   A B      +
+++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+#end
+#solved
+false
+#numactions
+0
+#time
+0
+#end

@@ -1,0 +1,65 @@
+#domain
+hospital
+#levelname
+SAThree
+#colors
+red: 0, F
+blue: E, N, M
+grey: B, S, R
+#initial
++++++++++++++++++
++              0+
++       +F+     +
++   B    +      +
++          ++++++
++++ +   S   M   +
+++  ++        +++
++  +E   +    RN +
++  +   + +      +
++               +
++++++++++++++++++
+#goal
++++++++++++++++++
++               +
++       + +     +
++   B    +      +
++          ++++++
++++ +   S   M   +
+++  ++        +++
++  +E   +    RN +
++  +   +F+      +
++               +
++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+659273138:Move(W)
+659338428:Move(W)
+659364791:Move(W)
+659387966:Move(W)
+659416403:Move(W)
+659438619:Move(W)
+659469589:Pull(E,S)
+659500615:Pull(E,W)
+659523982:Pull(E,W)
+659546570:Push(W,S)
+659569545:Push(S,S)
+659592193:Push(S,W)
+659618615:Push(W,S)
+659641453:Push(S,S)
+659663720:Push(S,S)
+659685875:Push(S,S)
+659708023:Push(S,S)
+659729999:Push(S,S)
+659751926:Push(S,W)
+659773956:Push(W,W)
+659801417:Push(W,N)
+#end
+#solved
+true
+#numactions
+21
+#time
+659801417
+#end

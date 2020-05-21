@@ -1,0 +1,96 @@
+#domain
+hospital
+#levelname
+MAChuligans
+#colors
+red: 0, A
+green: 1, B
+blue: 2, C
+#initial
+++++++++++++++++++++++++
++                      +
++          +++++++++++++
++      B             C2+
++   A                  +
++                      +
+++++++++++++++++++     +
++  0                   +
++                   1  +
+++++++++++++++++++++++++
+#goal
+++++++++++++++++++++++++
++C                    A+
++          +++++++++++++
++                      +
++                      +
++                      +
+++++++++++++++++++     +
++                      +
++                     B+
+++++++++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+774107300:Move(E);NoOp;Push(W,W)
+774179500:Move(E);NoOp;Push(W,W)
+774216300:Move(E);NoOp;Push(W,W)
+774246000:Move(E);NoOp;Push(W,W)
+774314600:Move(E);NoOp;Push(W,W)
+774362700:Move(E);NoOp;Push(W,W)
+774424500:Move(E);NoOp;Push(W,W)
+774464900:Move(E);NoOp;Push(W,W)
+774517900:Move(E);NoOp;Push(W,W)
+774565300:Move(E);Move(N);Push(W,W)
+774596800:Move(E);Move(N);Push(W,W)
+774630600:Move(E);Move(N);Push(W,N)
+774664600:Move(E);Move(N);Push(N,N)
+774699000:Move(E);Move(N);Push(N,W)
+774732900:Move(E);Move(W);Push(W,W)
+774763000:Move(N);Move(W);Push(W,W)
+774791700:Move(N);Move(W);Push(W,W)
+774820900:Move(N);Move(W);Push(W,W)
+774852100:Move(N);Move(W);Push(W,W)
+774881400:Move(W);Move(W);Push(W,W)
+774910600:Move(W);Move(W);Push(W,W)
+774939500:Move(W);Move(W);Push(W,W)
+774970100:Move(W);Move(W);NoOp
+774998800:Move(W);Move(W);NoOp
+775026700:Move(W);Move(W);NoOp
+775055000:Move(W);Move(W);NoOp
+775089100:Move(W);Pull(N,W);NoOp
+775142400:Move(S);Push(S,E);NoOp
+775175700:Move(W);Push(E,E);NoOp
+775204700:Move(W);Push(E,E);NoOp
+775233200:Move(W);Push(E,E);NoOp
+775263400:Move(W);Push(E,E);NoOp
+775295300:Move(W);Push(E,E);NoOp
+775324100:Pull(N,W);Push(E,E);NoOp
+775358600:Pull(N,S);Push(E,E);NoOp
+775388400:Pull(N,S);Push(E,E);NoOp
+775422000:Pull(E,S);Push(E,E);NoOp
+775495800:Pull(E,W);Push(E,S);NoOp
+775539700:Pull(E,W);Push(S,S);NoOp
+775573000:Pull(E,W);Push(S,S);NoOp
+775602900:Pull(E,W);Push(S,E);NoOp
+775638300:Pull(S,W);Push(E,E);NoOp
+775672200:Push(N,E);Push(E,E);NoOp
+775701600:Push(E,E);Push(E,E);NoOp
+775735200:Push(E,E);Push(E,S);NoOp
+775764000:Push(E,E);Push(S,S);NoOp
+775793400:Push(E,E);NoOp;NoOp
+775822000:Push(E,E);NoOp;NoOp
+775850500:Push(E,E);NoOp;NoOp
+775879500:Push(E,E);NoOp;NoOp
+775911700:Push(E,E);NoOp;NoOp
+775941100:Push(E,E);NoOp;NoOp
+775970100:Push(E,E);NoOp;NoOp
+775998600:Push(E,E);NoOp;NoOp
+#end
+#solved
+true
+#numactions
+54
+#time
+775998600
+#end

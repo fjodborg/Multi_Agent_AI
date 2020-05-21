@@ -1,0 +1,200 @@
+#domain
+hospital
+#levelname
+MAKaren
+#colors
+blue: 0, A
+pink: 1, C
+green: 2, B
+cyan: 3, D, F
+brown: 4, P
+purple: 5, K
+orange: X
+red: O
+lightblue: 6, E, G
+grey: Y
+#initial
+++++++++++++++++++++++++++++++
++                            +
++ +++                    +++ +
++ ++X+                  +X++ +
++ ++XX++              ++XX++ +
++ ++XXXX+            +XXXX++ +
++  +XXXXX++ F++++G ++XXXXX+  +
++  +XXXXXXX++XXXX++XXXXXXX+  +
++  +XXXXXXXXXXXXXXXXXXXXXX+  +
++   +XXXXXXXXXXXXXXXXXXXX+   +
++    +X+XXXXXXXXXXXXXX+X+    +
++     +XXXXXXXXXXXXXXXX+     +
++     +XXXXXXXXXXXXXXXX+     +
++    +XXX  XXXXXXXX  XXX+    +
++    +XX+ ++XXXXXX+ ++XX+    +
++    +XX++++XXXXXX++++XX+    +
++    +XXX++XXX++XXX++XXX+    +
++ +++XXOOXXXXXXXXXXXXOOXX+++ +
++ + +XOOOOXX+X++X+XXOOOOX+ + +
++ + +XOOOOXXX++++XXXOOOOX+ + +
++ +  +XOOXXXX+OO+XXXXOOX+  + +
++ +  E+XXXXXX+OO+XXXXXX+D  + +
++ +    ++XXXXX++XXXXX++    + +
++ +      +++XXXXXX+++      + +
++         6 ++++++ 3         +
+++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++
++++++  C  A++ 4++++++ ++++++++
++++++ +++++++ +++++++P++++++++
+++     1  0++ +++++++ ++++ +++
++++++++++++++              +++
++    B     ++K++++++++++++P+++
++ B    2  B++ +5           +++
++ B        ++ ++++++++++++++++
+++++++++++++++++++++++++++++++
+#goal
+++++++++++++++++++++++++++++++
++                            +
++ +++G                  F+++ +
++ ++X+                  +X++ +
++ ++XX++D             ++XX++ +
++ ++XXXX+           E+XXXX++ +
++  +XXXXX++  ++++  ++XXXXX+  +
++  +XXXXXXX++XXXX++XXXXXXX+  +
++  +XXXXXXXXXXXXXXXXXXXXXX+  +
++   +XXXXXXXXXXXXXXXXXXXX+   +
++    +X+XXXXXXXXXXXXXX+X+    +
++     +XXXXXXXXXXXXXXXX+     +
++     +XXXXXXXXXXXXXXXX+     +
++    +XXX  XXXXXXXX  XXX+    +
++    +XX+ ++XXXXXX+ ++XX+    +
++    +XX++++XXXXXX++++XX+    +
++    +XXX++XXX++XXX++XXX+    +
++ +++XXOOXXXXXXXXXXXXOOXX+++ +
++ + +XOOOOXX+X++X+XXOOOOX+ + +
++ + +XOOOOXXX++++XXXOOOOX+ + +
++ +  +XOOXXXX+OO+XXXXOOX+  + +
++ +   +XXXXXX+OO+XXXXXX+   + +
++ +    ++XXXXX++XXXXX++    + +
++ +      +++XXXXXX+++      + +
++           ++++++           +
+++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++
++++++      ++  ++++++P++++++++
++++++ +++++++ +++++++ ++++++++
+++CA       ++ +++++++ ++++P+++
++++++++++++++              +++
++      B   ++ ++++++++++++ +++
++          ++K+            +++
++         B++ ++++++++++++++++
+++++++++++++++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+26101087300:NoOp;Move(W);Move(N);Move(E);Move(W);Move(E);NoOp
+26101174600:NoOp;Move(W);Move(W);Move(E);Move(S);Move(W);NoOp
+26101222800:NoOp;Move(N);Pull(S,W);Move(E);Move(S);NoOp;NoOp
+26101338500:NoOp;Move(N);Pull(E,N);Move(E);Move(S);NoOp;NoOp
+26101374600:NoOp;Move(E);Pull(E,W);Move(E);Move(E);NoOp;NoOp
+26101409900:NoOp;Pull(W,E);Move(E);Move(N);Move(E);NoOp;NoOp
+26101439200:NoOp;Pull(S,E);Push(E,S);Move(N);Move(E);NoOp;Move(W)
+26101472200:NoOp;Pull(S,N);Move(W);Pull(E,N);Move(E);NoOp;Move(W)
+26101503300:NoOp;Pull(E,N);Move(W);Pull(E,W);Move(E);NoOp;Move(W)
+26101531900:NoOp;Push(W,W);Push(W,N);Pull(S,W);Move(E);NoOp;Move(W)
+26101592800:NoOp;Push(W,W);NoOp;Pull(S,N);Move(E);NoOp;Move(W)
+26101632200:NoOp;Push(W,W);NoOp;Pull(E,N);Move(E);NoOp;Move(N)
+26101689100:NoOp;NoOp;NoOp;Pull(E,W);Move(E);NoOp;Move(N)
+26101727000:NoOp;NoOp;NoOp;Pull(N,W);Move(E);NoOp;Pull(S,N)
+26101760700:NoOp;NoOp;NoOp;Pull(N,S);Move(E);NoOp;Pull(S,N)
+26101802100:NoOp;NoOp;NoOp;Pull(N,S);Move(E);NoOp;Pull(W,N)
+26101835300:NoOp;NoOp;NoOp;Pull(N,S);Move(E);NoOp;Pull(W,E)
+26101868400:NoOp;NoOp;NoOp;Pull(N,S);Pull(W,S);NoOp;Pull(W,E)
+26101907700:NoOp;NoOp;NoOp;Pull(N,S);Push(E,N);Move(E);Pull(W,E)
+26101947200:NoOp;NoOp;NoOp;Pull(N,S);Move(W);Move(E);Pull(N,E)
+26101979600:NoOp;NoOp;NoOp;Pull(N,S);Move(W);Move(E);Pull(N,S)
+26102011300:NoOp;NoOp;NoOp;Pull(N,S);Move(W);Move(E);Pull(N,S)
+26102043700:NoOp;NoOp;NoOp;Pull(N,S);Move(W);Move(E);Pull(N,S)
+26102077300:NoOp;NoOp;NoOp;Pull(N,S);Move(W);Move(E);Pull(N,S)
+26102110500:NoOp;NoOp;NoOp;Pull(N,S);Move(N);Move(E);Pull(N,S)
+26102149100:NoOp;NoOp;NoOp;Pull(N,S);Push(N,N);Move(E);Pull(N,S)
+26102240300:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(E);Pull(N,S)
+26102319200:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(E);Pull(N,S)
+26102356400:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(E);Pull(N,S)
+26102402900:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(N);Pull(N,S)
+26102437500:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(N);Pull(N,S)
+26102468700:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(W);Pull(N,S)
+26102497600:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(W);Pull(N,S)
+26102526000:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(W);Pull(N,S)
+26102555200:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(W);Pull(N,S)
+26102583000:NoOp;NoOp;NoOp;Pull(N,S);NoOp;Move(W);Pull(N,S)
+26102613800:NoOp;NoOp;NoOp;Pull(W,S);NoOp;Move(W);Pull(N,S)
+26102642900:NoOp;NoOp;NoOp;Pull(W,E);NoOp;Move(W);Pull(N,S)
+26102670300:NoOp;NoOp;NoOp;Pull(W,E);NoOp;Move(W);Pull(N,S)
+26102697600:NoOp;NoOp;NoOp;Pull(W,E);NoOp;Move(W);Pull(N,S)
+26102725900:NoOp;NoOp;NoOp;Pull(S,E);NoOp;Move(W);Pull(N,S)
+26102753300:NoOp;NoOp;NoOp;Pull(W,N);NoOp;Move(W);Pull(N,S)
+26102780300:NoOp;NoOp;NoOp;Pull(S,E);NoOp;Move(W);Pull(E,S)
+26102807200:NoOp;NoOp;NoOp;Pull(W,N);NoOp;Move(W);Pull(E,W)
+26102834800:NoOp;NoOp;NoOp;Pull(W,E);NoOp;Push(S,S);Pull(E,W)
+26102890900:NoOp;NoOp;NoOp;Pull(S,E);NoOp;NoOp;Pull(E,W)
+26102928600:NoOp;NoOp;NoOp;Pull(W,N);NoOp;NoOp;Pull(E,W)
+26102963300:NoOp;NoOp;NoOp;Pull(S,E);NoOp;NoOp;Pull(E,W)
+26102994900:NoOp;NoOp;NoOp;Pull(W,N);NoOp;NoOp;Pull(E,W)
+26103026300:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(E,W)
+26103058000:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(S,W)
+26103089700:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(E,N)
+26103130300:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(E,W)
+26103183900:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(E,W)
+26103234100:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(S,W)
+26103310400:NoOp;NoOp;NoOp;Pull(W,E);NoOp;NoOp;Pull(E,N)
+26103343200:NoOp;NoOp;NoOp;Pull(N,E);NoOp;NoOp;Pull(E,W)
+26103371500:NoOp;NoOp;NoOp;Push(S,W);NoOp;NoOp;Pull(E,W)
+26103398800:NoOp;NoOp;NoOp;Push(W,N);NoOp;NoOp;Pull(E,W)
+26103426400:NoOp;NoOp;NoOp;Push(N,W);NoOp;NoOp;Pull(E,W)
+26103453300:NoOp;NoOp;NoOp;Push(W,W);NoOp;NoOp;Pull(S,W)
+26103480000:NoOp;NoOp;NoOp;Push(W,W);NoOp;NoOp;Pull(S,N)
+26103506700:NoOp;NoOp;NoOp;Move(E);NoOp;NoOp;Pull(E,N)
+26103533200:NoOp;NoOp;NoOp;Move(E);NoOp;NoOp;Pull(S,W)
+26103560500:NoOp;NoOp;NoOp;Move(E);NoOp;NoOp;Push(W,N)
+26103587400:NoOp;NoOp;NoOp;Move(S);NoOp;NoOp;Push(N,N)
+26103614100:NoOp;NoOp;NoOp;Pull(N,S);NoOp;NoOp;Push(E,E)
+26103640700:NoOp;NoOp;NoOp;Push(S,E);NoOp;NoOp;Push(E,E)
+26103666900:NoOp;NoOp;NoOp;Push(E,E);NoOp;NoOp;Move(W)
+26103694400:NoOp;NoOp;NoOp;Push(E,N);NoOp;NoOp;Move(N)
+26103725000:NoOp;NoOp;NoOp;Push(N,E);NoOp;NoOp;Push(W,S)
+26103779600:NoOp;NoOp;NoOp;Push(E,N);NoOp;NoOp;Push(S,W)
+26103810800:NoOp;NoOp;NoOp;Push(N,E);NoOp;NoOp;Push(W,W)
+26103839800:NoOp;NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(W,N)
+26103867600:NoOp;NoOp;NoOp;Push(E,N);NoOp;NoOp;Push(N,W)
+26103894700:Move(W);NoOp;NoOp;Push(N,E);NoOp;NoOp;Push(W,N)
+26103943000:Move(W);NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(N,W)
+26103977300:Move(W);NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(W,N)
+26104009400:Move(W);NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(N,W)
+26104040200:Move(W);NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(W,W)
+26104071000:NoOp;NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(W,W)
+26104102100:Move(N);NoOp;NoOp;Push(E,E);NoOp;NoOp;Push(W,W)
+26104134900:Move(S);NoOp;NoOp;NoOp;NoOp;NoOp;Push(W,W)
+26104170700:Move(E);NoOp;NoOp;NoOp;NoOp;NoOp;Push(W,W)
+26104201600:NoOp;NoOp;NoOp;NoOp;NoOp;NoOp;Push(W,W)
+26104232300:Move(W);NoOp;NoOp;NoOp;NoOp;NoOp;Push(W,W)
+26104263300:Move(N);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104295600:Move(N);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104325100:Move(E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104354800:Move(E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104384100:Move(E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104413700:Move(E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104443300:Pull(W,E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104473900:Pull(W,E);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+26104504300:Pull(W,E);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104534700:Pull(W,E);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104564500:Pull(S,E);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104596200:Pull(S,N);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104627000:Pull(E,N);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104657700:Push(W,W);Move(E);NoOp;NoOp;NoOp;NoOp;NoOp
+26104688300:Push(W,W);NoOp;NoOp;NoOp;NoOp;NoOp;NoOp
+#end
+#solved
+true
+#numactions
+101
+#time
+26104688300
+#end

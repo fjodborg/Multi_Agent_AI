@@ -1,0 +1,37 @@
+#domain
+hospital
+#levelname
+SAheav
+#colors
+blue: 0, A
+#initial
+++++++++++++++++
++          A 0++
+++++++++++++++++
+#goal
+++++++++++++++++
++A            ++
+++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+18727810:Move(W)
+18816663:Push(W,W)
+18854833:Push(W,W)
+18891628:Push(W,W)
+18926954:Push(W,W)
+18957471:Push(W,W)
+18987731:Push(W,W)
+19026036:Push(W,W)
+19055603:Push(W,W)
+19084662:Push(W,W)
+19113430:Push(W,W)
+#end
+#solved
+true
+#numactions
+11
+#time
+19113430
+#end

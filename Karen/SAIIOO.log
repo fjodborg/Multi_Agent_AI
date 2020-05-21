@@ -1,0 +1,70 @@
+#domain
+hospital
+#levelname
+SAIIOO
+#colors
+red: 0, A, B
+#initial
+++++++++++++++
++    ABA     +
++    A A     +
++    A0A     +
++    A A     +
++    A A     +
++    A A     +
++    A A     +
+++++++ +++++++
+++++++ +++++++
+++++++++++++++
+#goal
+++++++++++++++
++            +
++            +
++            +
++            +
++            +
++            +
++            +
+++++++A+++++++
+++++++B+++++++
+++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+224431729:Move(N)
+224615518:Pull(S,N)
+224680203:Pull(S,N)
+224821143:Pull(S,N)
+224955787:Pull(S,N)
+225081027:Pull(S,N)
+225129702:Push(W,W)
+225177687:Push(N,W)
+225218476:Push(E,S)
+225259484:Push(S,S)
+225298333:Push(S,S)
+225329897:Move(N)
+225384189:Pull(N,E)
+225426524:Pull(N,E)
+225464180:Pull(N,W)
+225508199:Pull(N,W)
+225539217:Pull(N,W)
+225566628:Pull(N,W)
+225597615:Push(W,S)
+225623025:Push(S,S)
+225658928:Push(S,S)
+225684862:Push(S,S)
+225708282:Push(S,S)
+225731781:Push(S,S)
+225756194:Push(E,E)
+225786020:Push(S,E)
+225810937:Pull(N,W)
+225834942:Push(S,S)
+#end
+#solved
+true
+#numactions
+28
+#time
+225834942
+#end

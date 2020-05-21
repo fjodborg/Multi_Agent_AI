@@ -1,0 +1,66 @@
+#domain
+hospital
+#levelname
+SAAIstars
+#colors
+red: 0, A
+#initial
+++++++++++++++++++++++++++
++ 0A                     +
+++++++++++++++++++++ +++++
+                   +++
+#goal
+++++++++++++++++++++++++++
++A                       +
+++++++++++++++++++++ +++++
+                   +++
+#end
+#clientname
+MAI client
+#actions
+256256635:Push(E,E)
+256352651:Push(E,E)
+256411378:Push(E,E)
+256454239:Push(E,E)
+256505946:Push(E,E)
+256547007:Push(E,E)
+256587687:Push(E,E)
+256689702:Push(E,E)
+256750630:Push(E,E)
+256813498:Push(E,E)
+256882500:Push(E,E)
+256942424:Push(E,E)
+257069677:Push(E,E)
+257135999:Push(E,E)
+257199497:Push(E,E)
+257271761:Push(E,E)
+257332931:Push(E,E)
+257416241:Push(E,E)
+257550336:Pull(S,E)
+257618543:Push(N,W)
+257680152:Push(W,W)
+257754110:Push(W,W)
+257814892:Push(W,W)
+257871718:Push(W,W)
+257929294:Push(W,W)
+257985399:Push(W,W)
+258042143:Push(W,W)
+258100022:Push(W,W)
+258163308:Push(W,W)
+258223594:Push(W,W)
+258281965:Push(W,W)
+258345386:Push(W,W)
+258428083:Push(W,W)
+258491408:Push(W,W)
+258552178:Push(W,W)
+258678153:Push(W,W)
+258765616:Push(W,W)
+258832359:Push(W,W)
+#end
+#solved
+true
+#numactions
+38
+#time
+258832359
+#end

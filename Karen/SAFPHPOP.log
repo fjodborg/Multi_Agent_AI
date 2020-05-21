@@ -1,0 +1,120 @@
+#domain
+hospital
+#levelname
+SAFPHPOP
+#colors
+blue: 0, A, B
+#initial
+++++++++++++++++++++++++++++++++++++++++++++++++++
++0A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
++ A                                             B+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+#goal
+++++++++++++++++++++++++++++++++++++++++++++++++++
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
++B                                              A+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+#end
+#clientname
+MAI client
+#actions
+#end
+#solved
+false
+#numactions
+0
+#time
+0
+#end
