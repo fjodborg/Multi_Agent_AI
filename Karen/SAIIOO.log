@@ -30,7 +30,7 @@ red: 0, A, B
 ++++++++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 224431729:Move(N)
 224615518:Pull(S,N)

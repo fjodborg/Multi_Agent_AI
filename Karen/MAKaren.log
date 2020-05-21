@@ -87,7 +87,7 @@ grey: Y
 ++++++++++++++++++++++++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 26101087300:NoOp;Move(W);Move(N);Move(E);Move(W);Move(E);NoOp
 26101174600:NoOp;Move(W);Move(W);Move(E);Move(S);Move(W);NoOp

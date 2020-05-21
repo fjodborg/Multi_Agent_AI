@@ -38,7 +38,7 @@ cyan: 2, C, G
 +++++++++++++++++++++++++++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 1759747000:Push(N,E);Move(E);Move(E)
 1759819200:Push(E,N);Move(E);Move(E)

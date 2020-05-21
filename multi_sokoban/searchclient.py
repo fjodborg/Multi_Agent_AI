@@ -220,5 +220,5 @@ def run_loop(strategy: str, memory: float):
 
 if __name__ == "__main__":
     args = parse_arguments()
-    print("MAI client\n", flush=True)
+    print("Karen\n", flush=True)
     run_loop(args.strategy, args.max_memory)

@@ -21,7 +21,7 @@ blue: 1, B
 +++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 74502100:Move(E);NoOp
 74863700:Push(E,S);NoOp

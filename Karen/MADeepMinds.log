@@ -24,7 +24,7 @@ green: 2, C
 ++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 5779044900:Move(N);NoOp;NoOp
 5779102800:Move(E);NoOp;NoOp

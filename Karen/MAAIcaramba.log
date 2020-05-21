@@ -31,7 +31,7 @@ pink: 6, U
 +++++++++++++++++
 #end
 #clientname
-MAI client
+Karen
 #actions
 413825900:Pull(E,N);Pull(S,N);NoOp;Push(S,S);Pull(N,S);NoOp;Move(N)
 413961300:Push(W,S);Pull(S,N);NoOp;NoOp;Pull(N,S);NoOp;Move(N)
