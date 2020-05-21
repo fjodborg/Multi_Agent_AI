@@ -224,12 +224,18 @@ class Manager:
         list of actions to the best solution
 
         """
-        paths = self.solutions
+        paths = deepcopy(self.solutions)
         # make sure that all paths has the same length
         sol_len = max([len(path) for path in paths])
         for i in range(len(paths)):
             while sol_len > len(paths[i]):
                 paths[i].append("NoOp")
+        
+        if len(paths) < len(self.top_problem.agents):
+            missing = set(self.top_problem.agents.keys()) ^ {
+                agent for agent in self.agents
+            }
+            paths.insert(int(list(missing)[0]), ["NoOp"] * len(paths[0]))
 
         println(paths)
         return [";".join(actions) for actions in zip(*paths)]
